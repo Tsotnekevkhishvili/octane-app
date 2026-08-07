@@ -1,0 +1,33 @@
+name: Auto Fuel Price Scraper
+
+on:
+  schedule:
+    # გაეშვება ყოველ დილით საქართველოს დროით 08:00 საათზე (04:00 UTC)
+    - cron: '0 4 * * *'
+  workflow_dispatch: # გაძლევს საშუალებას GitHub-ის საიტიდანაც ხელით გააშვა ნებისმიერ დროს
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install axios cheerio
+
+      - name: Run Scraper Script
+        run: node scraper.js
+
+      - name: Commit and Push Updated Prices
+        run: |
+          git config --global user.name 'Octane Bot'
+          git config --global user.email 'bot@octane.ge'
+          git add dist/fuel-prices.json || git add fuel-prices.json
+          git commit -m "Auto-update fuel prices [skip ci]" || exit 0
+          git push
