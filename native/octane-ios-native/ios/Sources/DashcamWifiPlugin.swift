@@ -172,7 +172,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     }
 
     private var dlSession: URLSession?
-    private var dlCalls: [Int: (PluginCall, URL, String)] = [:]
+    private var dlCalls: [Int: (CAPPluginCall, URL, String)] = [:]
     private var dlLastNotify: [Int: Date] = [:]
 
     @objc func download(_ call: CAPPluginCall) {
