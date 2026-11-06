@@ -1,3 +1,10 @@
 node_modules/
 .idea/
 .DS_Store
+# 🔐 ხელმოწერის გასაღები და პაროლები - არასდროს აიტვირთოს GitHub-ზე
+*.jks
+*.keystore
+key.properties
+.env
+*.pem
+dist/secrets.js

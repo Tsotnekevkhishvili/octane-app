@@ -1,0 +1,11 @@
+{
+  "name": "octane-ios-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Octane App - iPhone-ის ნატიური ნაწილი (OBD WiFi/TCP, ვიდეორეგისტრატორი). მხოლოდ iOS - ანდროიდზე არ გამოიყენება.",
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  }
+}

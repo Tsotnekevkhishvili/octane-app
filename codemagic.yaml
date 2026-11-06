@@ -1,0 +1,62 @@
+# 🍎 Octane App — iPhone-ის აწყობა Codemagic-ზე (Mac-ის გარეშე) და ატვირთვა TestFlight-ში.
+#
+# Codemagic-ში წინასწარ საჭიროა (ერთხელ):
+#   1. Teams → Integrations → App Store Connect → API გასაღების დამატება, სახელით:  Octane ASC
+#   2. App → Environment variables → ჯგუფი  ios_signing , ცვლადი  CERTIFICATE_PRIVATE_KEY
+#      (Secure ✓) - მნიშვნელობა: codemagic-cert-key.pem ფაილის სრული ტექსტი (Desktop-ზეა)
+#   3. App Store Connect-ში აპის Apple ID (რიცხვი) → ცვლადი  APP_STORE_APPLE_ID  იმავე ჯგუფში
+#   4. OpenAI-ის გასაღები → ცვლადი  OPENAI_API_KEY  (Secure ✓) იმავე ჯგუფში (AI მექანიკოსისთვის)
+#
+# ანდროიდის ნაწილს (android/) ეს ფაილი არ ეხება.
+
+workflows:
+  ios-testflight:
+    name: iPhone → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Octane ASC
+    environment:
+      groups:
+        - ios_signing
+      vars:
+        BUNDLE_ID: "ge.octane.app"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 20
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events: []          # აწყობა მხოლოდ ხელით, ღილაკით „Start new build“
+    scripts:
+      - name: საიდუმლო გასაღები (AI მექანიკოსი) - ცვლადიდან, GitHub-ზე არ ინახება
+        script: |
+          printf "window.OCTANE_OPENAI_KEY = '%s';\n" "$OPENAI_API_KEY" > dist/secrets.js
+      - name: npm პაკეტები
+        script: npm ci
+      - name: Capacitor → iOS (ვებ-ნაწილი + CocoaPods)
+        script: npx cap sync ios
+      - name: ხელმოწერა - სერტიფიკატი და პროფილი (ავტომატურად, App Store Connect-იდან)
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: build ნომერი (ყოველ აწყობაზე იზრდება)
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          NEW=$((LATEST + 1))
+          echo "build ნომერი: $NEW"
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $NEW;/g" ios/App/App.xcodeproj/project.pbxproj
+      - name: აპის აწყობა (.ipa)
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -1,5 +1,21 @@
 {
   "appId": "ge.octane.app",
   "appName": "Octane Diagnostic Pro",
-  "webDir": "dist"
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true,
+    "includePlugins": [
+      "@capacitor-community/bluetooth-le",
+      "cordova-plugin-chrome-apps-common",
+      "cordova-plugin-chrome-apps-sockets-tcp"
+    ]
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0a1533",
+    "limitsNavigationsToAppBoundDomains": false,
+    "includePlugins": [
+      "octane-ios-native"
+    ]
+  }
 }
