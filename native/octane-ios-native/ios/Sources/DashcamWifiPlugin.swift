@@ -273,18 +273,14 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         guard let u = url else { call.reject("NO_URL"); return }
         let startMs = call.getInt("startMs", 0)
         let endMs = call.getInt("endMs", -1)
+        let title = call.getString("title", "")
         DispatchQueue.main.async {
             self.stopInline()
-            let player = AVPlayer(url: u)
-            let vc = OctanePlayerViewController()
-            vc.player = player
+            // კამერის 1296P ფაილებს iPhone-ის ჩაშენებული ფლეერი ვერ შიფრავს (მხოლოდ ხმა ისმის) - VLC-ით ვუკრავთ
+            let vc = OctaneFilePlayerViewController(url: u, title: title, startMs: startMs, endMs: endMs)
             vc.modalPresentationStyle = .fullScreen
-            if startMs > 0 { player.seek(to: CMTime(value: CMTimeValue(startMs), timescale: 1000)) }
-            if endMs > 0 {
-                vc.boundaryToken = player.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTime(value: CMTimeValue(endMs), timescale: 1000))], queue: .main) { [weak player] in player?.pause() }
-            }
             OctaneOrientation.set(true)
-            self.bridge?.viewController?.present(vc, animated: true) { player.play() }
+            self.bridge?.viewController?.present(vc, animated: true)
             call.resolve()
         }
     }
@@ -395,19 +391,39 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         let p = VLCMediaPlayer()
         let m = VLCMedia(url: u)
         m.addOption(":rtsp-tcp")
-        m.addOption(":network-caching=300")
+        m.addOption(":rtsp-frame-buffer-size=1000000")   // 1296P-ის დიდი კადრები
+        m.addOption(":network-caching=500")
         m.addOption(":no-audio")        // ბარათში ხმა არ გვჭირდება
         p.media = m
         p.drawable = v
         p.delegate = self
         livePlayer = p
         liveState("loading")
-        p.play()
+        // წინა ნაკადის გაჩერება ფონზე მიდის - ახალს მისი დასრულების შემდეგ ვრთავთ (კამერა ერთ ნაკადს აძლევს)
+        OctaneVlc.queue.async {
+            DispatchQueue.main.async { if self.livePlayer === p { p.play() } }
+        }
+        // 15 წამში კადრი არ მოვიდა → თავიდან ვცდით
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+            if self.livePlayer === p && !self.liveFirstFrame { self.liveFailed() }
+        }
     }
 
     private func releaseLivePlayer() {
-        if let p = livePlayer { p.delegate = nil; p.stop(); livePlayer = nil }
+        if let p = livePlayer { p.delegate = nil; livePlayer = nil; OctaneVlc.stop(p) }
         liveView?.isHidden = true
+    }
+
+    private func liveFailed() {
+        if liveWanted && liveRetries < 6 {
+            liveRetries += 1
+            liveState("loading")
+            releaseLivePlayer()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { if self.liveWanted { self.createLivePlayer() } }
+        } else {
+            releaseLivePlayer()
+            liveState("error")
+        }
     }
 
     private func stopInline() {
@@ -430,14 +446,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
             guard let p = self.livePlayer else { return }
             if p.state == .error || (p.state == .ended && !self.liveFirstFrame) || (p.state == .stopped && self.liveWanted && !self.liveFirstFrame) {
                 // კამერას ჩაწერის ჩართვის შემდეგ ნაკადის მომზადებას რამდენიმე წამი სჭირდება - ჯერ თავიდან ვცდით
-                if self.liveWanted && self.liveRetries < 6 {
-                    self.liveRetries += 1
-                    self.liveState("loading")
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { if self.liveWanted { self.createLivePlayer() } }
-                } else {
-                    self.releaseLivePlayer()
-                    self.liveState("error")
-                }
+                self.liveFailed()
             }
         }
     }
@@ -634,7 +643,8 @@ class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
         retry.isHidden = true
         let m = VLCMedia(url: url)
         m.addOption(":rtsp-tcp")
-        m.addOption(":network-caching=300")
+        m.addOption(":rtsp-frame-buffer-size=1000000")
+        m.addOption(":network-caching=500")
         player.media = m
         player.drawable = videoView
         player.delegate = self
@@ -659,13 +669,243 @@ class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
         }
     }
 
-    @objc private func retryTap() { player.stop(); start() }
+    @objc private func retryTap() {
+        retry.isHidden = true
+        OctaneVlc.stop(player) { [weak self] in self?.start() }
+    }
     @objc private func closeTap() { dismiss(animated: true) }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         player.delegate = nil
-        player.stop()
+        OctaneVlc.stop(player)
+        OctaneOrientation.set(false)
+    }
+}
+
+/// VLC-ის გაჩერება მთავარ ნაკადზე ეკრანს ყინავს (და iOS აპს ხურავს) - ყოველთვის ფონზე, რიგით
+enum OctaneVlc {
+    static let queue = DispatchQueue(label: "ge.octane.vlc")
+    static func stop(_ p: VLCMediaPlayer, then: (() -> Void)? = nil) {
+        queue.async {
+            p.stop()
+            if let t = then { DispatchQueue.main.async(execute: t) }
+        }
+    }
+}
+
+/// ჩანაწერის ფლეერი (VLC): ▶/❚❚, გადახვევა, დრო; ტრიალებს, დახურვისას აპი ისევ ვერტიკალურია
+class OctaneFilePlayerViewController: UIViewController, VLCMediaPlayerDelegate {
+    private let url: URL
+    private let titleText: String
+    private let startMs: Int
+    private let endMs: Int
+    private let player = VLCMediaPlayer()
+    private let videoView = UIView()
+    private let status = UILabel()
+    private let bar = UIView()
+    private let top = UIView()
+    private let playBtn = UIButton(type: .system)
+    private let slider = UISlider()
+    private let timeLbl = UILabel()
+    private var dragging = false
+    private var started = false
+    private var ended = false
+
+    init(url: URL, title: String, startMs: Int, endMs: Int) {
+        self.url = url
+        self.titleText = title
+        self.startMs = startMs
+        self.endMs = endMs
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .allButUpsideDown }
+    override var prefersStatusBarHidden: Bool { true }
+    override var prefersHomeIndicatorAutoHidden: Bool { true }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        videoView.translatesAutoresizingMaskIntoConstraints = false
+        videoView.isUserInteractionEnabled = false
+        view.addSubview(videoView)
+
+        status.textColor = .white
+        status.font = .systemFont(ofSize: 17, weight: .semibold)
+        status.textAlignment = .center
+        status.numberOfLines = 0
+        status.text = "ვიდეოს ვხსნი..."
+        status.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(status)
+
+        // ზედა ზოლი: დახურვა + სახელი
+        top.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(top)
+        let close = UIButton(type: .system)
+        close.setTitle("✕  დახურვა", for: .normal)
+        close.setTitleColor(.white, for: .normal)
+        close.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        close.backgroundColor = UIColor(white: 0, alpha: 0.6)
+        close.layer.cornerRadius = 22
+        close.contentEdgeInsets = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18)
+        close.translatesAutoresizingMaskIntoConstraints = false
+        close.addTarget(self, action: #selector(closeTap), for: .touchUpInside)
+        top.addSubview(close)
+        let name = UILabel()
+        name.textColor = .white
+        name.font = .systemFont(ofSize: 15, weight: .semibold)
+        name.text = titleText
+        name.translatesAutoresizingMaskIntoConstraints = false
+        top.addSubview(name)
+
+        // ქვედა ზოლი: ▶/❚❚ + გადახვევა + დრო
+        bar.backgroundColor = UIColor(white: 0, alpha: 0.55)
+        bar.layer.cornerRadius = 22
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bar)
+        playBtn.tintColor = .white
+        playBtn.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        playBtn.translatesAutoresizingMaskIntoConstraints = false
+        playBtn.addTarget(self, action: #selector(playTap), for: .touchUpInside)
+        bar.addSubview(playBtn)
+        slider.minimumTrackTintColor = UIColor(red: 0.23, green: 0.51, blue: 0.96, alpha: 1)
+        slider.translatesAutoresizingMaskIntoConstraints = false
+        slider.addTarget(self, action: #selector(slideStart), for: .touchDown)
+        slider.addTarget(self, action: #selector(slideMove), for: .valueChanged)
+        slider.addTarget(self, action: #selector(slideEnd), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        bar.addSubview(slider)
+        timeLbl.textColor = .white
+        timeLbl.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+        timeLbl.text = "0:00 / 0:00"
+        timeLbl.setContentHuggingPriority(.required, for: .horizontal)
+        timeLbl.setContentCompressionResistancePriority(.required, for: .horizontal)
+        timeLbl.translatesAutoresizingMaskIntoConstraints = false
+        bar.addSubview(timeLbl)
+
+        let g = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            videoView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            videoView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            videoView.topAnchor.constraint(equalTo: view.topAnchor),
+            videoView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            status.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            status.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 24),
+            status.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -24),
+
+            top.topAnchor.constraint(equalTo: g.topAnchor, constant: 10),
+            top.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 12),
+            top.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -12),
+            top.heightAnchor.constraint(equalToConstant: 44),
+            close.leadingAnchor.constraint(equalTo: top.leadingAnchor),
+            close.centerYAnchor.constraint(equalTo: top.centerYAnchor),
+            close.heightAnchor.constraint(equalToConstant: 44),
+            name.leadingAnchor.constraint(equalTo: close.trailingAnchor, constant: 14),
+            name.trailingAnchor.constraint(lessThanOrEqualTo: top.trailingAnchor),
+            name.centerYAnchor.constraint(equalTo: top.centerYAnchor),
+
+            bar.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 12),
+            bar.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -12),
+            bar.bottomAnchor.constraint(equalTo: g.bottomAnchor, constant: -12),
+            bar.heightAnchor.constraint(equalToConstant: 56),
+            playBtn.leadingAnchor.constraint(equalTo: bar.leadingAnchor, constant: 8),
+            playBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            playBtn.widthAnchor.constraint(equalToConstant: 44),
+            playBtn.heightAnchor.constraint(equalToConstant: 44),
+            slider.leadingAnchor.constraint(equalTo: playBtn.trailingAnchor, constant: 8),
+            slider.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            timeLbl.leadingAnchor.constraint(equalTo: slider.trailingAnchor, constant: 12),
+            timeLbl.trailingAnchor.constraint(equalTo: bar.trailingAnchor, constant: -16),
+            timeLbl.centerYAnchor.constraint(equalTo: bar.centerYAnchor)
+        ])
+
+        // ეკრანზე შეხება → მართვის ზოლები ქრება / ჩნდება
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggleUi)))
+        start()
+    }
+
+    private func start() {
+        started = false
+        ended = false
+        let m = VLCMedia(url: url)
+        m.addOption(":network-caching=1500")
+        if startMs > 0 { m.addOption(":start-time=\(Double(startMs) / 1000.0)") }
+        if endMs > startMs { m.addOption(":stop-time=\(Double(endMs) / 1000.0)") }
+        player.media = m
+        player.drawable = videoView
+        player.delegate = self
+        player.play()
+    }
+
+    private func fmt(_ ms: Int32) -> String {
+        let s = max(0, Int(ms) / 1000)
+        return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, (s / 60) % 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
+    }
+
+    private func updateTime(_ pos: Float? = nil) {
+        let len: Int32 = player.media?.length.intValue ?? 0
+        var cur: Int32 = player.time.intValue
+        if let p = pos { cur = Int32(Float(len) * p) }
+        timeLbl.text = fmt(cur) + " / " + fmt(len)
+    }
+
+    func mediaPlayerTimeChanged(_ aNotification: Notification) {
+        DispatchQueue.main.async {
+            if !self.started { self.started = true; self.status.isHidden = true }
+            if !self.dragging {
+                self.slider.value = self.player.position
+                self.updateTime()
+            }
+        }
+    }
+
+    func mediaPlayerStateChanged(_ aNotification: Notification) {
+        DispatchQueue.main.async {
+            let st = self.player.state
+            if st == .error {
+                self.status.text = "ვიდეო ვერ ჩაირთო.\nშეამოწმე, რომ ტელეფონი კამერის WiFi-ზეა."
+                self.status.isHidden = false
+            }
+            if st == .ended || st == .stopped { self.ended = true }
+            let playing = self.player.isPlaying && !self.ended
+            self.playBtn.setImage(UIImage(systemName: playing ? "pause.fill" : "play.fill"), for: .normal)
+        }
+    }
+
+    @objc private func playTap() {
+        if ended {
+            // ბოლომდე ჩაირთო → თავიდან
+            playBtn.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+            OctaneVlc.stop(player) { [weak self] in self?.start() }
+        } else if player.isPlaying {
+            player.pause()
+            playBtn.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        } else {
+            player.play()
+            playBtn.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        }
+    }
+
+    @objc private func slideStart() { dragging = true }
+    @objc private func slideMove() { updateTime(slider.value) }
+    @objc private func slideEnd() {
+        dragging = false
+        if !ended { player.position = slider.value }
+    }
+
+    @objc private func toggleUi() {
+        let hide = !bar.isHidden
+        bar.isHidden = hide
+        top.isHidden = hide
+    }
+
+    @objc private func closeTap() { dismiss(animated: true) }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        player.delegate = nil
+        OctaneVlc.stop(player)
         OctaneOrientation.set(false)
     }
 }
