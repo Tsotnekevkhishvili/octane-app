@@ -44,10 +44,11 @@ workflows:
           xcode-project use-profiles
       - name: build ნომერი (ყოველ აწყობაზე იზრდება)
         script: |
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
-          NEW=$((LATEST + 1))
+          # თარიღი+დრო (მაგ. 202611071530) - ყოველთვის წინაზე დიდია, Apple-ს არაფერი უნდა ვკითხოთ
+          NEW=$(date -u +%Y%m%d%H%M)
           echo "build ნომერი: $NEW"
           sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $NEW;/g" ios/App/App.xcodeproj/project.pbxproj
+          grep -m1 "CURRENT_PROJECT_VERSION" ios/App/App.xcodeproj/project.pbxproj
       - name: აპის აწყობა (.ipa)
         script: |
           xcode-project build-ipa \
