@@ -95,6 +95,8 @@
             --gauge-tick: rgba(22,58,122,0.3);
         }
 
+        /* 🍎 iPhone: გვერდი კიდეებზე არ „ხტება“ */
+        html.ios, html.ios body { overscroll-behavior: none; }
         body {
             background: radial-gradient(circle at 50% -10%, var(--bg-glow-top) 0%, var(--bg-main) 55%);
             color: var(--text-main);
@@ -787,7 +789,7 @@
         .dc-pick2 .dc-pick-ic .ic { width: 28px; height: 28px; stroke-width: 1.8; }
         .dc-pick2.obd .dc-pick-ic { background: linear-gradient(160deg, #6a9bff 0%, #2f6bff 100%); box-shadow: 0 0 26px -4px rgba(59,130,246,.75); }
         .dc-pick2.cam .dc-pick-ic { background: linear-gradient(160deg, #5eead4 0%, #0ea5e9 100%); box-shadow: 0 0 26px -4px rgba(14,165,233,.7); }
-        .dc-pick2 .dc-pick-t { flex: 1; min-width: 0; font-size: clamp(15.5px, 4.8vw, 18.5px); font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dc-pick2 .dc-pick-t { flex: 1; min-width: 0; font-size: clamp(14px, 3.9vw, 17.5px); font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dc-pick2 .dc-pick-arr { width: 36px; height: 36px; padding: 8px; border-radius: 50%; flex-shrink: 0; color: #dbe6ff; background: rgba(255,255,255,.08); border: 1px solid rgba(150,180,255,.24); }
         .dc-back { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; height: 42px; padding: 0 16px 0 10px; border-radius: 14px; cursor: pointer;
                    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); color: #fff; font-size: 14.5px; font-weight: 800; }

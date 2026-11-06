@@ -9,6 +9,18 @@
     if (!C || typeof C.getPlatform !== 'function' || C.getPlatform() !== 'ios') return;
     document.documentElement.classList.add('ios');
 
+    // საათის ზოლის ფერი თემას მიჰყვება (მუქი/ნათელი)
+    var D = C.Plugins && C.Plugins.DashcamWifi;
+    if (D && D.setTheme) {
+        var root = document.documentElement, last = null;
+        var sync = function () {
+            var t = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            if (t !== last) { last = t; D.setTheme({ theme: t }).catch(function () {}); }
+        };
+        sync();
+        new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+
     var T = C.Plugins && C.Plugins.ObdTcp;
     if (!T) return;
 

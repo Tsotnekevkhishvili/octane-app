@@ -57,7 +57,8 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         CAPPluginMethod(name: "liveInlineStart", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "liveInlineRect", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "liveInlineVisible", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "liveInlineStop", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "liveInlineStop", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setTheme", returnType: CAPPluginReturnPromise)
     ]
 
     // ═══════════ 📶 WiFi ═══════════
@@ -477,7 +478,49 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         DispatchQueue.main.async { self.stopInline(); call.resolve() }
     }
 
+    // ═══════════ 📱 ეკრანის ზედა ზოლი (საათი/ბატარეა) ═══════════
+    // iPhone-ზე გვერდი არ უნდა „ხტოდეს“ და შიგთავსი საათის ქვეშ არ უნდა გადიოდეს
+    private var topCover: UIView?
+
+    private func setupScreen() {
+        guard let wv = bridge?.webView else { return }
+        wv.scrollView.bounces = false
+        wv.scrollView.alwaysBounceVertical = false
+        wv.scrollView.alwaysBounceHorizontal = false
+        if topCover == nil {
+            let c = UIView()
+            c.backgroundColor = UIColor(red: 0x0d/255.0, green: 0x1d/255.0, blue: 0x48/255.0, alpha: 1)
+            c.isUserInteractionEnabled = false
+            c.translatesAutoresizingMaskIntoConstraints = false
+            wv.addSubview(c)
+            NSLayoutConstraint.activate([
+                c.topAnchor.constraint(equalTo: wv.topAnchor),
+                c.leadingAnchor.constraint(equalTo: wv.leadingAnchor),
+                c.trailingAnchor.constraint(equalTo: wv.trailingAnchor),
+                c.bottomAnchor.constraint(equalTo: wv.safeAreaLayoutGuide.topAnchor)
+            ])
+            topCover = c
+        }
+    }
+
+    @objc func setTheme(_ call: CAPPluginCall) {
+        let light = call.getString("theme", "dark") == "light"
+        DispatchQueue.main.async {
+            self.setupScreen()
+            self.topCover?.backgroundColor = light
+                ? UIColor(red: 0xcf/255.0, green: 0xe3/255.0, blue: 0xff/255.0, alpha: 1)
+                : UIColor(red: 0x0d/255.0, green: 0x1d/255.0, blue: 0x48/255.0, alpha: 1)
+            // საათის/ბატარეის ფერი: მუქ თემაზე თეთრი, ნათელზე შავი
+            if let w = self.bridge?.webView?.window {
+                w.overrideUserInterfaceStyle = light ? .light : .dark
+            }
+            self.bridge?.viewController?.setNeedsStatusBarAppearanceUpdate()
+            call.resolve()
+        }
+    }
+
     override public func load() {
+        DispatchQueue.main.async { self.setupScreen() }
         // აპი ფონზე → ნაკადს ვაჩერებთ, დაბრუნებისას ვაგრძელებთ
         NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
             self?.releaseLivePlayer()
