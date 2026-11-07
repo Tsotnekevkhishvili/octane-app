@@ -50,6 +50,7 @@
     <script src="car-body.js"></script>
     <script src="car.js"></script>
     <script src="prepurchase.js"></script>
+    <script src="live-pids.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -2135,17 +2136,51 @@
                 </div>
             </div>
 
-            <div class="ui-tiles">
-                <div class="ui-tile"><small>ანტიფრიზი</small><b :class="liveData.coolant !== null && liveData.coolant > 105 ? 'hot' : ''" x-text="liveData.coolant !== null ? liveData.coolant + '°C' : '—'"></b></div>
-                <div class="ui-tile"><small>დროსელი</small><b x-text="liveData.throttle !== null ? liveData.throttle + '%' : '—'"></b></div>
-                <div class="ui-tile"><small>დატვირთვა</small><b x-text="liveData.engineLoad !== null ? liveData.engineLoad + '%' : '—'"></b></div>
-                <div class="ui-tile"><small>ჰაერის ტემპ.</small><b x-text="liveData.intakeTemp !== null ? liveData.intakeTemp + '°C' : '—'"></b></div>
-                <div class="ui-tile"><small>მუშაობის დრო</small><b x-text="liveData.runtime !== null ? liveData.runtime + ' წმ' : '—'"></b></div>
-                <div class="ui-tile"><small>საწვავი</small><b x-text="liveData.fuelLevel !== null ? liveData.fuelLevel + '%' : '—'"></b></div>
-                <div class="ui-tile"><small>ჰაერმზომი</small><b x-text="liveData.maf !== null ? liveData.maf + ' გ/წმ' : '—'"></b></div>
-                <div class="ui-tile"><small>სიჩქარე</small><b x-text="liveData.speed !== null ? liveData.speed + ' კმ/სთ' : '—'"></b></div>
-            </div>
-            <p class="ui-note">„—“ ნიშნავს, რომ ამ მანქანას ეს სენსორი არ აქვს ან ჯერ არ განახლებულა.</p>
+            <!-- მაჩვენებლები ჯგუფებად (live-pids.js) - დაჭერით: ახსნა + ბოლო 60 წამი -->
+            <template x-for="g in $store.live.groups" :key="g.key">
+                <div>
+                    <div class="ui-sec" x-text="g.ka"></div>
+                    <div class="ui-tiles">
+                        <template x-for="p in g.items" :key="p">
+                            <button type="button" class="ui-tile ui-tile-btn" @click="$store.live.open = p">
+                                <small x-text="$store.live.label(p)"></small>
+                                <b :class="$store.live.status(p) && $store.live.status(p).status === 'attention' ? 'hot' : ''" x-text="$store.live.value(p)"></b>
+                                <em x-show="$store.live.status(p) && $store.live.status(p).status !== 'ok'" :class="($store.live.status(p) || {}).status" x-text="($store.live.status(p) || {}).label"></em>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <p class="ui-note" x-show="!liveStreaming">დააჭირე „დაწყებას“ - მაჩვენებლები რეალურ დროში გამოჩნდება.</p>
+            <p class="ui-note" x-show="liveStreaming">ზოგი მაჩვენებელი რამდენიმე წამში გამოჩნდება. რასაც მანქანა არ გადმოსცემს, აქ არ ჩანს.</p>
+
+            <!-- მაჩვენებლის ახსნა -->
+            <template x-teleport="body">
+                <div>
+                    <div class="ui-sheet-bg" x-show="$store.live.open" x-cloak x-transition.opacity @click="$store.live.open = ''"></div>
+                    <div class="ui-sheet" x-show="$store.live.open" x-cloak role="dialog" aria-modal="true">
+                        <div class="ui-sheet-grab"></div>
+                        <template x-if="$store.live.open">
+                            <div>
+                                <h3 x-text="$store.live.label($store.live.open)"></h3>
+                                <p class="ui-sheet-p" x-show="$store.live.meta($store.live.open).technical" x-text="$store.live.meta($store.live.open).technical"></p>
+                                <div class="ui-big" style="text-align:center; margin-top:14px;" x-text="$store.live.value($store.live.open)"></div>
+                                <div style="text-align:center; margin-top:8px;" x-show="$store.live.status($store.live.open)">
+                                    <span class="ui-chip" :class="{ attention: 'red', low: 'amber', warming: 'amber', ok: 'green' }[($store.live.status($store.live.open) || {}).status]" x-text="($store.live.status($store.live.open) || {}).label"></span>
+                                </div>
+                                <div class="ui-label">ბოლო 60 წამის ისტორია</div>
+                                <div class="ui-chart" style="margin-top:0;"><svg viewBox="0 0 100 50" preserveAspectRatio="none"><polyline :points="$store.live.spark($store.live.open)" vector-effect="non-scaling-stroke"/></svg></div>
+                                <div class="ui-label">რას ნიშნავს ეს მაჩვენებელი</div>
+                                <p class="ui-answer" style="font-size:14px;" x-text="$store.live.meta($store.live.open).meaning"></p>
+                                <div class="ui-label" x-show="$store.live.meta($store.live.open).attention">რას უნდა მიაქციოთ ყურადღება</div>
+                                <p class="ui-answer" style="font-size:14px;" x-show="$store.live.meta($store.live.open).attention" x-text="$store.live.meta($store.live.open).attention"></p>
+                                <p class="ui-sheet-p" style="margin-top:12px;" x-text="'PID 01 ' + $store.live.open"></p>
+                                <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="$store.live.open = ''">დახურვა</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
         </div>
 
         <!-- TAB 3: BATTERY -->
@@ -3846,6 +3881,8 @@ function obdApp() {
                     }
                 }
             }
+            // 📈 Obede-დან: დამატებითი მაჩვენებლები (მხარდაჭერილი PID-ები, რიგრიგობით 4-4)
+            if (window.OCTANE_LIVE && this.liveStreaming) { try { await window.OCTANE_LIVE.tick(this); } catch (e) {} }
         },
 
         async readLiveData() {
