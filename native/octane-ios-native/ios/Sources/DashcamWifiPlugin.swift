@@ -424,9 +424,9 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         liveTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
             guard let self = self, self.livePlayer === p else { t.invalidate(); return }
             ticks += 1
-            var shown: Int32 = 0
+            var shown = 0
             if let m = p.media {
-                shown = m.numberOfDisplayedPictures
+                shown = Int(m.numberOfDisplayedPictures)
                 let kb = Int(m.numberOfReadBytesOnInput) / 1024
                 self.liveStats = "\(kb)KB · dec \(m.numberOfDecodedVideoBlocks) · pic \(shown) · lost \(m.numberOfLostPictures) · vout \(p.hasVideoOut ? 1 : 0)"
             }
