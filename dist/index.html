@@ -49,6 +49,7 @@
     <script src="cars-db.js"></script>
     <script src="car-body.js"></script>
     <script src="car.js"></script>
+    <script src="prepurchase.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -1441,6 +1442,125 @@
         </div>
     </div>
 
+    <!-- ═══════════ 🔎 შეძენამდე შემოწმება (prepurchase.js) ═══════════ -->
+    <div class="ui-full" x-show="$store.pp.open" x-cloak x-transition.opacity.duration.150ms>
+        <header class="ui-top">
+            <button type="button" class="ui-circle" @click="$store.pp.close()" :disabled="$store.pp.state === 'run'" aria-label="უკან"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <div class="ui-top-t"><b>შეძენამდე შემოწმება</b><span x-text="$store.car.title"></span></div>
+            <span></span>
+        </header>
+        <div class="ui-page" style="padding-bottom:40px;">
+
+            <!-- მიმდინარეობს -->
+            <div class="ui-card" x-show="$store.pp.state === 'run'">
+                <div class="ui-card-t">მიმდინარეობს შემოწმება</div>
+                <div class="ui-card-s">პროცესს მხოლოდ რამდენიმე წამი დასჭირდება. ნუ გათიშავ სკანერს.</div>
+                <div class="ui-prog"><span :style="'width:' + Math.round(($store.pp.step + 1) / $store.pp.steps.length * 100) + '%'"></span><em x-text="($store.pp.step + 1) + ' / ' + $store.pp.steps.length"></em></div>
+                <div style="margin-top:14px;">
+                    <template x-for="(t, i) in $store.pp.steps" :key="i">
+                        <div class="ui-row ui-step" :class="i < $store.pp.step ? 'ok' : (i === $store.pp.step ? 'cur' : '')">
+                            <span class="ui-step-ic"><span class="ui-spin dark" x-show="i === $store.pp.step" style="width:16px; height:16px;"></span><span x-show="i < $store.pp.step"><svg class="ic"><use href="#i-check"/></svg></span></span>
+                            <span class="ui-row-l" x-text="t"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- შეცდომა -->
+            <div class="ui-card" x-show="$store.pp.state === 'error'">
+                <div class="ui-card-t">შემოწმება ვერ დასრულდა</div>
+                <div class="ui-card-s">სკანერმა არ უპასუხა. შეამოწმე კავშირი და სცადე თავიდან.</div>
+                <button type="button" class="ui-btn dark wide" style="margin-top:14px;" @click="$store.pp.start($data)">თავიდან ცდა</button>
+            </div>
+
+            <!-- შედეგი -->
+            <template x-if="$store.pp.state === 'done' && $store.pp.r">
+                <div x-data="{ inf: '' }">
+                    <div class="ui-card ui-pp-head" :class="'c-' + $store.pp.r.concern">
+                        <span class="ui-chip" :class="{ high: 'red', medium: 'amber', low: 'green', none: '' }[$store.pp.r.concern]" x-text="{ high: 'მაღალი რისკი', medium: 'საშუალო რისკი', low: 'დაბალი რისკი', none: 'მონაცემი არ კმარა' }[$store.pp.r.concern]"></span>
+                        <div class="ui-pp-title" x-text="$store.pp.r.title"></div>
+                        <div class="ui-card-s" x-text="$store.pp.r.summary"></div>
+                        <p class="ui-tip" x-show="$store.pp.r.meaning" x-text="$store.pp.r.meaning"></p>
+                    </div>
+
+                    <div class="ui-card" x-show="$store.pp.r.findings.length">
+                        <div class="ui-card-t">რა აღმოვაჩინეთ</div>
+                        <template x-for="(f, i) in $store.pp.r.findings" :key="i">
+                            <div class="ui-finding">
+                                <i :class="f.lvl"></i>
+                                <div>
+                                    <span x-text="f.text"></span>
+                                    <button type="button" class="ui-link-sm" x-show="f.info" @click="inf = inf === f.info + i ? '' : f.info + i">რას ნიშნავს?</button>
+                                    <div class="ui-info" x-show="inf === f.info + i" x-cloak>
+                                        <template x-for="(pp, j) in (($store.pp.infoText[f.info] || {}).p || [])" :key="j"><p x-text="pp"></p></template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="ui-card">
+                        <div class="ui-card-t">ჩვენი რეკომენდაცია</div>
+                        <template x-for="(k, i) in $store.pp.r.recommendations" :key="k">
+                            <div class="ui-row"><span class="ui-num" x-text="i + 1"></span><span class="ui-row-l" x-text="$store.pp.recText[k]"></span></div>
+                        </template>
+                    </div>
+
+                    <div class="ui-card">
+                        <div class="ui-card-t">მრიცხველების ისტორია</div>
+                        <div style="margin-top:10px;">
+                            <template x-for="(r, i) in $store.pp.r.rows" :key="i">
+                                <div class="ui-row"><span class="ui-row-l" x-text="r.k"></span><span class="ui-row-v" :class="/მიუწვდომ|ვერ/.test(r.v) ? 'muted' : ''" x-text="r.v"></span></div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="ui-card" x-show="$store.pp.r.readiness">
+                        <div class="ui-card-h">
+                            <div>
+                                <div class="ui-card-t">სისტემის თვითშემოწმება</div>
+                                <div class="ui-card-s">მანქანის კომპიუტერი მუდმივად ამოწმებს საკუთარ სისტემებს. წაშლის ან აკუმულატორის ჩახსნის შემდეგ ამას თავიდან გავლა სჭირდება.</div>
+                            </div>
+                            <div class="ui-accent" style="font-size:20px;" x-text="$store.pp.r.readyDone + '/' + $store.pp.r.readyTotal"></div>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <template x-for="(m, i) in ($store.pp.r.readiness || [])" :key="i">
+                                <div class="ui-row"><span class="ui-row-l" x-text="$store.pp.monName[m.key] || m.key"></span><span class="ui-chip" :class="m.done ? 'green' : 'amber'" x-text="m.done ? 'დასრულებულია' : 'არ არის დასრულებული'"></span></div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="ui-card">
+                        <div class="ui-card-t">ხარვეზების კოდები</div>
+                        <div style="margin-top:10px;">
+                            <div class="ui-row"><span class="ui-row-l">აქტიური</span><span class="ui-row-v" x-text="$store.pp.r.stored.length"></span></div>
+                            <div class="ui-row"><span class="ui-row-l">დაგროვილი (მოლოდინში)</span><span class="ui-row-v" x-text="$store.pp.r.pending.length"></span></div>
+                            <div class="ui-row"><span class="ui-row-l">მუდმივი</span><span class="ui-row-v" x-text="$store.pp.r.permanent.length"></span></div>
+                        </div>
+                        <div class="ui-codes" x-show="$store.pp.r.stored.length + $store.pp.r.pending.length + $store.pp.r.permanent.length">
+                            <template x-for="c in [].concat($store.pp.r.stored, $store.pp.r.pending, $store.pp.r.permanent).filter((x, i, a) => a.indexOf(x) === i)" :key="c">
+                                <button type="button" class="ui-chip" @click="manualCodeInput = c; searchManualCode(); $store.pp.close()" x-text="c"></button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="ui-card">
+                        <button type="button" class="ui-link" @click="inf = inf === 'how' ? '' : 'how'">
+                            <svg class="ic ui-ic-blue"><use href="#i-info"/></svg>
+                            <span class="ui-card-t">როგორ მუშაობს ეს შემოწმება?</span>
+                            <svg class="ic"><use href="#i-chev-d"/></svg>
+                        </button>
+                        <div class="ui-info" x-show="inf === 'how'" x-cloak>
+                            <template x-for="(pp, j) in $store.pp.infoText.how.p" :key="j"><p x-text="pp"></p></template>
+                        </div>
+                    </div>
+
+                    <button type="button" class="ui-btn dark wide" style="margin-top:14px;" @click="$store.pp.start($data)">თავიდან შემოწმება</button>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <!-- ═══════════ 🧹 ჩეკის ჩაქრობის ანიმაცია ═══════════ -->
     <div x-show="clearAnim.open" x-cloak class="sc-overlay" x-transition.opacity.duration.200ms>
         <div class="sc-wrap" style="padding-top:70px;">
@@ -1898,6 +2018,18 @@
                         <span class="ui-ctrl-c"><svg class="ic"><use href="#i-trash"/></svg></span><b>წაშლა</b>
                     </button>
                 </div>
+            </div>
+
+            <!-- 🔎 შეძენამდე შემოწმება -->
+            <div class="ui-card">
+                <div class="ui-card-h" style="align-items:center;">
+                    <div>
+                        <div class="ui-card-t">ყიდულობ ავტომობილს?</div>
+                        <div class="ui-card-s">გაიგე, ხომ არ წაშალეს ხარვეზების კოდები ახლახან.</div>
+                    </div>
+                    <svg class="ic ui-ic-blue" style="width:26px; height:26px;"><use href="#i-dc-shield"/></svg>
+                </div>
+                <button type="button" class="ui-btn dark wide" style="margin-top:14px;" @click="$store.pp.start($data)" :disabled="loading || scanAnim.open || clearAnim.open">შეამოწმე შეძენამდე</button>
             </div>
 
             <!-- 🚗 მარკა - მხოლოდ მწარმოებლის კოდის შემთხვევაში -->
