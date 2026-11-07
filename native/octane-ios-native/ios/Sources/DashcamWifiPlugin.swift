@@ -206,6 +206,8 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         do {
             try? FileManager.default.removeItem(at: out)
             try FileManager.default.moveItem(at: location, to: out)
+            // კამერის ვიდეოში ცარიელი კადრებია - iPhone-ის ფლეერი/გალერეა მათზე ჩერდება
+            if out.pathExtension.lowercased() == "mp4" { OctaneMp4Fix.fixInPlace(out) }
             let size = (try? FileManager.default.attributesOfItem(atPath: out.path)[.size] as? Int64) ?? 0
             call.resolve(["path": out.path, "size": size])
         } catch {
@@ -233,6 +235,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         guard let path = call.getString("path"), FileManager.default.fileExists(atPath: path) else { call.reject("NO_FILE"); return }
         let isImage = call.getString("mime", "video/mp4").hasPrefix("image/")
         let url = URL(fileURLWithPath: path)
+        if !isImage { OctaneMp4Fix.fixInPlace(url) }   // ძველად გადმოწერილიც გასწორდეს
         let save = {
             PHPhotoLibrary.shared().performChanges({
                 if isImage { PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url) }
