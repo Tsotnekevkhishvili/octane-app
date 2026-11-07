@@ -1763,58 +1763,27 @@
 
     <!-- 🗂️ გვერდითი მენიუ + ჰედერი - საერთო scope-ში (დამალულია AI მექანიკოსის სრულ-ეკრანიან ხედში) -->
     <div x-data="{ menuOpen: false }" x-show="activeTab !== 'ai_mechanic'">
-        <div x-show="menuOpen" x-cloak @click="menuOpen = false"
-             class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[9998]" x-transition.opacity></div>
-
-        <div x-show="menuOpen" x-cloak
-             x-transition:enter="transition ease-out duration-250" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
-             class="fixed top-0 left-0 bottom-0 w-[78%] max-w-[300px] bg-[var(--bg-card)] border-r border-[var(--border)] z-[9999] p-5 flex flex-col gap-2 overflow-y-auto">
-
-            <div class="flex items-center gap-2.5 mb-4">
-                <div class="w-10 h-10 rounded-2xl bg-[var(--accent-light)] p-1 flex-shrink-0">
-                    <img src="logo.png.png" alt="Logo" class="w-full h-full object-contain rounded-xl">
-                </div>
-                <div>
-                    <h1 class="text-sm font-black tracking-tight leading-tight text-[var(--text-main)]">Octane App</h1>
-                    <span class="text-[8px] font-bold text-[var(--text-muted)] block leading-tight">ქართული დიაგნოსტიკა</span>
-                </div>
-                <button @click="menuOpen = false" class="ml-auto icon-btn text-[var(--text-main)]">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-
-            <button type="button" class="drawer-item" @click="menuOpen = false; $store.car.openEdit()">
-                <svg class="ic" style="color:var(--u-blue);"><use href="#i-dc-car"/></svg>
-                <span>ჩემი მანქანა</span>
+        <!-- ☰ მენიუ - ქვედა ფანჯარა (იგივე, რაც რეგისტრატორში) -->
+        <div class="ui-sheet-bg" x-show="menuOpen" x-cloak x-transition.opacity @click="menuOpen = false"></div>
+        <div class="ui-sheet" x-show="menuOpen" x-cloak role="dialog" aria-modal="true" aria-label="მენიუ">
+            <div class="ui-sheet-grab"></div>
+            <button type="button" class="ui-mrow" @click="menuOpen = false; $store.car.openEdit()">
+                <svg class="ic"><use href="#i-dc-car"/></svg><span>ჩემი მანქანა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </button>
-
-            <a href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer"
-               onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;" class="drawer-item">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--u-blue)" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-                <span>როგორ დავაკავშირო? (ვიდეო)</span>
+            <a class="ui-mrow" href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;">
+                <svg class="ic"><use href="#i-play"/></svg><span>როგორ დავაკავშირო? (ვიდეო)</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </a>
-
-            <!-- 📹 ვიდეორეგისტრატორზე გადასვლა (ახალი) -->
-            <button @click="menuOpen = false; $store.octaneMode.go('dashcam')" class="drawer-item dc-entry">
-                <svg class="ic" style="color:var(--accent-2);"><use href="#i-dc-dashcam"/></svg>
-                <span>ვიდეორეგისტრატორი</span>
+            <button type="button" class="ui-mrow" x-show="!window.OCTANE_FLAGS || window.OCTANE_FLAGS.showDashcam !== false" @click="menuOpen = false; $store.octaneMode.go('dashcam')">
+                <svg class="ic"><use href="#i-dc-cam"/></svg><span>ვიდეორეგისტრატორზე გადასვლა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </button>
-
-            <a href="https://octane.ge/privacy.php" target="_blank" class="drawer-item">
-                <svg class="ic" style="color:var(--u-ink-2);"><use href="#i-lock"/></svg>
-                <span>კონფიდენციალურობის პოლიტიკა</span>
+            <button type="button" class="ui-mrow danger" x-show="connected" @click="disconnectOBD(); menuOpen = false">
+                <svg class="ic"><use href="#i-dc-power"/></svg><span>სკანერის გათიშვა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
+            </button>
+            <a href="https://octane.ge/privacy.php" target="_blank" class="ui-mrow muted">
+                <svg class="ic"><use href="#i-lock"/></svg><span>კონფიდენციალურობა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </a>
-
-
-            <template x-if="connected">
-                <button @click="disconnectOBD(); menuOpen = false" class="drawer-item" style="color:var(--u-red) !important;">
-                    <svg class="ic"><use href="#i-dc-power"/></svg>
-                    <span>სისტემის გათიშვა</span>
-                </button>
-            </template>
-
-            <div class="drawer-ver" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.1</div>
+            <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="menuOpen = false">დახურვა</button>
+            <div class="ui-ver" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.1</div>
         </div>
 
         <!-- ზედა ზოლი: მენიუ · მანქანის სახელი და სტატუსი · მოწყობილობის შეცვლა -->
@@ -1836,16 +1805,18 @@
             <span class="ui-hero-edit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
         </div>
 
-        <!-- სკანერი არ არის დაკავშირებული -->
-        <div class="ui-card" x-show="!connected">
+        <!-- სკანერი არ არის დაკავშირებული - მთავარი მოქმედება -->
+        <div class="ui-card ui-connect" x-show="!connected">
+            <div class="ui-connect-ic" :class="loading ? 'busy' : ''"><svg class="ic"><use href="#i-wifi"/></svg></div>
             <div class="ui-card-t">OBD სკანერი</div>
             <div class="ui-card-s" x-text="statusMessage"></div>
-            <div class="ui-btns">
-                <button type="button" class="ui-btn dark pulse-cta" @click="connectOBD()" :disabled="loading">
-                    <span x-text="loading ? 'ვეძებ სკანერს…' : 'დაკავშირება'">დაკავშირება</span>
-                </button>
-                <a class="ui-btn blue" href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;">ინსტრუქცია</a>
-            </div>
+            <button type="button" class="ui-btn blue wide ui-btn-xl pulse-cta" @click="connectOBD()" :disabled="loading">
+                <span class="ui-spin" x-show="loading" x-cloak></span>
+                <span x-text="loading ? 'ვეძებ სკანერს…' : 'დაკავშირება'">დაკავშირება</span>
+            </button>
+            <a class="ui-textbtn" href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>ვიდეო ინსტრუქცია
+            </a>
         </div>
 
         <div x-show="connected">
@@ -2230,36 +2201,18 @@
         </div>
     </template>
 
-    <!-- 🧊 ჩეკის წაშლის დამადასტურებელი MODAL -->
+    <!-- ჩეკის ჩაქრობის დადასტურება - ქვედა ფანჯარა -->
     <template x-teleport="body">
-        <div x-show="showClearConfirmModal"
-             x-cloak
-             class="fixed inset-0 bg-black/90 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
-
-            <div @click.away="showClearConfirmModal = false"
-                 class="panel w-full max-w-sm overflow-hidden shadow-2xl relative flex flex-col box-border">
-
-                <div class="p-5 text-center space-y-3">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style="background:var(--u-amber-soft); color:var(--u-amber);">
-                        <svg class="ic"><use href="#i-alert"/></svg>
-                    </div>
-                    <h3 class="text-sm font-black text-[var(--text-main)]">დარწმუნებული ხართ?</h3>
-                    <p class="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                        თუ ჩეკი წაშლის შემდეგ ისევ დაბრუნდება, ან საერთოდ არ წაიშალა, ეს ნიშნავს, რომ ავტომობილის რეალური პრობლემა, რომელიც ხარვეზების სიაში აღმოჩნდა, ჯერ არ არის მოგვარებული. ასე რომ, თუ ჩეკი არ ჩაქრება, ჯერ მოაგვარეთ ის ხარვეზი, რომლის გამოც ანთია ჩეკი, შემდეგ კი სცადეთ თავიდან.
-                    </p>
-                </div>
-
-                <div class="p-4 border-t border-[var(--border)] bg-[var(--bg-card)] flex-shrink-0 grid grid-cols-2 gap-2">
-                    <button type="button"
-                            @click="showClearConfirmModal = false"
-                            class="w-full py-3 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-main)] font-bold text-xs active:scale-95 transition-all cursor-pointer">
-                        გაუქმება
-                    </button>
-                    <button type="button"
-                            @click="showClearConfirmModal = false; clearWithAnimation()"
-                            class="w-full py-3 rounded-2xl bg-red-500 text-white font-bold text-xs shadow-lg active:scale-95 transition-all cursor-pointer">
-                        დიახ, წაშალე
-                    </button>
+        <div>
+            <div class="ui-sheet-bg" x-show="showClearConfirmModal" x-cloak x-transition.opacity @click="showClearConfirmModal = false"></div>
+            <div class="ui-sheet" x-show="showClearConfirmModal" x-cloak role="dialog" aria-modal="true" aria-label="ჩეკის ჩაქრობა">
+                <div class="ui-sheet-grab"></div>
+                <div class="ui-sheet-ic"><svg class="ic"><use href="#i-engine"/></svg></div>
+                <h3>ჩავაქრო Check Engine?</h3>
+                <p class="ui-sheet-p">წაიშლება შენახული ხარვეზები. თუ მიზეზი არ გამოსწორდა, ჩეკი რამდენიმე მგზავრობის შემდეგ ისევ აინთება.</p>
+                <div class="ui-btns">
+                    <button type="button" class="ui-btn light" @click="showClearConfirmModal = false">გაუქმება</button>
+                    <button type="button" class="ui-btn dark" @click="showClearConfirmModal = false; clearWithAnimation()">ჩაქრობა</button>
                 </div>
             </div>
         </div>
