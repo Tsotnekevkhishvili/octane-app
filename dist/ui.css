@@ -401,3 +401,15 @@ body { padding-bottom: 110px !important; }
 .ui-hrow-t { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; }
 .ui-hrow-t b { font-weight: 600; color: var(--u-ink); }
 .ui-hrow-t span { color: var(--u-ink-3); font-size: 13px; }
+
+/* ორივე მენიუ (OBD და რეგისტრატორი) - ერთი ზომა და სტილი */
+.ui-sheet, .dc-sheet { max-width: 28rem !important; }
+.ui-mrow { min-height: 72px; margin-top: 0; border-radius: 22px; }
+.ui-mrow + .ui-mrow, .ui-mrow + template + .ui-mrow { margin-top: 10px; }
+.ui-mrow:first-of-type { margin-top: 0; }
+.ui-sheet .ui-mrow ~ .ui-mrow { margin-top: 10px; }
+.dc-sheet .dc-stack { gap: 10px !important; }
+.dc-sheet .dc-wide { min-height: 72px !important; padding: 0 18px !important; border-radius: 22px !important; }
+.dc-sheet .dc-wide-t b { font-size: 15.5px !important; font-weight: 500 !important; }
+.dc-sheet .dc-btn-soft, .dc-sheet .dc-btn-ghost { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; }
+.dc-sheet .dc-stack > * { margin: 0 !important; }
