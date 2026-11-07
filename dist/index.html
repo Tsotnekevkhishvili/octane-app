@@ -2609,7 +2609,6 @@
                             <em x-show="dcConnected"></em>
                         </span>
                         <span x-text="dcLiveText()">აქ გამოჩნდება კამერის ვიდეო</span>
-                        <small class="dc-live-diag" x-show="dcConnected && dcLiveDetail && dcLiveState !== 'playing'" x-cloak x-text="dcLiveDetail"></small>
                         <button type="button" class="dc-btn" x-show="dcConnected && dcLiveState === 'error'" x-cloak @click.stop="dcRetryLive()"><svg class="ic"><use href="#i-refresh"/></svg>თავიდან ცდა</button>
                     </div>
                     <div class="dc-live-tags" x-show="dcConnected && (dcInfo.res || dcInfo.codec)" x-cloak>
