@@ -16,7 +16,8 @@ final class OctaneRtspClient {
 
     private let url: URL
     private let q = DispatchQueue(label: "ge.octane.rtsp")
-    private var conn: NWConnection?
+    private var urlSession: URLSession?
+    private var task: URLSessionStreamTask?
     private var buf = [UInt8]()
     private var cseq = 0
     private var phase = Phase.connect
@@ -66,10 +67,15 @@ final class OctaneRtspClient {
             self.keepAlive?.cancel()
             self.keepAlive = nil
             if !self.session.isEmpty { self.send("TEARDOWN", self.controlUrl.isEmpty ? self.url.absoluteString : self.controlUrl) }
-            let c = self.conn
-            self.conn = nil
+            let t = self.task
+            let us = self.urlSession
+            self.task = nil
+            self.urlSession = nil
             // TEARDOWN-ს გაგზავნის დრო მივცეთ
-            self.q.asyncAfter(deadline: .now() + 0.3) { c?.cancel() }
+            self.q.asyncAfter(deadline: .now() + 0.3) {
+                t?.cancel()
+                us?.invalidateAndCancel()
+            }
         }
     }
 
@@ -77,28 +83,21 @@ final class OctaneRtspClient {
 
     private func open() {
         guard let host = url.host else { fail("NO_HOST"); return }
-        let portNum = UInt16(url.port ?? 554)
-        guard let port = NWEndpoint.Port(rawValue: portNum) else { fail("BAD_PORT"); return }
-        let params = NWParameters.tcp
-        params.requiredInterfaceType = .wifi   // კამერა ყოველთვის WiFi-ზეა
-        let c = NWConnection(host: NWEndpoint.Host(host), port: port, using: params)
-        conn = c
-        c.stateUpdateHandler = { [weak self] state in
-            guard let self = self, !self.stopped else { return }
-            switch state {
-            case .ready:
-                self.phase = .options
-                self.send("OPTIONS", self.url.absoluteString)
-                self.receive(c)
-            case .failed(let e):
-                self.fail("TCP: \(e)")
-            case .waiting(let e):
-                self.lastError = "TCP waiting: \(e)"
-            default:
-                break
-            }
-        }
-        c.start(queue: q)
+        let portNum = url.port ?? 554
+        // iPhone-ზე კამერის WiFi-ს „gateway“ არ აქვს და Network.framework-ის „მხოლოდ WiFi“ კავშირი
+        // „Network is down“-ს წერდა. ფაილებს/ინფორმაციას URLSession წარმატებით იღებს - TCP-საც მისით ვხსნით.
+        let cfg = URLSessionConfiguration.default
+        cfg.allowsCellularAccess = false
+        cfg.waitsForConnectivity = false
+        cfg.timeoutIntervalForRequest = 15
+        let us = URLSession(configuration: cfg)
+        let t = us.streamTask(withHostName: host, port: portNum)
+        urlSession = us
+        task = t
+        t.resume()
+        phase = .options
+        send("OPTIONS", url.absoluteString)
+        readLoop(t)
         // 12 წამში სურათი არ მოვიდა → შეცდომა (სად გაჩერდა - phase-ში ჩანს)
         q.asyncAfter(deadline: .now() + 12) { [weak self] in
             guard let self = self, !self.stopped, self.frames == 0 else { return }
@@ -112,22 +111,28 @@ final class OctaneRtspClient {
         stopped = true
         keepAlive?.cancel()
         keepAlive = nil
-        conn?.cancel()
-        conn = nil
+        task?.cancel()
+        urlSession?.invalidateAndCancel()
+        task = nil
+        urlSession = nil
         onError?(msg)
     }
 
-    private func receive(_ c: NWConnection) {
-        c.receive(minimumIncompleteLength: 1, maximumLength: 262144) { [weak self] data, _, isComplete, error in
-            guard let self = self, !self.stopped else { return }
-            if let d = data, !d.isEmpty {
-                self.bytesIn += d.count
-                self.buf.append(contentsOf: d)
-                self.process()
+    private func readLoop(_ t: URLSessionStreamTask) {
+        t.readData(ofMinLength: 1, maxLength: 262144, timeout: 15) { [weak self] data, atEOF, error in
+            guard let self = self else { return }
+            self.q.async {
+                guard !self.stopped, self.task === t else { return }
+                if let d = data, !d.isEmpty {
+                    self.bytesIn += d.count
+                    self.buf.append(contentsOf: d)
+                    self.process()
+                }
+                if self.stopped { return }
+                if let e = error { self.fail("RECV: \(e.localizedDescription)"); return }
+                if atEOF { self.fail("კამერამ კავშირი დახურა @\(self.phase.rawValue)"); return }
+                self.readLoop(t)
             }
-            if let e = error { self.fail("RECV: \(e)"); return }
-            if isComplete { self.fail("კამერამ კავშირი დახურა @\(self.phase.rawValue)"); return }
-            self.receive(c)
         }
     }
 
@@ -137,7 +142,11 @@ final class OctaneRtspClient {
         if !session.isEmpty { s += "Session: \(session)\r\n" }
         for e in extra { s += e + "\r\n" }
         s += "\r\n"
-        conn?.send(content: Data(s.utf8), completion: .contentProcessed { _ in })
+        guard let t = task else { return }
+        t.write(Data(s.utf8), timeout: 10) { [weak self] error in
+            guard let self = self, let e = error else { return }
+            self.q.async { self.fail("SEND: \(e.localizedDescription)") }
+        }
     }
 
     // ─────────── შემოსული ნაკადის დაშლა ───────────

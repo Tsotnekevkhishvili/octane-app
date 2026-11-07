@@ -277,13 +277,29 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         let startMs = call.getInt("startMs", 0)
         let endMs = call.getInt("endMs", -1)
         let title = call.getString("title", "")
+        // ტელეფონში გადმოწერილი ფაილი უკვე გასწორებულია (ცარიელი კადრები ამოღებულია) - Photos-ის მსგავსად
+        // iPhone-ის ჩაშენებული ფლეერით ვუკრავთ. ძველად გადმოწერილიც ახლა გასწორდება.
+        if u.isFileURL { OctaneMp4Fix.fixInPlace(u) }
         DispatchQueue.main.async {
             self.stopInline()
-            // კამერის 1296P ფაილებს iPhone-ის ჩაშენებული ფლეერი ვერ შიფრავს (მხოლოდ ხმა ისმის) - VLC-ით ვუკრავთ
-            let vc = OctaneFilePlayerViewController(url: u, title: title, startMs: startMs, endMs: endMs)
-            vc.modalPresentationStyle = .fullScreen
-            OctaneOrientation.set(true)
-            self.bridge?.viewController?.present(vc, animated: true)
+            if u.isFileURL {
+                let player = AVPlayer(url: u)
+                let vc = OctanePlayerViewController()
+                vc.player = player
+                vc.modalPresentationStyle = .fullScreen
+                if startMs > 0 { player.seek(to: CMTime(value: CMTimeValue(startMs), timescale: 1000)) }
+                if endMs > 0 {
+                    vc.boundaryToken = player.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTime(value: CMTimeValue(endMs), timescale: 1000))], queue: .main) { [weak player] in player?.pause() }
+                }
+                OctaneOrientation.set(true)
+                self.bridge?.viewController?.present(vc, animated: true) { player.play() }
+            } else {
+                // პირდაპირ კამერიდან (გაუსწორებელი ფაილი) - VLC, პროგრამული დეკოდერით
+                let vc = OctaneFilePlayerViewController(url: u, title: title, startMs: startMs, endMs: endMs)
+                vc.modalPresentationStyle = .fullScreen
+                OctaneOrientation.set(true)
+                self.bridge?.viewController?.present(vc, animated: true)
+            }
             call.resolve()
         }
     }
@@ -838,6 +854,9 @@ class OctaneFilePlayerViewController: UIViewController, VLCMediaPlayerDelegate {
         ended = false
         let m = VLCMedia(url: url)
         m.addOption(":network-caching=1500")
+        // iPhone-ის აპარატული დეკოდერი კამერის ფაილის ცარიელ კადრებზე „ბრმავდება“ (შავი ეკრანი, ხმა ისმის)
+        m.addOption(":codec=avcodec")
+        m.addOption(":avcodec-hw=none")
         if startMs > 0 { m.addOption(":start-time=\(Double(startMs) / 1000.0)") }
         if endMs > startMs { m.addOption(":stop-time=\(Double(endMs) / 1000.0)") }
         player.media = m
