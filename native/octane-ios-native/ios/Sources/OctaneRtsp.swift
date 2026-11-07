@@ -256,11 +256,13 @@ final class OctaneRtspClient {
     }
 
     private func startKeepAlive() {
+        // კამერა: „Session: …;timeout=6“ - 6 წამში სიგნალი თუ არ მივიდა, ნაკადს წყვეტს (ლეპტოპით შემოწმდა).
+        // GET_PARAMETER ყოველ 2 წამში - 15 წამიან ტესტში კამერა ყველას პასუხობდა და ნაკადი არ გაწყვეტილა.
         let t = DispatchSource.makeTimerSource(queue: q)
-        t.schedule(deadline: .now() + 20, repeating: 20)
+        t.schedule(deadline: .now() + 2, repeating: 2)
         t.setEventHandler { [weak self] in
             guard let self = self, !self.stopped else { return }
-            self.send("OPTIONS", self.url.absoluteString)
+            self.send("GET_PARAMETER", self.baseUrl.isEmpty ? self.url.absoluteString : self.baseUrl)
         }
         t.resume()
         keepAlive = t
