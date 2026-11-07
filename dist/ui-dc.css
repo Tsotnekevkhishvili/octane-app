@@ -116,3 +116,4 @@
                      border: 1px solid rgba(255,255,255,.7) !important; color: var(--u-ink-2) !important; box-shadow: none !important; display: grid; place-items: center; }
 .dc-app .dc-nav button.on .dc-nav-ic { background: var(--u-blue) !important; border-color: var(--u-blue) !important; color: #fff !important; }
 .dc-app .dc-nav-ic .ic { width: 21px !important; height: 21px !important; }
+.dc-app .dc-acts + .dc-wide, .dc-app .dc-acts ~ .dc-wide { margin-top: 12px; }

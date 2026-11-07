@@ -1227,7 +1227,11 @@
     <div class="ui-sheet" x-show="$store.car.open" x-cloak role="dialog" aria-modal="true" aria-label="ჩემი მანქანა">
         <div class="ui-sheet-grab"></div>
         <h3>ჩემი მანქანა</h3>
-        <div class="ui-sheet-photo"><img :src="$store.car.draftSrc" alt=""></div>
+        <p class="ui-sheet-p" x-show="$store.car.need" x-cloak>სკანირებამდე მიუთითე შენი მანქანა - მარკისა და წლის მიხედვით შეირჩევა კავშირის პროტოკოლი და ხარვეზების ზუსტი აღწერა.</p>
+        <div class="ui-sheet-photo" :class="!$store.car.draftPhoto && $store.car.draftIcon ? 'ico' : ''">
+            <img x-show="$store.car.draftPhoto || !$store.car.draftIcon" :src="$store.car.draftSrc" alt="">
+            <div class="ui-sheet-ico" x-show="!$store.car.draftPhoto && $store.car.draftIcon" x-html="$store.car.draftIcon"></div>
+        </div>
 
         <label class="ui-label" for="ui-car-brand">ბრენდი</label>
         <select id="ui-car-brand" class="ui-input ui-select" x-model="$store.car.draftBrand" @change="$store.car.brandChanged()">
@@ -1243,11 +1247,21 @@
             <template x-for="m in $store.car.models" :key="m"><option :value="m"></option></template>
         </datalist>
 
-        <label class="ui-label">ძარის ტიპი</label>
-        <div class="ui-chips">
-            <template x-for="t in $store.car.bodyTypes" :key="t.key">
-                <button type="button" :class="$store.car.draftBody === t.key ? 'on' : ''" @click="$store.car.pickBody(t.key)" x-text="t.ka"></button>
-            </template>
+        <div class="ui-two">
+            <div>
+                <label class="ui-label" for="ui-car-year">წელი</label>
+                <select id="ui-car-year" class="ui-input ui-select" x-model="$store.car.draftYear">
+                    <option value="">წელი</option>
+                    <template x-for="y in $store.car.years" :key="y"><option :value="y" x-text="y" :selected="y === $store.car.draftYear"></option></template>
+                </select>
+            </div>
+            <div>
+                <label class="ui-label" for="ui-car-body">ძარის ტიპი</label>
+                <select id="ui-car-body" class="ui-input ui-select" x-model="$store.car.draftBody" @change="$store.car.bodyChanged()">
+                    <option value="">ტიპი</option>
+                    <template x-for="t in $store.car.bodyTypes" :key="t.key"><option :value="t.key" x-text="t.ka" :selected="t.key === $store.car.draftBody"></option></template>
+                </select>
+            </div>
         </div>
 
         <label class="ui-label" for="ui-car-name">სახელი <small>(სურვილისამებრ)</small></label>
@@ -1264,12 +1278,12 @@
         <p class="ui-err" x-show="$store.car.error" x-text="$store.car.error"></p>
         <div class="ui-btns">
             <button type="button" class="ui-btn light" @click="$store.car.close()">გაუქმება</button>
-            <button type="button" class="ui-btn dark" @click="$store.car.submit()">შენახვა</button>
+            <button type="button" class="ui-btn dark" @click="$store.car.submit()" x-text="$store.car.need ? 'შენახვა და გაგრძელება' : 'შენახვა'">შენახვა</button>
         </div>
     </div>
 </div>
 
-<div id="diagnostic-app" x-data="obdApp()">
+<div id="diagnostic-app" x-data="obdApp()" @octane-car.window="$event.detail.codeBrand && setBrand($event.detail.codeBrand)">
 
     <!-- 🔐 აქტივაციის საწყისი ეკრანი - ლურჯი ფონი + სკანერის რეალური ფოტო 3D-ში -->
     <div x-show="!isActivated" x-cloak class="act-screen" x-data="{ focused: false, rx: 0, ry: 0 }">
@@ -1826,7 +1840,8 @@
     <!-- 🏠 მთავარი: მანქანა · სკანერი · მართვა · ხარვეზები -->
     <div class="ui-page" x-show="activeTab === 'errors'">
         <div class="ui-hero" @click="$store.car.openEdit()" role="button" aria-label="ჩემი მანქანა">
-            <img :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <img x-show="$store.car.custom || !$store.car.icon" :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <div class="ui-hero-ico" x-show="!$store.car.custom && $store.car.icon" x-cloak x-html="$store.car.icon"></div>
             <svg class="ui-arc" viewBox="0 0 360 46" preserveAspectRatio="none" aria-hidden="true"><path d="M2 2 Q180 66 358 2"/></svg><span class="ui-arc-dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>
             <span class="ui-hero-edit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
         </div>
@@ -1836,7 +1851,7 @@
             <div class="ui-connect-ic" :class="loading ? 'busy' : ''"><svg class="ic"><use href="#i-wifi"/></svg></div>
             <div class="ui-card-t">OBD სკანერი</div>
             <div class="ui-card-s" x-text="statusMessage"></div>
-            <button type="button" class="ui-btn blue wide ui-btn-xl pulse-cta" @click="connectOBD()" :disabled="loading">
+            <button type="button" class="ui-btn blue wide ui-btn-xl pulse-cta" @click="$store.car.ready ? connectOBD() : $store.car.requireThen(() => connectOBD())" :disabled="loading">
                 <span class="ui-spin" x-show="loading" x-cloak></span>
                 <span x-text="loading ? 'ვეძებ სკანერს…' : 'დაკავშირება'">დაკავშირება</span>
             </button>
@@ -1869,7 +1884,7 @@
             <div class="ui-card">
                 <div class="ui-card-t">მართვა</div>
                 <div class="ui-ctrls">
-                    <button type="button" class="ui-ctrl blue ma-scan" @click="scanWithAnimation()" :disabled="loading || scanAnim.open || clearAnim.open">
+                    <button type="button" class="ui-ctrl blue ma-scan" @click="$store.car.ready ? scanWithAnimation() : $store.car.requireThen(() => scanWithAnimation())" :disabled="loading || scanAnim.open || clearAnim.open">
                         <span class="ui-ctrl-c"><svg class="ic"><use href="#i-search"/></svg></span><b>სკანირება</b>
                     </button>
                     <button type="button" class="ui-ctrl" @click="activeTab = 'live'">
@@ -2269,7 +2284,8 @@
             <!-- ნაბიჯი 1: არჩევანი -->
             <div x-show="$store.octaneMode.step === 'pick'" class="ui-choose">
                 <div class="ui-hero" @click="$store.car.openEdit()" role="button" aria-label="ჩემი მანქანა">
-            <img :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <img x-show="$store.car.custom || !$store.car.icon" :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <div class="ui-hero-ico" x-show="!$store.car.custom && $store.car.icon" x-cloak x-html="$store.car.icon"></div>
             <svg class="ui-arc" viewBox="0 0 360 46" preserveAspectRatio="none" aria-hidden="true"><path d="M2 2 Q180 66 358 2"/></svg><span class="ui-arc-dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>
             <span class="ui-hero-edit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
         </div>
@@ -3522,10 +3538,20 @@ function obdApp() {
             // ნელი ECU-ებისთვის (Mercedes, ძველი იაპონური) პასუხის ლოდინი მაქსიმუმამდე (~1 წმ)
             await this.sendELMCommand('AT ST FF');
 
+            // 0) შენი მანქანის (მარკა + წელი) მიხედვით სავარაუდო პროტოკოლი - პირველად მას ვცდით.
+            //    თუ არ უპასუხა, ქვემოთ ჩვეულებრივი ძებნა გრძელდება (ბოლო → ავტო → ხელით).
+            let pref = '';
+            try { const c = window.Alpine && Alpine.store('car'); pref = (c && window.OCTANE_BODY) ? window.OCTANE_BODY.protocol(c.brand, c.year) : ''; } catch (e) {}
+            if (pref) {
+                this.statusMessage = 'მანქანასთან დაკავშირება...';
+                await this.sendELMCommand('AT SP' + pref);
+                if (await probe(KLINE.includes(pref) ? 12000 : 6000) === 'ok') return await this.protocolFound(pref);
+            }
+
             // 1) ჯერ ის პროტოკოლი, რომლითაც ბოლოს წარმატებით დავუკავშირდით - იგივე მანქანაზე წამებში უკავშირდება
             let last = null;
             try { last = localStorage.getItem('octane_last_protocol'); } catch (e) {}
-            if (last && /^[1-9]$/.test(last)) {
+            if (last && /^[1-9]$/.test(last) && last !== pref) {
                 this.statusMessage = 'მანქანასთან დაკავშირება...';
                 await this.sendELMCommand('AT SP' + last);
                 if (await probe(KLINE.includes(last) ? 12000 : 6000) === 'ok') return await this.protocolFound(last);

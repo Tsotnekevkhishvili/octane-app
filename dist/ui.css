@@ -355,3 +355,10 @@ body { padding-bottom: 110px !important; }
 .ui-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .ui-chips button { height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--u-line); background: var(--u-card); color: var(--u-ink); font-size: 13.5px; font-weight: 500; cursor: pointer; }
 .ui-chips button.on { background: var(--u-dark); border-color: var(--u-dark); color: #fff; }
+
+/* ძარის ტიპის შავი ხატულა (ფოტოს ნაცვლად) */
+.ui-hero-ico { position: absolute; left: 50%; top: 34px; width: 78%; max-width: 330px; transform: translateX(-50%); pointer-events: none; }
+.ui-hero-ico .car-ico, .ui-sheet-ico .car-ico { display: block; width: 100%; height: auto; }
+.ui-sheet-photo.ico { display: grid; place-items: center; }
+.ui-sheet-ico { width: 82%; --u-bg: #F4F5F7; }
+.ui-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

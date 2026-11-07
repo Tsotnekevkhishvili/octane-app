@@ -36,6 +36,11 @@
     }
 
     function cars() { return window.OCTANE_CARS || {}; }
+    // OBD ნაწილს ვატყობინებთ მარკას (მწარმოებლის კოდების აღწერისთვის)
+    function announce(o) {
+        try { window.dispatchEvent(new CustomEvent('octane-car', { detail: { brand: o.brand, year: o.year, codeBrand: body().codeBrand(o.brand) } })); } catch (e) {}
+    }
+    document.addEventListener('alpine:initialized', function () { var s = load(); if (s.brand) announce(s); });
     function body() { return window.OCTANE_BODY || { types: [], guess: function () { return 'sedan'; }, label: function () { return ''; } }; }
 
     document.addEventListener('alpine:init', function () {
@@ -46,7 +51,9 @@
             brand: saved.brand || '',
             model: saved.model || '',
             body: saved.body || '',
+            year: saved.year || '',
             open: false,
+            draftYear: '', after: null, need: false,
             draftName: '', draftPhoto: '', draftBrand: '', draftModel: '', draftBody: '', bodyManual: false,
             busy: false,
             error: '',
@@ -55,6 +62,10 @@
             get title() { return this.name || this.autoName || DEFAULT_NAME; },
             get src() { return this.photo || DEFAULT_PHOTO; },
             get custom() { return !!this.photo; },
+            get ready() { return !!(this.brand && this.model && this.year); },
+            get icon() { return this.body ? body().svg(this.body) : ''; },
+            get draftIcon() { return this.draftBody ? body().svg(this.draftBody) : ''; },
+            get years() { var y = new Date().getFullYear() + 1, a = []; for (; y >= 1990; y--) a.push(String(y)); return a; },
             get draftSrc() { return this.draftPhoto || DEFAULT_PHOTO; },
             get draftAutoName() { return [this.draftBrand, this.draftModel].filter(Boolean).join(' '); },
 
@@ -68,12 +79,15 @@
                 this.draftPhoto = this.photo;
                 this.draftBrand = this.brand;
                 this.draftModel = this.model;
+                this.draftYear = this.year;
                 this.draftBody = this.body || (this.model ? body().guess(this.brand, this.model) : '');
                 this.bodyManual = !!this.body && this.body !== body().guess(this.brand, this.model);
                 this.error = '';
                 this.open = true;
             },
-            close: function () { this.open = false; },
+            close: function () { this.open = false; this.after = null; this.need = false; },
+            // სკანერთან დაკავშირებამდე/სკანირებამდე მანქანა აუცილებლად უნდა იყოს მითითებული
+            requireThen: function (fn) { this.after = fn || null; this.need = true; this.openEdit(); },
 
             brandChanged: function () {
                 this.draftModel = '';
@@ -83,6 +97,7 @@
                 if (!this.bodyManual && this.draftModel) this.draftBody = body().guess(this.draftBrand, this.draftModel);
             },
             pickBody: function (k) { this.draftBody = k; this.bodyManual = true; },
+            bodyChanged: function () { this.bodyManual = true; },
 
             pick: async function (ev) {
                 var f = ev && ev.target && ev.target.files && ev.target.files[0];
@@ -96,11 +111,16 @@
             resetPhoto: function () { this.draftPhoto = ''; },
 
             submit: function () {
+                if (this.need && !(this.draftBrand && String(this.draftModel || '').trim() && this.draftYear)) {
+                    this.error = 'მიუთითე მარკა, მოდელი და წელი.';
+                    return;
+                }
                 var o = {
                     name: String(this.draftName || '').trim().slice(0, 40),
                     brand: String(this.draftBrand || '').trim().slice(0, 40),
                     model: String(this.draftModel || '').trim().slice(0, 40),
                     body: this.draftBody || '',
+                    year: this.draftYear || '',
                     photo: this.draftPhoto || ''
                 };
                 if (!save(o)) {
@@ -113,6 +133,10 @@
                 }
                 Object.assign(this, o);
                 this.open = false;
+                this.need = false;
+                announce(o);
+                var fn = this.after; this.after = null;
+                if (fn) setTimeout(fn, 250);
             }
         });
     });
