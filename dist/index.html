@@ -1284,9 +1284,6 @@
                 <label class="ui-label" for="ci-vin">VIN კოდი</label>
                 <div class="ui-btns" style="margin-top:0; align-items:center;">
                     <input id="ci-vin" class="ui-input" style="flex:1; font-family:'Inter',sans-serif !important; letter-spacing:.04em !important;" type="text" maxlength="17" autocapitalize="characters" spellcheck="false" placeholder="17 სიმბოლო" x-model="$store.car.info.vin" @change="$store.car.saveInfo()">
-                    <button type="button" class="ui-btn blue" style="flex:none; height:50px; padding:0 16px; font-size:13.5px;" x-show="$store.car.obdConnected()" @click="$store.car.readVin()" :disabled="$store.car.vinBusy">
-                        <span x-show="!$store.car.vinBusy">წაკითხვა</span><span class="ui-spin" x-show="$store.car.vinBusy"></span>
-                    </button>
                 </div>
                 <label class="ui-label" for="ci-plate">სახელმწიფო ნომერი</label>
                 <input id="ci-plate" class="ui-input" type="text" maxlength="12" autocapitalize="characters" placeholder="მაგ.: AA-123-BB" x-model="$store.car.info.plate" @change="$store.car.saveInfo()">
@@ -3863,7 +3860,7 @@ function obdApp() {
             }
 
             // VIN-ის წაკითხვა გამორთულია - ზოგ ავტომობილზე არასწორად იკითხებოდა
-            // (ფუნქცია fetchVIN() კოდში დარჩა, საჭიროების შემთხვევაში ხელახლა ჩასართავად)
+            // (წაკითხვის ფუნქცია მთლიანად ამოღებულია - VIN მხოლოდ ხელით შეიყვანება „ჩემი მანქანის“ გვერდზე)
             this.loading = false;
             this.statusMessage = 'სისტემა მზადაა!';
         },
@@ -3964,49 +3961,6 @@ function obdApp() {
             await this.sendELMCommand('AT PC', 3000);
             await new Promise(r => setTimeout(r, 500));
             this.elmTimedOut = false;
-        },
-
-        async fetchVIN() {
-            let vin = await this.tryFetchVIN();
-            if (!vin) {
-                // ერთხელ თავიდან ვცდით - ხანდახან პირველ მოთხოვნას სჭირდება "გამართვა"
-                await new Promise(r => setTimeout(r, 300));
-                vin = await this.tryFetchVIN();
-            }
-            if (vin) {
-                this.carInfo.vin = vin;
-                this.carInfo.model = 'OBD2 ავტომობილი (' + vin + ')';
-            }
-        },
-
-        async tryFetchVIN() {
-            let res = await this.sendELMCommand('0902', 6000);
-            let clean = this.cleanELMResponse(res, '0902');
-            if (clean.lines.length === 0 || clean.lines.every(l => this.isErrorResponse(l))) return null;
-
-            // თითო ხაზს ცალ-ცალკე ვამუშავებთ და ვშლით მხოლოდ ხაზის დასაწყისში მდგარ
-            // '4902' echo-ს - არა ყველგან, სადაც ეს ქვესტრიქონი შემთხვევით გამოჩნდება
-            // (იგივე კლასის ბაგი, რაც DTC-ების parsing-ს ჰქონდა).
-            let hexParts = [];
-            for (let line of clean.lines) {
-                if (this.isErrorResponse(line)) continue;
-                let hex = line.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
-                let idx = hex.indexOf('4902');
-                if (idx !== -1) hex = hex.substring(idx + 4);
-                hexParts.push(hex);
-            }
-            let hexStr = hexParts.join('');
-            if (!hexStr) return null;
-
-            let vin = '';
-            for (let i = 0; i < hexStr.length; i += 2) {
-                let code = parseInt(hexStr.substr(i, 2), 16);
-                if (code >= 32 && code <= 126) vin += String.fromCharCode(code);
-            }
-            // დამატებითი დაცვა: ვშლით ნებისმიერ non-alphanumeric ნარჩენს, რაც
-            // frame-ინდექსის ბაიტებმა შეიძლება დატოვონ, თუ ადაპტერს CAF1 ჯერ არ აქვს ათვისებული
-            vin = vin.replace(/[^A-Z0-9]/gi, '').toUpperCase();
-            return vin.length >= 11 ? vin.substring(0, 17) : null;
         },
 
         async toggleLiveStream() {

@@ -55,7 +55,6 @@
             // დამატებითი ინფორმაცია („ჩემი მანქანის“ გვერდი) - ცვლილებისთანავე ინახება
             info: Object.assign({ mileage: '', engine: '', fuel: '', gearbox: '', vin: '', plate: '', oilAt: '', oilEvery: '10000' }, saved.info || {}),
             page: false,
-            vinBusy: false,
             open: false,
             draftYear: '', after: null, need: false,
             draftName: '', draftPhoto: '', draftBrand: '', draftModel: '', draftBody: '', bodyManual: false,
@@ -67,8 +66,9 @@
             get src() { return this.photo || DEFAULT_PHOTO; },
             get custom() { return !!this.photo; },
             get ready() { return !!(this.brand && this.model && this.year); },
-            get icon() { return this.body ? body().svg(this.body) : ''; },
-            get draftIcon() { return this.draftBody ? body().svg(this.draftBody) : ''; },
+            // ძარის სილუეტები აღარ ჩანს - ყოველთვის ფოტო (საკუთარი ან ნაგულისხმევი შავი მანქანა)
+            get icon() { return ''; },
+            get draftIcon() { return ''; },
             get years() { var y = new Date().getFullYear() + 1, a = []; for (; y >= 1990; y--) a.push(String(y)); return a; },
             get draftSrc() { return this.draftPhoto || DEFAULT_PHOTO; },
             get draftAutoName() { return [this.draftBrand, this.draftModel].filter(Boolean).join(' '); },
@@ -105,13 +105,6 @@
             // OBD ნაწილის მდგომარეობა (ქვედა მენიუსთვის და VIN-ისთვის)
             obd: function () { try { return Alpine.$data(document.getElementById('diagnostic-app')); } catch (e) { return null; } },
             obdConnected: function () { var o = this.obd(); return !!(o && o.connected); },
-            readVin: async function () {
-                var o = this.obd();
-                if (!o || !o.connected || !o.tryFetchVIN) return;
-                this.vinBusy = true;
-                try { var v = await o.tryFetchVIN(); if (v) { this.info.vin = v; this.saveInfo(); } } catch (e) {}
-                this.vinBusy = false;
-            },
             // ქვედა მენიუდან სხვა ჩანართზე გადასვლა (OBD: activeTab, რეგისტრატორი: dcTab)
             nav: function (tab) {
                 this.page = false;
