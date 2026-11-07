@@ -2164,7 +2164,7 @@
                     </div>
                 </div>
                 <div class="ui-eng-stats">
-                    <div><small>Check Engine</small><b :class="health.mil ? 'hot' : ''" x-text="health.mil === null ? '—' : (health.mil ? 'ანთია' : 'ჩამქრალი')"></b></div>
+                    <button type="button" class="ui-eng-oil" @click="$store.car.openPage()"><small>ზეთამდე</small><b :class="$store.car.oilLeft !== null && $store.car.oilLeft <= 500 ? 'hot' : ''" x-text="$store.car.oilLeft === null ? 'მიუთითე' : ($store.car.oilLeft <= 0 ? 'დროა' : $store.car.oilLeft.toLocaleString('ka-GE') + ' კმ')"></b></button>
                     <div><small>ძაბვა</small><b x-text="(health.volt || voltage) ? Number(health.volt || voltage).toFixed(1) + ' V' : '—'"></b></div>
                     <div><small>ანტიფრიზი</small><b x-text="health.temp === null ? '—' : health.temp + '°C'"></b></div>
                 </div>
@@ -4267,14 +4267,11 @@ function obdApp() {
             if (this.hasScanned) {
                 const n = this.errors.length;
                 if (!n) return { tone: 'green', chip: 'გამართულია', title: 'ხარვეზები არ არის', text: 'მანქანის კომპიუტერში შეცდომები არ დაფიქსირდა.' };
-                return { tone: h.mil ? 'red' : 'amber', chip: n + ' ხარვეზი', title: 'ნაპოვნია ' + n + ' ხარვეზი', text: 'იხილე „შეცდომების“ ჩანართში - თითოეულს ახსნა და რჩევა აქვს.' };
+                return { tone: 'amber', chip: n + ' ხარვეზი', title: 'ნაპოვნია ' + n + ' ხარვეზი', text: 'იხილე „შეცდომების“ ჩანართში - თითოეულს ახსნა და რჩევა აქვს.' };
             }
-            if (h.mil === null) return { tone: '', chip: h.busy ? 'მოწმდება…' : 'მზადაა', title: h.busy ? 'მოწმდება…' : 'მზადაა სკანირებისთვის', text: 'სკანირება აჩვენებს ხარვეზებს და მათ ახსნას.' };
-            if (h.mil) return { tone: 'red', chip: 'Check Engine', title: 'Check Engine ანთია', text: (h.count ? 'კომპიუტერი ' + h.count + ' შეცდომას ინახავს. ' : '') + 'დაასკანერე, რომ ნახო რა ხდება.' };
-            if (h.count) return { tone: 'amber', chip: 'ყურადღება', title: h.count + ' შენახული შეცდომა', text: 'Check Engine არ ანთია, მაგრამ კომპიუტერში ჩანაწერია. დაასკანერე.' };
-            return { tone: 'green', chip: 'კარგია', title: 'Check Engine ჩამქრალია', text: 'სწრაფმა შემოწმებამ პრობლემა ვერ აღმოაჩინა. სრული სურათისთვის დაასკანერე.' };
+            return { tone: '', chip: 'მზადაა', title: 'მზადაა სკანირებისთვის', text: 'სკანირება აჩვენებს ხარვეზებს, მათ ახსნას და რჩევას, რა შეამოწმო.' };
         },
-        // სწრაფი შემოწმება დაკავშირებისას: 0101 (Check Engine + შეცდომების რაოდენობა), 0105, AT RV.
+        // სწრაფი შემოწმება დაკავშირებისას: ანტიფრიზი (0105) და ძაბვა (AT RV).
         // მხოლოდ კითხულობს; სკანირების ლოგიკას არ ეხება.
         async quickHealth() {
             this.health = { mil: null, count: 0, temp: null, volt: 0, busy: true };
@@ -4290,8 +4287,6 @@ function obdApp() {
                 return null;
             };
             try {
-                const a = await pid('01');
-                if (a && a.length) { this.health.mil = !!(a[0] & 0x80); this.health.count = a[0] & 0x7F; }
                 const t = await pid('05');
                 if (t && t.length) this.health.temp = t[0] - 40;
                 const rv = this.cleanELMResponse(await this.sendELMCommand('AT RV', 3000), 'AT RV');
