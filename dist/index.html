@@ -42,6 +42,7 @@
     <!-- 🔐 საიდუმლო გასაღებები - ფაილი მხოლოდ კომპიუტერზეა (.gitignore), Codemagic-ზე იქმნება ცვლადიდან -->
     <script src="secrets.js"></script>
     <script src="codes.js"></script>
+    <script src="codes-obede.js"></script>
     <script src="keys.js"></script>
     <script src="articles.js"></script>
     <!-- 📹 ვიდეორეგისტრატორი (დეშ ქემი) - ცალკე ფაილი -->
@@ -1920,6 +1921,7 @@
                     </div>
                     <div class="ui-card-t" style="margin-top:12px;" x-text="err.title"></div>
                     <p class="ui-card-s" x-text="err.desc"></p>
+                    <p class="ui-tip" x-show="err.tip"><b>რა შევამოწმო:</b> <span x-text="err.tip"></span></p>
                     <p class="ui-card-s" style="color:var(--u-ink-3);" x-show="err.symptoms" x-text="(err.symptoms || '').replace(/^\W*სიმპტომები:\s*/, 'სიმპტომები: ')"></p>
 
                     <div x-show="err.mfr && !err.brandExact" class="mfr-note" x-data="{ why: false }" style="margin-top:12px;">
@@ -2146,6 +2148,7 @@
                         </div>
                         <h4 class="lk-r-title" x-text="manualSearchResult.title"></h4>
                         <p class="lk-r-desc" x-text="manualSearchResult.desc"></p>
+                        <p class="ui-tip" x-show="manualSearchResult.tip"><b>რა შევამოწმო:</b> <span x-text="manualSearchResult.tip"></span></p>
                         <p class="lk-r-sym" x-text="(manualSearchResult.symptoms || '').replace(/^\W*სიმპტომები:\s*/, 'სიმპტომები: ')"></p>
 
                         <div x-show="manualSearchResult.mfr && !manualSearchResult.brandExact" class="mfr-note">

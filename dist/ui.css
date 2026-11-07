@@ -362,3 +362,5 @@ body { padding-bottom: 110px !important; }
 .ui-sheet-photo.ico { display: grid; place-items: center; }
 .ui-sheet-ico { width: 82%; --u-bg: #F4F5F7; }
 .ui-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ui-tip { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--u-blue-soft); color: var(--u-ink); font-size: 13px; line-height: 1.55; }
+.ui-tip b { color: var(--u-blue-2); font-weight: 600; }
