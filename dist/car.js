@@ -52,6 +52,10 @@
             model: saved.model || '',
             body: saved.body || '',
             year: saved.year || '',
+            // დამატებითი ინფორმაცია („ჩემი მანქანის“ გვერდი) - ცვლილებისთანავე ინახება
+            info: Object.assign({ mileage: '', engine: '', fuel: '', gearbox: '', vin: '', plate: '', oilAt: '', oilEvery: '10000' }, saved.info || {}),
+            page: false,
+            vinBusy: false,
             open: false,
             draftYear: '', after: null, need: false,
             draftName: '', draftPhoto: '', draftBrand: '', draftModel: '', draftBody: '', bodyManual: false,
@@ -86,6 +90,33 @@
                 this.open = true;
             },
             close: function () { this.open = false; this.after = null; this.need = false; },
+
+            // ─── „ჩემი მანქანის“ გვერდი ───
+            openPage: function () { this.page = true; },
+            closePage: function () { this.page = false; },
+            saveInfo: function () {
+                var s = load(); s.info = this.info;
+                if (this.info.vin) this.info.vin = String(this.info.vin).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+                save(s);
+            },
+            get oilNext() { var a = parseInt(this.info.oilAt, 10), e = parseInt(this.info.oilEvery, 10); return a >= 0 && e > 0 ? a + e : null; },
+            get oilLeft() { var n = this.oilNext, m = parseInt(this.info.mileage, 10); return n !== null && m >= 0 ? n - m : null; },
+            get subtitle() { return [this.brand, this.model, this.year].filter(Boolean).join(' · ') || 'მონაცემები ჯერ არ არის შევსებული'; },
+            // OBD ნაწილის მდგომარეობა (ქვედა მენიუსთვის და VIN-ისთვის)
+            obd: function () { try { return Alpine.$data(document.getElementById('diagnostic-app')); } catch (e) { return null; } },
+            obdConnected: function () { var o = this.obd(); return !!(o && o.connected); },
+            readVin: async function () {
+                var o = this.obd();
+                if (!o || !o.connected || !o.tryFetchVIN) return;
+                this.vinBusy = true;
+                try { var v = await o.tryFetchVIN(); if (v) { this.info.vin = v; this.saveInfo(); } } catch (e) {}
+                this.vinBusy = false;
+            },
+            // ქვედა მენიუდან სხვა ჩანართზე გადასვლა (OBD: activeTab, რეგისტრატორი: dcTab)
+            nav: function (tab) {
+                this.page = false;
+                try { window.dispatchEvent(new CustomEvent('octane-nav', { detail: tab })); } catch (e) {}
+            },
             // სკანერთან დაკავშირებამდე/სკანირებამდე მანქანა აუცილებლად უნდა იყოს მითითებული
             requireThen: function (fn) { this.after = fn || null; this.need = true; this.openEdit(); },
 
@@ -123,6 +154,7 @@
                     year: this.draftYear || '',
                     photo: this.draftPhoto || ''
                 };
+                o.info = this.info;
                 if (!save(o)) {
                     // ტელეფონის მეხსიერება სავსეა - ფოტოს გარეშე მაინც შევინახოთ დანარჩენი
                     o.photo = '';

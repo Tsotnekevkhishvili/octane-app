@@ -413,3 +413,10 @@ body { padding-bottom: 110px !important; }
 .dc-sheet .dc-wide-t b { font-size: 15.5px !important; font-weight: 500 !important; }
 .dc-sheet .dc-btn-soft, .dc-sheet .dc-btn-ghost { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; }
 .dc-sheet .dc-stack > * { margin: 0 !important; }
+
+/* „ჩემი მანქანის“ გვერდი */
+.ui-carpage { z-index: 9500; }
+.ui-nav.six { gap: 6px; }
+.ui-nav.six button { width: 50px; height: 50px; }
+.ui-row-btn { width: 100%; background: none; border: 0; border-top: 1px solid var(--u-line) !important; cursor: pointer; text-align: left; }
+.ui-carpage .ui-two { margin-top: 0; }

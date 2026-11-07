@@ -1225,6 +1225,131 @@
     <symbol id="i-dc-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L2 10l8-8z"/></symbol>
 </svg>
 
+<!-- 🚗 „ჩემი მანქანის“ გვერდი (ანგარიშის მსგავსი) - ქვედა მენიუში ყველაზე მარჯვნივ -->
+<div x-data>
+    <div class="ui-full ui-carpage" x-show="$store.car.page" x-cloak x-transition.opacity.duration.150ms>
+        <header class="ui-top">
+            <span></span>
+            <div class="ui-top-t"><b>ჩემი მანქანა</b><span x-text="$store.car.obdConnected() ? 'სკანერი დაკავშირებულია' : 'პროფილი'"></span></div>
+            <button type="button" class="ui-circle" @click="$store.car.openEdit()" aria-label="რედაქტირება"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+        </header>
+        <div class="ui-page" style="padding-bottom:120px;">
+            <div class="ui-hero" @click="$store.car.openEdit()" role="button" aria-label="რედაქტირება">
+                <img x-show="$store.car.custom || !$store.car.icon" :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+                <div class="ui-hero-ico" x-show="!$store.car.custom && $store.car.icon" x-cloak x-html="$store.car.icon"></div>
+            </div>
+            <div class="ui-choose-h" style="margin-top:4px;"><b x-text="$store.car.title"></b><span x-text="$store.car.subtitle"></span></div>
+
+            <!-- მარკა / მოდელი / წელი / ძარა -->
+            <div class="ui-card">
+                <button type="button" class="ui-link" @click="$store.car.openEdit()">
+                    <span class="ui-card-t">მანქანის მონაცემები</span>
+                    <svg class="ic"><use href="#i-chev-r"/></svg>
+                </button>
+                <div style="margin-top:10px;">
+                    <div class="ui-row"><span class="ui-row-l">მარკა</span><span class="ui-row-v" x-text="$store.car.brand || '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">მოდელი</span><span class="ui-row-v" x-text="$store.car.model || '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">წელი</span><span class="ui-row-v" x-text="$store.car.year || '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">ძარის ტიპი</span><span class="ui-row-v" x-text="$store.car.bodyLabel($store.car.body) || '—'"></span></div>
+                </div>
+            </div>
+
+            <!-- დამატებითი ინფორმაცია - ცვლილებისთანავე ინახება -->
+            <div class="ui-card">
+                <div class="ui-card-t">ძირითადი ინფორმაცია</div>
+                <div class="ui-two">
+                    <div>
+                        <label class="ui-label" for="ci-mileage">გარბენი (კმ)</label>
+                        <input id="ci-mileage" class="ui-input" type="number" inputmode="numeric" min="0" placeholder="მაგ.: 185000" x-model="$store.car.info.mileage" @change="$store.car.saveInfo()">
+                    </div>
+                    <div>
+                        <label class="ui-label" for="ci-engine">ძრავი (ლ)</label>
+                        <input id="ci-engine" class="ui-input" type="text" inputmode="decimal" maxlength="5" placeholder="მაგ.: 1.8" x-model="$store.car.info.engine" @change="$store.car.saveInfo()">
+                    </div>
+                </div>
+                <div class="ui-two">
+                    <div>
+                        <label class="ui-label" for="ci-fuel">საწვავი</label>
+                        <select id="ci-fuel" class="ui-input ui-select" x-model="$store.car.info.fuel" @change="$store.car.saveInfo()">
+                            <option value="">აირჩიე</option><option>ბენზინი</option><option>დიზელი</option><option>ჰიბრიდი</option><option>ელექტრო</option><option>გაზი / ბენზინი</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ui-label" for="ci-gear">კოლოფი</label>
+                        <select id="ci-gear" class="ui-input ui-select" x-model="$store.car.info.gearbox" @change="$store.car.saveInfo()">
+                            <option value="">აირჩიე</option><option>ავტომატიკა</option><option>მექანიკა</option><option>ვარიატორი</option><option>რობოტი</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="ui-label" for="ci-vin">VIN კოდი</label>
+                <div class="ui-btns" style="margin-top:0; align-items:center;">
+                    <input id="ci-vin" class="ui-input" style="flex:1; font-family:'Inter',sans-serif !important; letter-spacing:.04em !important;" type="text" maxlength="17" autocapitalize="characters" spellcheck="false" placeholder="17 სიმბოლო" x-model="$store.car.info.vin" @change="$store.car.saveInfo()">
+                    <button type="button" class="ui-btn blue" style="flex:none; height:50px; padding:0 16px; font-size:13.5px;" x-show="$store.car.obdConnected()" @click="$store.car.readVin()" :disabled="$store.car.vinBusy">
+                        <span x-show="!$store.car.vinBusy">წაკითხვა</span><span class="ui-spin" x-show="$store.car.vinBusy"></span>
+                    </button>
+                </div>
+                <label class="ui-label" for="ci-plate">სახელმწიფო ნომერი</label>
+                <input id="ci-plate" class="ui-input" type="text" maxlength="12" autocapitalize="characters" placeholder="მაგ.: AA-123-BB" x-model="$store.car.info.plate" @change="$store.car.saveInfo()">
+            </div>
+
+            <!-- ზეთის შეცვლა -->
+            <div class="ui-card">
+                <div class="ui-card-h" style="align-items:center;">
+                    <div class="ui-card-t">ზეთის შეცვლა</div>
+                    <span class="ui-chip" x-show="$store.car.oilLeft !== null" :class="$store.car.oilLeft < 0 ? 'red' : ($store.car.oilLeft < 1000 ? 'amber' : 'green')"
+                          x-text="$store.car.oilLeft < 0 ? 'ვადა გადაცილებულია' : ('დარჩა ' + $store.car.oilLeft + ' კმ')"></span>
+                </div>
+                <div class="ui-two">
+                    <div>
+                        <label class="ui-label" for="ci-oil">ბოლოს შეიცვალა (კმ)</label>
+                        <input id="ci-oil" class="ui-input" type="number" inputmode="numeric" min="0" placeholder="მაგ.: 180000" x-model="$store.car.info.oilAt" @change="$store.car.saveInfo()">
+                    </div>
+                    <div>
+                        <label class="ui-label" for="ci-oil-every">ყოველ (კმ)</label>
+                        <select id="ci-oil-every" class="ui-input ui-select" x-model="$store.car.info.oilEvery" @change="$store.car.saveInfo()">
+                            <option value="5000">5 000</option><option value="7500">7 500</option><option value="10000">10 000</option><option value="15000">15 000</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="ui-card-s" style="margin-top:10px;" x-show="$store.car.oilNext !== null" x-text="'შემდეგი შეცვლა: ' + $store.car.oilNext + ' კმ-ზე'"></p>
+            </div>
+
+            <!-- სტატისტიკა -->
+            <div class="ui-card">
+                <div class="ui-card-t">სტატისტიკა</div>
+                <div style="margin-top:10px;">
+                    <div class="ui-row"><span class="ui-row-l">ბოლო სკანირება</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">ნაპოვნი ხარვეზი</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.last.codes.length : '—'"></span></div>
+                    <button type="button" class="ui-row ui-row-btn" @click="$store.hist.open = true" x-show="$store.hist.items.length">
+                        <span class="ui-row-l">ისტორია</span><span class="ui-row-v blue" x-text="$store.hist.items.length + ' ჩანაწერი'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ქვედა მენიუ - იმ ნაწილისა, საიდანაც გაიხსნა -->
+        <nav class="ui-nav" :class="$store.octaneMode.screen === 'obd' ? 'six' : ''">
+            <template x-if="$store.octaneMode.screen === 'obd'">
+                <div style="display:contents;">
+                    <button type="button" @click="$store.car.nav('errors')" aria-label="მთავარი"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></button>
+                    <button type="button" @click="$store.car.nav('live')" :disabled="!$store.car.obdConnected()" aria-label="Live Data"><svg class="ic"><use href="#i-gauge"/></svg></button>
+                    <button type="button" @click="$store.car.nav('ai_mechanic')" aria-label="AI მექანიკოსი"><svg class="ic"><use href="#i-sparkle"/></svg></button>
+                    <button type="button" @click="$store.car.nav('battery')" :disabled="!$store.car.obdConnected()" aria-label="ძაბვა"><svg class="ic"><use href="#i-dc-battery"/></svg></button>
+                    <button type="button" @click="$store.car.nav('clear')" :disabled="!$store.car.obdConnected()" aria-label="წაშლა"><svg class="ic"><use href="#i-trash"/></svg></button>
+                </div>
+            </template>
+            <template x-if="$store.octaneMode.screen === 'dashcam'">
+                <div style="display:contents;">
+                    <button type="button" @click="$store.car.nav('camera')" aria-label="კამერა"><svg class="ic"><use href="#i-dc-dashcam"/></svg></button>
+                    <button type="button" @click="$store.car.nav('gallery')" aria-label="გალერეა"><svg class="ic"><use href="#i-dc-image"/></svg></button>
+                    <button type="button" @click="$store.car.nav('settings')" aria-label="პარამეტრები"><svg class="ic"><use href="#i-gear"/></svg></button>
+                </div>
+            </template>
+            <button type="button" class="on" aria-label="ჩემი მანქანა"><svg class="ic"><use href="#i-dc-car"/></svg></button>
+        </nav>
+    </div>
+</div>
+
 <!-- 🚗 ჩემი მანქანა - სახელი და ფოტო -->
 <div x-data>
     <div class="ui-sheet-bg" x-show="$store.car.open" x-cloak x-transition.opacity @click="$store.car.close()"></div>
@@ -1287,7 +1412,7 @@
     </div>
 </div>
 
-<div id="diagnostic-app" x-data="obdApp()" @octane-car.window="$event.detail.codeBrand && setBrand($event.detail.codeBrand)">
+<div id="diagnostic-app" x-data="obdApp()" @octane-car.window="$event.detail.codeBrand && setBrand($event.detail.codeBrand)" @octane-nav.window="['errors', 'live', 'ai_mechanic', 'battery', 'clear'].includes($event.detail) && (activeTab = $event.detail)">
 
     <!-- 🔐 აქტივაციის საწყისი ეკრანი - ლურჯი ფონი + სკანერის რეალური ფოტო 3D-ში -->
     <div x-show="!isActivated" x-cloak class="act-screen" x-data="{ focused: false, rx: 0, ry: 0 }">
@@ -1970,7 +2095,7 @@
         <div class="ui-sheet-bg" x-show="menuOpen" x-cloak x-transition.opacity @click="menuOpen = false"></div>
         <div class="ui-sheet" x-show="menuOpen" x-cloak role="dialog" aria-modal="true" aria-label="მენიუ">
             <div class="ui-sheet-grab"></div>
-            <button type="button" class="ui-mrow" @click="menuOpen = false; $store.car.openEdit()">
+            <button type="button" class="ui-mrow" @click="menuOpen = false; $store.car.openPage()">
                 <svg class="ic"><use href="#i-dc-car"/></svg><span>ჩემი მანქანა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </button>
             <a class="ui-mrow" href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;">
@@ -2484,12 +2609,13 @@
     </div>
 
     <!-- 📱 ქვედა მენიუ (მცურავი) -->
-    <nav class="ui-nav" x-show="isActivated && $store.octaneMode.screen === 'obd'" x-cloak>
+    <nav class="ui-nav six" x-show="isActivated && $store.octaneMode.screen === 'obd'" x-cloak>
         <button type="button" :class="activeTab === 'errors' ? 'on' : ''" @click="activeTab = 'errors'" aria-label="მთავარი"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></button>
         <button type="button" :class="activeTab === 'live' ? 'on' : ''" @click="activeTab = 'live'" :disabled="!connected" aria-label="Live Data"><svg class="ic"><use href="#i-gauge"/></svg></button>
         <button type="button" :class="activeTab === 'ai_mechanic' ? 'on' : ''" @click="activeTab = 'ai_mechanic'" aria-label="AI მექანიკოსი"><svg class="ic"><use href="#i-sparkle"/></svg></button>
         <button type="button" :class="activeTab === 'battery' ? 'on' : ''" @click="activeTab = 'battery'" :disabled="!connected" aria-label="ძაბვა"><svg class="ic"><use href="#i-dc-battery"/></svg></button>
         <button type="button" :class="activeTab === 'clear' ? 'on' : ''" @click="activeTab = 'clear'" :disabled="!connected" aria-label="წაშლა"><svg class="ic"><use href="#i-trash"/></svg></button>
+        <button type="button" @click="$store.car.openPage()" aria-label="ჩემი მანქანა"><svg class="ic"><use href="#i-dc-car"/></svg></button>
     </nav>
 
     <!-- ═══════════ 🔀 რეჟიმის არჩევა: OBD სკანერი / ვიდეორეგისტრატორი (ახალი) ═══════════
@@ -2575,7 +2701,7 @@
     </div>
 
     <!-- ═══════════ 📹 ვიდეორეგისტრატორის განყოფილება (ლოგიკა: dashcam.js) ═══════════ -->
-    <div class="dc-app" x-data="dashcamApp()" x-show="$store.octaneMode.screen === 'dashcam'" x-cloak>
+    <div class="dc-app" x-data="dashcamApp()" x-show="$store.octaneMode.screen === 'dashcam'" x-cloak @octane-nav.window="['camera', 'gallery', 'settings'].includes($event.detail) && (dcTab = $event.detail)">
         <div class="dc-wrap">
 
             <!-- 🎛️ ზედა ნაწილი: მენიუ, სათაური და სტატუსი, თემა -->
@@ -2896,6 +3022,9 @@
                 </button>
                 <button type="button" :class="dcTab === 'settings' ? 'on' : ''" @click="dcTab = 'settings'">
                     <span class="dc-nav-ic"><svg class="ic"><use href="#i-gear"/></svg></span><b>პარამეტრები</b>
+                </button>
+                <button type="button" @click="$store.car.openPage()" aria-label="ჩემი მანქანა">
+                    <span class="dc-nav-ic"><svg class="ic"><use href="#i-dc-car"/></svg></span><b>მანქანა</b>
                 </button>
             </div>
         </nav>
