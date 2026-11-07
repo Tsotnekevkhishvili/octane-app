@@ -43,6 +43,7 @@
     <script src="secrets.js"></script>
     <script src="codes.js"></script>
     <script src="codes-obede.js"></script>
+    <script src="codes-avto.js"></script>
     <script src="keys.js"></script>
     <script src="articles.js"></script>
     <!-- 📹 ვიდეორეგისტრატორი (დეშ ქემი) - ცალკე ფაილი -->
@@ -1409,7 +1410,7 @@
     </div>
 </div>
 
-<div id="diagnostic-app" x-data="obdApp()" @octane-car.window="$event.detail.codeBrand && setBrand($event.detail.codeBrand)" @octane-nav.window="['errors', 'live', 'ai_mechanic', 'battery', 'clear'].includes($event.detail) && (activeTab = $event.detail)">
+<div id="diagnostic-app" x-data="obdApp()" @octane-car.window="$event.detail.codeBrand && setBrand($event.detail.codeBrand)" @octane-codes.window="refreshFaultTexts()" @octane-nav.window="['errors', 'live', 'ai_mechanic', 'battery', 'clear'].includes($event.detail) && (activeTab = $event.detail)">
 
     <!-- 🔐 აქტივაციის საწყისი ეკრანი - ლურჯი ფონი + სკანერის რეალური ფოტო 3D-ში -->
     <div x-show="!isActivated" x-cloak class="act-screen" x-data="{ focused: false, rx: 0, ry: 0 }">
@@ -4237,6 +4238,19 @@ function obdApp() {
             return codes;
         },
 
+        // ახალი კოდების ფაილი ჩაიტვირთა → უკვე ნაჩვენები აღწერების განახლება
+        refreshFaultTexts() {
+            if (this.errors.length) this.errors = this.errors.map(e => this.getOfflineFaultDetails(e.code));
+            if (this.manualSearchResult && !this.manualSearchResult.invalid && this.manualSearchResult.code) this.searchManualCode();
+        },
+        // ავტოექიმის ჩანაწერი → ჩვენი ფორმატი (დაკავშირებული სტანდარტული კოდიდან - ახსნა და რჩევა)
+        avtoFault(code, a, brandName) {
+            let db = window.OBD_CODES || {}, rel = a.rel && a.rel !== code ? db[a.rel] : null;
+            let desc = rel ? 'უკავშირდება სტანდარტულ კოდს ' + a.rel + ': ' + rel.title + '.'
+                           : (brandName ? 'ეს კოდი ' + brandName + '-ის მწარმოებლის კოდია. ' : '') + 'ზუსტი მიზეზის დასადგენად შეამოწმეთ სერვისში.';
+            return { code: code, mfr: !!brandName, brandExact: !!brandName, level: (rel && rel.level) || 'სერვისში მისასვლელი',
+                     title: a.title + (brandName ? ' (' + brandName + ')' : ''), desc: desc, symptoms: '', tip: rel ? (rel.tip || '') : '' };
+        },
         getOfflineFaultDetails(code) {
             // 0. მწარმოებლის კოდი + არჩეული მარკა → მარკის ზუსტი აღწერა (codes.js → OBD_BRAND_CODES)
             if (/^(P1|P3[0-3]|B[123]|C[123]|U[123])/.test(code) && this.carBrand) {
@@ -4246,8 +4260,17 @@ function obdApp() {
                     return { code: code, mfr: true, brandExact: true, level: b.level, title: b.title + ' (' + this.brandLabel() + ')', desc: b.desc, symptoms: b.symptoms };
                 }
             }
-            // 1. ჯერ ვამოწმებთ codes.js-ის გლობალურ ბაზას
+            // 0ბ. ავტოექიმის მარკის ბაზა (codes-avto.js) - მწარმოებლის კოდები და ის კოდები, რომლებიც ზოგად ბაზაში არ არის
             let db = window.OBD_CODES || {};
+            const isMfrCode = /^(P1|P3[0-3]|B[123]|C[123]|U[123])/.test(code);
+            if (window.OCTANE_AVTO && (isMfrCode || !db[code])) {
+                let a = window.OCTANE_AVTO.brand(code, this.carBrand);
+                if (a) {
+                    let bn = (window.Alpine && Alpine.store('car') && Alpine.store('car').brand) || this.brandLabel();
+                    return this.avtoFault(code, a, bn);
+                }
+            }
+            // 1. ჯერ ვამოწმებთ codes.js-ის გლობალურ ბაზას
             if (db[code]) {
                 let item = db[code];
                 item.code = code;
@@ -4304,6 +4327,12 @@ function obdApp() {
                 let item = builtInDb[code];
                 item.code = code;
                 return item;
+            }
+
+            // 2ბ. ავტოექიმის ზოგადი ცხრილი (სტანდარტული კოდები, რომლებიც codes.js-ში არ არის)
+            if (window.OCTANE_AVTO && !isMfrCode) {
+                let a = window.OCTANE_AVTO.generic(code);
+                if (a) return this.avtoFault(code, a, '');
             }
 
             // 3. ბაზაში არ არის. მწარმოებლის კოდებს (P1xxx, P30-P33xx, B1-B3, C1-C3, U1-U3) მნიშვნელობა
