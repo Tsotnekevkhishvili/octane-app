@@ -52,6 +52,10 @@
 	<!-- 🔐 ნებართვების ტექსტები (iPhone მომხმარებელს ამას აჩვენებს) -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>აპი უკავშირდება OBD სკანერს და ვიდეორეგისტრატორს WiFi-ით, რომ წაიკითხოს მანქანის ხარვეზები და კამერის ვიდეოები.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>კამერა საჭიროა მანქანის ფოტოს გადასაღებად (სურვილისამებრ).</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>გალერეიდან ფოტოს არჩევა საჭიროა მანქანის ფოტოს დასაყენებლად (სურვილისამებრ).</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>ვიდეორეგისტრატორის ვიდეოები და ფოტოები ინახება ტელეფონის გალერეაში.</string>
 	<!-- კამერა და სკანერი ლოკალურ ქსელში HTTP-ით მუშაობს (192.168.x.x) -->
