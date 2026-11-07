@@ -63,6 +63,15 @@ enum OctaneMp4Fix {
         return removed
     }
 
+    /// მთლიანი moov ყუთი (სათაურით) მეხსიერებაში → გასწორებული moov (ცარიელი კადრების გარეშე).
+    /// კამერიდან პირდაპირ ყურებისას გამოიყენება (OctaneCamVideoLoader). ვიდეოს მონაცემების ოფსეტები არ იცვლება.
+    static func fixMoovBox(_ moov: [UInt8]) -> [UInt8] {
+        guard moov.count > 8, be32(moov, 0) == UInt32(moov.count) else { return moov }
+        var removed = 0
+        let body = rebuild(Array(moov[8...]), &removed)
+        return removed == 0 ? moov : makeBox("moov", body)
+    }
+
     // ─────────── შიდა ───────────
 
     private static let containers: Set<String> = ["moov", "trak", "mdia", "minf", "stbl", "edts"]

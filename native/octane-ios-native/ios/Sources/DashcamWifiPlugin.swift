@@ -282,10 +282,19 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         if u.isFileURL { OctaneMp4Fix.fixInPlace(u) }
         DispatchQueue.main.async {
             self.stopInline()
+            // ტელეფონში გადმოწერილი - პირდაპირ; კამერაზე მყოფი - „შუამავლით“, რომელიც ცარიელ კადრებს მაშინვე აშორებს
+            var avPlayer: AVPlayer? = nil
+            var camLoader: OctaneCamVideoLoader? = nil
             if u.isFileURL {
-                let player = AVPlayer(url: u)
+                avPlayer = AVPlayer(url: u)
+            } else if let made = OctaneCamVideoLoader.makeAsset(u) {
+                camLoader = made.1
+                avPlayer = AVPlayer(playerItem: AVPlayerItem(asset: made.0))
+            }
+            if let player = avPlayer {
                 let vc = OctanePlayerViewController()
                 vc.player = player
+                vc.loader = camLoader
                 vc.modalPresentationStyle = .fullScreen
                 if startMs > 0 { player.seek(to: CMTime(value: CMTimeValue(startMs), timescale: 1000)) }
                 if endMs > 0 {
@@ -294,7 +303,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
                 OctaneOrientation.set(true)
                 self.bridge?.viewController?.present(vc, animated: true) { player.play() }
             } else {
-                // პირდაპირ კამერიდან (გაუსწორებელი ფაილი) - VLC, პროგრამული დეკოდერით
+                // სათადარიგო: VLC, პროგრამული დეკოდერით
                 let vc = OctaneFilePlayerViewController(url: u, title: title, startMs: startMs, endMs: endMs)
                 vc.modalPresentationStyle = .fullScreen
                 OctaneOrientation.set(true)
@@ -571,12 +580,15 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
 /// ჩანაწერის ფლეერი: ტრიალებს, დახურვისას აპი ისევ ვერტიკალური ხდება
 class OctanePlayerViewController: AVPlayerViewController {
     var boundaryToken: Any?
+    var loader: OctaneCamVideoLoader?
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .allButUpsideDown }
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if isBeingDismissed || presentingViewController == nil {
             if let t = boundaryToken { player?.removeTimeObserver(t); boundaryToken = nil }
             player?.pause()
+            loader?.shutdown()
+            loader = nil
             OctaneOrientation.set(false)
         }
     }
