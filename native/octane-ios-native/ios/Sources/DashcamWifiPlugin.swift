@@ -34,7 +34,7 @@ import MobileVLCKit
  * ცოცხალი ხედი (RTSP) - MobileVLCKit; ჩანაწერები - AVPlayer (iPhone 1296P-ს თავისით ხსნის).
  */
 @objc(DashcamWifiPlugin)
-public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDelegate, VLCMediaPlayerDelegate {
+public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadDelegate {
     public let identifier = "DashcamWifiPlugin"
     public let jsName = "DashcamWifi"
     public let pluginMethods: [CAPPluginMethod] = [
@@ -356,8 +356,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         }
     }
 
-    private var liveView: UIView?
-    private var livePlayer: VLCMediaPlayer?
+    private var liveView: OctaneRtspView?
     private var liveUrl: URL?
     private var liveRect = CGRect.zero
     private var liveRadius: CGFloat = 0
@@ -365,8 +364,10 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     private var liveShown = true
     private var liveRetries = 0
     private var liveFirstFrame = false
+    private var liveRunning = false
+    private var liveGen = 0
     private var liveTimer: Timer?
-    private var liveStats = ""
+    private var liveLastError = ""
 
     private func readRect(_ call: CAPPluginCall) {
         liveRect = CGRect(x: call.getDouble("x", Double(liveRect.minX)), y: call.getDouble("y", Double(liveRect.minY)),
@@ -388,15 +389,11 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         notifyListeners("liveState", data: ["state": s, "detail": liveDetail()])
     }
 
-    // 🔎 დიაგნოსტიკა: ბოლო რას ამბობს VLC (ბარათში პატარა ტექსტად ჩანს)
-    private let vlcLog = OctaneVlcLog()
-    private var lastDiag: TimeInterval = 0
+    // 🔎 დიაგნოსტიკა: რომელ ეტაპზეა კამერასთან საუბარი და რამდენი მოვიდა (ბარათში პატარა ტექსტად ჩანს)
     private func liveDetail() -> String {
-        var st = "-"
-        if let p = livePlayer { st = VLCMediaPlayerStateToString(p.state) }
-        let err = vlcLog.lastError
-        st = st.replacingOccurrences(of: "VLCMediaPlayerState", with: "")
-        return "ცდა \(liveRetries + 1)/7 · \(st) · \(liveStats.isEmpty ? "-" : liveStats)" + (err.isEmpty ? "" : " ⚠ \(err)")
+        let st = liveView?.stats ?? "-"
+        let err = liveLastError.isEmpty ? "" : " · წინა: \(liveLastError)"
+        return "ცდა \(liveRetries + 1)/7 · \(st)\(err)"
     }
 
     private func createLivePlayer() {
@@ -404,45 +401,35 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         guard let u = liveUrl, let v = liveView else { return }
         liveFirstFrame = false
         v.isHidden = true
-        let p = VLCMediaPlayer()
-        let m = VLCMedia(url: u)
-        OctaneVlc.liveOptions(m)
-        m.addOption(":no-audio")        // ბარათში ხმა არ გვჭირდება
-        p.media = m
-        p.drawable = v
-        p.delegate = self
-        livePlayer = p
+        liveGen += 1
+        let gen = liveGen
+        v.onFirstFrame = { [weak self] in
+            guard let self = self, self.liveGen == gen else { return }
+            self.markFirstFrame()
+        }
+        v.onError = { [weak self] msg in
+            guard let self = self, self.liveGen == gen else { return }
+            self.liveLastError = msg
+            self.liveFailed()
+        }
+        liveRunning = true
+        v.start(u)
         liveState("loading")
-        // წინა ნაკადის გაჩერება ფონზე მიდის - ახალს მისი დასრულების შემდეგ ვრთავთ (კამერა ერთ ნაკადს აძლევს);
-        // play() -ც ფონზე, რომ ეკრანი არ გაიჭედოს
-        OctaneVlc.queue.async { p.play() }
-        // ყოველ წამს: რამდენი მოვიდა კამერიდან / რამდენი კადრი გამოჩნდა.
-        // VLC ზოგჯერ „Buffering“-ში რჩება და დროის სიგნალს არ გზავნის, თუმცა სურათი უკვე მოდის.
-        liveStats = ""
+        // დიაგნოსტიკის განახლება წამში ერთხელ, სანამ სურათი გამოჩნდება
         liveTimer?.invalidate()
-        var ticks = 0
         liveTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
-            guard let self = self, self.livePlayer === p else { t.invalidate(); return }
-            ticks += 1
-            var shown = 0
-            if let m = p.media {
-                shown = Int(m.numberOfDisplayedPictures)
-                let kb = Int(m.numberOfReadBytesOnInput) / 1024
-                self.liveStats = "\(kb)KB · dec \(m.numberOfDecodedVideoBlocks) · pic \(shown) · lost \(m.numberOfLostPictures) · vout \(p.hasVideoOut ? 1 : 0)"
-            }
-            if !self.liveFirstFrame && (shown > 0 || p.hasVideoOut) {
-                self.markFirstFrame()
-            } else if !self.liveFirstFrame {
-                self.liveState("loading")
-                if ticks >= 20 { t.invalidate(); self.liveFailed() }   // 20 წამი უშედეგოდ → თავიდან
-            }
+            guard let self = self, self.liveGen == gen, self.liveRunning, !self.liveFirstFrame else { t.invalidate(); return }
+            self.liveState("loading")
         }
     }
 
     private func markFirstFrame() {
-        if liveFirstFrame || livePlayer == nil { return }
+        if liveFirstFrame || !liveRunning { return }
         liveFirstFrame = true
         liveRetries = 0
+        liveLastError = ""
+        liveTimer?.invalidate()
+        liveTimer = nil
         applyRect()
         liveState("playing")
     }
@@ -450,16 +437,18 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     private func releaseLivePlayer() {
         liveTimer?.invalidate()
         liveTimer = nil
-        if let p = livePlayer { p.delegate = nil; livePlayer = nil; OctaneVlc.stop(p) }
+        liveGen += 1
+        liveRunning = false
+        liveView?.stop()
         liveView?.isHidden = true
     }
 
     private func liveFailed() {
         if liveWanted && liveRetries < 6 {
             liveRetries += 1
-            liveState("loading")
             releaseLivePlayer()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { if self.liveWanted { self.createLivePlayer() } }
+            liveState("loading")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { if self.liveWanted && !self.liveRunning { self.createLivePlayer() } }
         } else {
             releaseLivePlayer()
             liveState("error")
@@ -471,27 +460,13 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         releaseLivePlayer()
     }
 
-    public func mediaPlayerTimeChanged(_ aNotification: Notification) {
-        DispatchQueue.main.async { self.markFirstFrame() }
-    }
-
-    public func mediaPlayerStateChanged(_ aNotification: Notification) {
-        DispatchQueue.main.async {
-            guard let p = self.livePlayer else { return }
-            if !self.liveFirstFrame { self.liveState("loading") }
-            if p.state == .error || (p.state == .ended && !self.liveFirstFrame) || (p.state == .stopped && self.liveWanted && !self.liveFirstFrame) {
-                // კამერას ჩაწერის ჩართვის შემდეგ ნაკადის მომზადებას რამდენიმე წამი სჭირდება - ჯერ თავიდან ვცდით
-                self.liveFailed()
-            }
-        }
-    }
-
     @objc func liveInlineStart(_ call: CAPPluginCall) {
         guard let s = call.getString("url"), let u = URL(string: s) else { call.reject("NO_URL"); return }
         readRect(call)
         DispatchQueue.main.async {
             if self.liveView == nil, let wv = self.bridge?.webView, let parent = wv.superview {
-                let v = UIView()
+                let v = OctaneRtspView()
+                v.fill = true
                 v.backgroundColor = .black
                 v.clipsToBounds = true
                 v.isUserInteractionEnabled = false   // შეხება ვებ-გვერდზე გადადის
@@ -502,6 +477,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
             self.liveWanted = true
             self.liveShown = true
             self.liveRetries = 0
+            self.liveLastError = ""
             self.applyRect()
             self.createLivePlayer()
             call.resolve()
@@ -565,18 +541,6 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
 
     override public func load() {
         DispatchQueue.main.async { self.setupScreen() }
-        vlcLog.onChange = { [weak self] in
-            DispatchQueue.main.async {
-                guard let self = self, self.liveWanted, !self.liveFirstFrame else { return }
-                let now = Date().timeIntervalSince1970
-                if now - self.lastDiag < 0.7 { return }   // ძალიან ხშირად არ ვაგზავნით
-                self.lastDiag = now
-                self.liveState("loading")
-            }
-        }
-        VLCLibrary.shared().debugLoggingLevel = 4
-        VLCLibrary.shared().debugLoggingTarget = vlcLog
-        VLCLibrary.shared().debugLogging = true
         // აპი ფონზე → ნაკადს ვაჩერებთ, დაბრუნებისას ვაგრძელებთ
         NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
             self?.releaseLivePlayer()
@@ -602,12 +566,11 @@ class OctanePlayerViewController: AVPlayerViewController {
     }
 }
 
-/// ცოცხალი ხედი სრულ ეკრანზე (VLC)
-class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
+/// ცოცხალი ხედი სრულ ეკრანზე (საკუთარი RTSP კლიენტი)
+class OctaneLiveViewController: UIViewController {
     private let url: URL
     private let titleText: String
-    private let player = VLCMediaPlayer()
-    private let videoView = UIView()
+    private let videoView = OctaneRtspView()
     private let status = UILabel()
     private let retry = UIButton(type: .system)
     private var started = false
@@ -688,67 +651,31 @@ class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
         status.text = "ცოცხალ ხედს ვრთავ..."
         status.isHidden = false
         retry.isHidden = true
-        let m = VLCMedia(url: url)
-        OctaneVlc.liveOptions(m)
-        player.media = m
-        player.drawable = videoView
-        player.delegate = self
-        player.play()
-    }
-
-    func mediaPlayerTimeChanged(_ aNotification: Notification) {
-        DispatchQueue.main.async {
-            if self.started { return }
+        videoView.fill = false
+        videoView.onFirstFrame = { [weak self] in
+            guard let self = self, !self.started else { return }
             self.started = true
             self.status.isHidden = true
         }
-    }
-
-    func mediaPlayerStateChanged(_ aNotification: Notification) {
-        DispatchQueue.main.async {
-            if self.player.state == .error || (self.player.state == .ended && !self.started) {
-                self.status.text = "ცოცხალი ხედი ვერ ჩაირთო.\nშეამოწმე, რომ ტელეფონი კამერის WiFi-ზეა."
-                self.status.isHidden = false
-                self.retry.isHidden = false
-            }
+        videoView.onError = { [weak self] msg in
+            guard let self = self else { return }
+            self.status.text = "ცოცხალი ხედი ვერ ჩაირთო.\nშეამოწმე, რომ ტელეფონი კამერის WiFi-ზეა.\n(\(msg))"
+            self.status.isHidden = false
+            self.retry.isHidden = false
         }
+        videoView.start(url)
     }
 
     @objc private func retryTap() {
         retry.isHidden = true
-        OctaneVlc.stop(player) { [weak self] in self?.start() }
+        start()
     }
     @objc private func closeTap() { dismiss(animated: true) }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        player.delegate = nil
-        OctaneVlc.stop(player)
+        videoView.stop()
         OctaneOrientation.set(false)
-    }
-}
-
-/// VLC-ის შეტყობინებები (შეცდომები/გაფრთხილებები) - ბოლო ერთს ვინახავთ დიაგნოსტიკისთვის
-class OctaneVlcLog: NSObject, VLCLibraryLogReceiverProtocol {
-    private let lock = NSLock()
-    private var _last = ""
-    private var _lastError = ""
-    private var lastFire: TimeInterval = 0
-    var onChange: (() -> Void)?
-    var last: String { lock.lock(); defer { lock.unlock() }; return _last }
-    var lastError: String { lock.lock(); defer { lock.unlock() }; return _lastError }
-    func handleMessage(_ message: String, debugLevel level: Int32) {
-        let m = message.count > 90 ? String(message.prefix(90)) : message
-        let low = m.lowercased()
-        let isErr = ["error", "fail", "cannot", "unable", "timeout", "timed out", "refused", "no data", "corrupt", "not supported", "unsupported"].contains { low.contains($0) }
-        let now = Date().timeIntervalSince1970
-        lock.lock()
-        _last = m
-        if isErr { _lastError = m }
-        let fire = now - lastFire > 0.7   // ბევრი შეტყობინებაა - ეკრანს წამში ~1-ჯერ ვაახლებთ
-        if fire { lastFire = now }
-        lock.unlock()
-        if fire { onChange?() }
     }
 }
 
