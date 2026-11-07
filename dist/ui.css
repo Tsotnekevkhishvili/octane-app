@@ -392,3 +392,12 @@ body { padding-bottom: 110px !important; }
 .ui-tile-btn { border: 0; text-align: left; cursor: pointer; min-height: 84px; }
 .ui-tile-btn em { display: inline-block; margin-top: 6px; font-style: normal; font-size: 11.5px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: var(--u-amber-soft); color: var(--u-amber); }
 .ui-tile-btn em.attention { background: var(--u-red-soft); color: var(--u-red); }
+
+/* ისტორია */
+.ui-hrow { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--u-line); }
+.ui-hrow:first-of-type { border-top: 0; padding-top: 0; }
+.ui-hdot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; background: var(--u-ink-3); }
+.ui-hdot.ok { background: var(--u-green); } .ui-hdot.bad { background: var(--u-amber); } .ui-hdot.clear { background: var(--u-blue); }
+.ui-hrow-t { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; }
+.ui-hrow-t b { font-weight: 600; color: var(--u-ink); }
+.ui-hrow-t span { color: var(--u-ink-3); font-size: 13px; }

@@ -51,6 +51,7 @@
     <script src="car.js"></script>
     <script src="prepurchase.js"></script>
     <script src="live-pids.js"></script>
+    <script src="history.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -1562,6 +1563,46 @@
         </div>
     </div>
 
+    <!-- ═══════════ 🕘 ისტორია (history.js) ═══════════ -->
+    <div class="ui-full" x-show="$store.hist.open" x-cloak x-transition.opacity.duration.150ms>
+        <header class="ui-top">
+            <button type="button" class="ui-circle" @click="$store.hist.open = false" aria-label="უკან"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <div class="ui-top-t"><b>ისტორია</b><span x-text="$store.car.title"></span></div>
+            <span></span>
+        </header>
+        <div class="ui-page" style="padding-bottom:40px;">
+            <div class="ui-card" x-show="!$store.hist.items.length">
+                <div class="ui-card-t">ისტორია ჯერ ცარიელია</div>
+                <div class="ui-card-s">სკანირების შედეგები აქ გამოჩნდება.</div>
+            </div>
+            <template x-for="d in $store.hist.days" :key="d.key">
+                <div>
+                    <div class="ui-sec" x-text="d.label"></div>
+                    <div class="ui-card" style="margin-top:8px;">
+                        <template x-for="(r, i) in d.rows" :key="r.at">
+                            <div class="ui-hrow">
+                                <span class="ui-hdot" :class="r.kind === 'clear' ? 'clear' : (r.codes.length ? 'bad' : 'ok')"></span>
+                                <div style="flex:1; min-width:0;">
+                                    <div class="ui-hrow-t"><b x-text="$store.hist.title(r)"></b><span x-text="$store.hist.time(r.at)"></span></div>
+                                    <div class="ui-card-s" x-show="$store.hist.change(r)" x-text="$store.hist.change(r)"></div>
+                                    <div class="ui-codes" x-show="r.codes.length" style="margin-top:8px;">
+                                        <template x-for="c in r.codes" :key="c">
+                                            <span class="ui-chip" :class="r.added.indexOf(c) >= 0 ? 'red' : ''" x-text="c"></span>
+                                        </template>
+                                    </div>
+                                    <div class="ui-codes" x-show="r.gone.length" style="margin-top:6px;">
+                                        <template x-for="c in r.gone" :key="'g' + c"><span class="ui-chip green" style="text-decoration:line-through;" x-text="c"></span></template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <button type="button" class="ui-btn light wide" style="margin-top:16px; color:var(--u-red);" x-show="$store.hist.items.length" @click="$store.hist.clearAll()">ისტორიის გასუფთავება</button>
+        </div>
+    </div>
+
     <!-- ═══════════ 🧹 ჩეკის ჩაქრობის ანიმაცია ═══════════ -->
     <div x-show="clearAnim.open" x-cloak class="sc-overlay" x-transition.opacity.duration.200ms>
         <div class="sc-wrap" style="padding-top:70px;">
@@ -2100,6 +2141,18 @@
             </div>
 
             <button type="button" class="ui-btn light wide" style="margin-top:12px; color:var(--u-red);" @click="disconnectOBD()">კავშირის გათიშვა</button>
+        </div>
+
+        <!-- 🕘 ისტორია -->
+        <div class="ui-card" x-show="$store.hist.items.length">
+            <button type="button" class="ui-link" @click="$store.hist.open = true">
+                <svg class="ic ui-ic-blue"><use href="#i-clock"/></svg>
+                <span style="flex:1; min-width:0;">
+                    <span class="ui-card-t" style="display:block;">ისტორია</span>
+                    <span class="ui-card-s" style="display:block;" x-show="$store.hist.last" x-text="$store.hist.last ? $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) + ' - ' + $store.hist.title($store.hist.last) : ''"></span>
+                </span>
+                <svg class="ic"><use href="#i-chev-r"/></svg>
+            </button>
         </div>
     </div>
 
@@ -4007,6 +4060,7 @@ function obdApp() {
             clearInterval(ticker);
             this.scanAnim.progress = 100;
             this.scanAnim.state = 'done';
+            if (window.OCTANE_HISTORY) window.OCTANE_HISTORY.add('scan', this.errors.map(e => e.code));
             await sleep(1800);
             this.scanAnim.open = false;
         },
@@ -4265,6 +4319,7 @@ function obdApp() {
             clearInterval(ticker);
             this.clearAnim.progress = 100;
             this.clearAnim.state = result === 'ok' ? 'ok' : (result === 'conn' ? 'conn' : 'fail');
+            if (result === 'ok' && window.OCTANE_HISTORY) window.OCTANE_HISTORY.add('clear', []);
         },
 
         // ძაბვის ნორმების ცხრილში შესაბამისი სტრიქონის მოსანიშნად
