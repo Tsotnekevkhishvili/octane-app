@@ -553,7 +553,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         DispatchQueue.main.async {
             self.setupScreen()
             self.topCover?.backgroundColor = light
-                ? UIColor(red: 0xcf/255.0, green: 0xe3/255.0, blue: 0xff/255.0, alpha: 1)
+                ? UIColor(red: 0xed/255.0, green: 0xef/255.0, blue: 0xf2/255.0, alpha: 1)
                 : UIColor(red: 0x0d/255.0, green: 0x1d/255.0, blue: 0x48/255.0, alpha: 1)
             // საათის/ბატარეის ფერი: მუქ თემაზე თეთრი, ნათელზე შავი
             if let w = self.bridge?.webView?.window {

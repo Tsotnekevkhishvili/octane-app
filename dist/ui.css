@@ -1,0 +1,316 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Octane - ერთიანი დიზაინი (OBD + ვიდეორეგისტრატორი)
+   ღია ნაცრისფერი ფონი · თეთრი ბარათები · ლოგოს ლურჯი · შავი მთავარი ღილაკები
+   გრადიენტების, ნათებების და ემოჯების გარეშე.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 700; font-display: swap;
+             src: url('fonts/inter-latin.woff2') format('woff2');
+             unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+@font-face { font-family: 'Noto Sans Georgian'; font-style: normal; font-weight: 400 800; font-display: swap;
+             src: url('fonts/noto-sans-georgian.woff2') format('woff2');
+             unicode-range: U+0589, U+10A0-10FF, U+1C90-1CBA, U+1CBD-1CBF, U+205A, U+2D00-2D2F, U+2E31; }
+
+:root, :root[data-theme="light"], :root[data-theme="dark"] {
+    --u-bg: #EDEFF2;
+    --u-card: #FFFFFF;
+    --u-soft: #F4F5F7;
+    --u-ink: #121417;
+    --u-ink-2: #5F6670;
+    --u-ink-3: #9AA0A8;
+    --u-line: #E3E6EA;
+    --u-blue: #1A9BE8;
+    --u-blue-2: #0F86D0;
+    --u-blue-soft: #E5F3FC;
+    --u-dark: #141517;
+    --u-red: #E5484D;
+    --u-red-soft: #FDECEC;
+    --u-green: #1F9D5B;
+    --u-green-soft: #E7F6EE;
+    --u-amber: #D98A06;
+    --u-amber-soft: #FCF3E2;
+    --u-r: 24px;
+
+    /* ძველი ცვლადები → ახალი პალიტრა (Tailwind-ის კლასები მათ იყენებს) */
+    --bg-main: var(--u-bg); --bg-card: var(--u-card); --bg-elevated: var(--u-soft); --bg-nav: var(--u-card);
+    --text-main: var(--u-ink); --text-muted: var(--u-ink-2); --accent: var(--u-blue); --accent-2: var(--u-blue);
+    --accent-light: var(--u-blue-soft); --border: var(--u-line); --glow: transparent; --bg-glow-top: var(--u-bg);
+    --track-color: #E6E8EC; --tick-color: #D5D9DE; --gauge-ink: var(--u-ink); --gauge-tick: #C9CED4;
+    --og-glass: var(--u-card); --og-line: var(--u-line); --og-solid: var(--u-card);
+    --dc-line: var(--u-line); --dc-glass: var(--u-card); --dc-solid: var(--u-card);
+    color-scheme: light;
+}
+
+html, body { background: var(--u-bg) !important; }
+* { font-family: 'Inter', 'Noto Sans Georgian', -apple-system, 'Segoe UI', sans-serif !important; letter-spacing: 0 !important; }
+body { color: var(--u-ink); -webkit-font-smoothing: antialiased; }
+:root[data-theme] body { background: var(--u-bg) !important; background-image: none !important; }
+
+/* ─────────── საერთო კომპონენტები ─────────── */
+.ui-page { padding: 0 16px; }
+.ui-top { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 10px; padding: 18px 16px 6px; position: relative; z-index: 10; }
+.ui-circle { width: 48px; height: 48px; border-radius: 50%; background: var(--u-card); border: 1px solid var(--u-line);
+             display: grid; place-items: center; color: var(--u-ink); cursor: pointer; padding: 0; transition: transform .15s; }
+.ui-circle:active { transform: scale(.94); }
+.ui-circle .ic, .ui-circle svg { width: 20px; height: 20px; }
+.ui-top-t { text-align: center; min-width: 0; }
+.ui-top-t b { display: block; font-size: 16px; font-weight: 600; color: var(--u-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ui-top-t span { display: block; font-size: 12px; font-weight: 500; color: var(--u-blue); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ui-top-t span.off { color: var(--u-ink-3); }
+.ui-top-t span.bad { color: var(--u-red); }
+
+/* მანქანის ფოტო + ლურჯი რკალი */
+.ui-hero { position: relative; margin: 6px -16px 0; height: 236px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ui-hero img.def { position: absolute; left: 50%; top: 14px; width: 94%; max-width: 440px; transform: translateX(-50%); pointer-events: none; }
+.ui-hero img.own { position: absolute; left: 16px; right: 16px; top: 6px; width: calc(100% - 32px); height: 196px; object-fit: cover; border-radius: var(--u-r); }
+.ui-arc { position: absolute; left: 4%; right: 4%; bottom: 10px; width: 92%; height: 46px; pointer-events: none;
+          -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%); }
+.ui-arc path { fill: none; stroke: var(--u-blue); stroke-width: 1.6; }
+.ui-arc-dot { position: absolute; left: 50%; bottom: 1px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%;
+              background: var(--u-blue); color: #fff; display: grid; place-items: center; }
+.ui-arc-dot svg { width: 14px; height: 14px; }
+.ui-hero-edit { position: absolute; right: 18px; top: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92);
+                border: 1px solid var(--u-line); display: grid; place-items: center; color: var(--u-ink-2); }
+.ui-hero-edit svg { width: 15px; height: 15px; }
+
+.ui-card { background: var(--u-card); border-radius: var(--u-r); padding: 18px; margin-top: 12px; border: 0; }
+.ui-card-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ui-card-t { font-size: 16px; font-weight: 600; color: var(--u-ink); line-height: 1.3; }
+.ui-card-s { font-size: 12.5px; color: var(--u-ink-2); margin-top: 3px; line-height: 1.45; }
+.ui-card-more { width: 28px; height: 28px; display: grid; place-items: center; color: var(--u-ink); flex-shrink: 0; }
+.ui-card-more svg { width: 18px; height: 18px; }
+.ui-link { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; color: var(--u-ink); }
+.ui-link .ui-card-t { flex: 1; }
+.ui-link > svg { width: 18px; height: 18px; color: var(--u-ink-2); }
+.ui-ic-blue { width: 22px; height: 22px; color: var(--u-blue); flex-shrink: 0; }
+
+/* ზოლებიანი მაჩვენებელი (როგორც „Battery Information“) */
+.ui-meter { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+.ui-seg { flex: 1; height: 50px; display: flex; gap: 2px; padding: 3px; border-radius: 14px; background: var(--u-soft); border: 1px solid var(--u-line); overflow: hidden; }
+.ui-seg i { flex: 1; border-radius: 3px; background: transparent; transition: background .3s; }
+.ui-seg i.on { background: var(--u-blue); }
+.ui-seg i.on:first-child { border-radius: 10px 3px 3px 10px; }
+.ui-seg.red i.on { background: var(--u-red); }
+.ui-seg.green i.on { background: var(--u-green); }
+.ui-seg.amber i.on { background: var(--u-amber); }
+.ui-meter > svg { width: 22px; height: 22px; color: var(--u-ink-2); flex-shrink: 0; }
+.ui-figs { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.ui-big { font-size: 30px; font-weight: 600; color: var(--u-ink); line-height: 1; }
+.ui-big-s { font-size: 12px; color: var(--u-ink-2); margin-top: 6px; }
+.ui-accent { font-size: 24px; font-weight: 600; color: var(--u-blue); line-height: 1; white-space: nowrap; }
+.ui-accent.red { color: var(--u-red); } .ui-accent.green { color: var(--u-green); } .ui-accent.amber { color: var(--u-amber); }
+
+/* პროგრესი ტექსტით შიგნით (როგორც „24m 35 sec remaining“) */
+.ui-prog { position: relative; height: 50px; border-radius: 14px; background: var(--u-soft); border: 1px solid var(--u-line); overflow: hidden; margin-top: 14px; }
+.ui-prog > span { position: absolute; left: 3px; top: 3px; bottom: 3px; border-radius: 11px; background: var(--u-blue); transition: width .5s linear; min-width: 6px;
+                  background-image: repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,.25) 28px 30px); }
+.ui-prog > em { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12px; font-weight: 500; color: #fff; white-space: nowrap; }
+
+/* მართვის ღილაკები (როგორც „Vehicle Control“) */
+.ui-ctrls { display: flex; justify-content: space-between; margin-top: 16px; }
+.ui-ctrl { display: flex; flex-direction: column; align-items: center; gap: 8px; background: none; border: 0; padding: 0; cursor: pointer; flex: 1; min-width: 0; }
+.ui-ctrl-c { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--u-card); border: 1px solid var(--u-line); color: var(--u-ink-2); transition: transform .15s; }
+.ui-ctrl-c svg { width: 22px; height: 22px; }
+.ui-ctrl b { font-size: 12px; font-weight: 500; color: var(--u-ink); text-align: center; line-height: 1.25; }
+.ui-ctrl:active .ui-ctrl-c { transform: scale(.93); }
+.ui-ctrl.blue .ui-ctrl-c { background: var(--u-blue); border-color: var(--u-blue); color: #fff; }
+.ui-ctrl.dark .ui-ctrl-c { background: var(--u-dark); border-color: var(--u-dark); color: #fff; }
+.ui-ctrl:disabled { opacity: .45; cursor: default; }
+.ui-ctrl .ui-badge { position: absolute; }
+
+/* ღილაკები */
+.ui-btns { display: flex; gap: 10px; margin-top: 16px; }
+.ui-btn { flex: 1; height: 50px; border-radius: 999px; border: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          font-size: 14.5px; font-weight: 600; cursor: pointer; transition: transform .15s, opacity .15s; padding: 0 18px; white-space: nowrap; text-decoration: none; }
+.ui-btn:active { transform: scale(.97); }
+.ui-btn:disabled { opacity: .5; cursor: default; }
+.ui-btn svg { width: 18px; height: 18px; }
+.ui-btn.dark { background: var(--u-dark); color: #fff; }
+.ui-btn.blue { background: var(--u-blue); color: #fff; }
+.ui-btn.light { background: var(--u-soft); color: var(--u-ink); border: 1px solid var(--u-line); }
+.ui-btn.red { background: var(--u-red); color: #fff; }
+.ui-btn.wide { width: 100%; flex: none; }
+
+/* სტრიქონი ბარათში (როგორც „Battery capacity 77.4 kWh“) */
+.ui-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.ui-row + .ui-row { border-top: 1px solid var(--u-line); padding-top: 14px; margin-top: 10px; }
+.ui-row-l { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 500; color: var(--u-ink); }
+.ui-row-v { font-size: 14.5px; font-weight: 600; color: var(--u-ink); white-space: nowrap; }
+.ui-row-v.blue { color: var(--u-blue); }
+.ui-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.ui-tile { background: var(--u-card); border-radius: 20px; padding: 14px 16px; }
+.ui-tile small { display: block; font-size: 12px; color: var(--u-ink-2); }
+.ui-tile b { display: block; font-size: 20px; font-weight: 600; color: var(--u-ink); margin-top: 6px; }
+.ui-tile b.hot { color: var(--u-red); }
+
+.ui-note { font-size: 12px; color: var(--u-ink-3); text-align: center; line-height: 1.5; margin: 14px 12px 0; }
+.ui-chip { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--u-blue-soft); color: var(--u-blue-2); }
+.ui-chip.red { background: var(--u-red-soft); color: var(--u-red); }
+.ui-chip.amber { background: var(--u-amber-soft); color: var(--u-amber); }
+.ui-chip.green { background: var(--u-green-soft); color: var(--u-green); }
+.ui-sec { font-size: 13px; font-weight: 600; color: var(--u-ink-2); margin: 22px 4px 0; }
+
+/* მცურავი ქვედა მენიუ */
+.ui-nav { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60;
+          display: flex; gap: 8px; padding: 7px; border-radius: 999px; background: rgba(214,218,224,.72);
+          -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); border: 1px solid rgba(255,255,255,.6); }
+.ui-nav button { width: 54px; height: 54px; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.55);
+                 display: grid; place-items: center; color: var(--u-ink-2); cursor: pointer; padding: 0; transition: background .2s, transform .15s; }
+.ui-nav button svg { width: 21px; height: 21px; }
+.ui-nav button.on { background: var(--u-blue); border-color: var(--u-blue); color: #fff; }
+.ui-nav button:disabled { opacity: .45; cursor: default; }
+.ui-nav button:active { transform: scale(.94); }
+body { padding-bottom: 110px !important; }
+
+/* ქვედა ფანჯარა (sheet) */
+.ui-sheet-bg { position: fixed; inset: 0; background: rgba(18,20,23,.35); z-index: 100000; }
+.ui-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100001; background: var(--u-card); border-radius: 28px 28px 0 0;
+            padding: 10px 18px calc(22px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto; max-height: 92vh; overflow-y: auto; }
+.ui-sheet-grab { width: 40px; height: 4px; border-radius: 4px; background: var(--u-line); margin: 0 auto 14px; }
+.ui-sheet h3 { font-size: 17px; font-weight: 600; text-align: center; color: var(--u-ink); }
+.ui-sheet-photo { position: relative; height: 180px; border-radius: 20px; background: var(--u-soft); margin-top: 16px; overflow: hidden; }
+.ui-sheet-photo img { width: 100%; height: 100%; object-fit: cover; }
+.ui-label { display: block; font-size: 12.5px; color: var(--u-ink-2); margin: 16px 2px 6px; }
+.ui-input { width: 100%; height: 50px; border-radius: 14px; border: 1px solid var(--u-line); background: var(--u-soft); padding: 0 16px;
+            font-size: 15px; color: var(--u-ink); outline: none; }
+.ui-input:focus { border-color: var(--u-blue); background: #fff; }
+.ui-err { color: var(--u-red); font-size: 12.5px; margin-top: 10px; text-align: center; }
+
+/* ─────────── ძველი კომპონენტები ახალ სტილში ─────────── */
+.panel, .info-box, .lk-card, .vn-card, .brand-box, .clr-list, .sc-list, .q-step, .g-note, .g-trouble, .lk-result {
+    background: var(--u-card) !important; border: 0 !important; border-radius: var(--u-r) !important; box-shadow: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.lk-card { padding: 18px !important; margin: 12px 16px 0 !important; }
+.lk-head { gap: 12px !important; }
+.lk-ic { width: 40px !important; height: 40px !important; border-radius: 50% !important; background: var(--u-blue-soft) !important; color: var(--u-blue) !important; }
+.lk-title { font-size: 16px !important; font-weight: 600 !important; color: var(--u-ink) !important; }
+.lk-sub { font-size: 12.5px !important; color: var(--u-ink-2) !important; font-weight: 400 !important; }
+.lk-input { height: 50px !important; border-radius: 14px !important; background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; font-family: 'Inter', sans-serif !important; letter-spacing: .06em !important; }
+.lk-btn { height: 50px !important; border-radius: 999px !important; background: var(--u-dark) !important; color: #fff !important; font-weight: 600 !important; box-shadow: none !important; padding: 0 22px !important; }
+.lk-btn:disabled { opacity: .35 !important; }
+.lk-chips span { color: var(--u-ink-3) !important; font-weight: 400 !important; }
+.lk-chips button { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.lk-result { background: var(--u-soft) !important; border-radius: 18px !important; }
+.lk-code { background: var(--u-blue-soft) !important; color: var(--u-blue-2) !important; font-family: 'Inter', sans-serif !important; }
+.lk-level { color: var(--u-amber) !important; }
+.lk-r-title { color: var(--u-ink) !important; font-weight: 600 !important; }
+.lk-r-desc { color: var(--u-ink-2) !important; }
+.lk-r-sym { color: var(--u-amber) !important; }
+.lk-ai { background: var(--u-dark) !important; color: #fff !important; border: 0 !important; border-radius: 999px !important; font-weight: 600 !important; }
+.lk-clear { color: var(--u-ink-2) !important; }
+.lk-invalid { color: var(--u-ink-2) !important; }
+.app-ver { color: var(--u-ink-3) !important; font-weight: 400 !important; }
+
+.brand-box { padding: 16px 18px !important; }
+.brand-box-t { color: var(--u-ink) !important; font-weight: 600 !important; font-size: 14px !important; }
+.brand-select { height: 48px !important; border-radius: 14px !important; background-color: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; font-weight: 500 !important; }
+.mfr-note { background: var(--u-soft) !important; border: 0 !important; border-radius: 14px !important; color: var(--u-ink-2) !important; }
+.mfr-note-t, .mfr-note-t span { color: var(--u-ink) !important; font-weight: 500 !important; }
+.mfr-note-t em { color: var(--u-blue) !important; }
+.mfr-note-ok .mfr-note-t, .mfr-note-ok .mfr-note-t span { color: var(--u-green) !important; }
+.mfr-note p { color: var(--u-ink-2) !important; }
+
+.vn-card { padding: 18px !important; }
+.vn-hi { background: var(--u-blue-soft) !important; color: var(--u-blue) !important; border-radius: 50% !important; }
+.vn-title { color: var(--u-ink) !important; font-weight: 600 !important; }
+.vn-hint { color: var(--u-ink-2) !important; }
+.vn-group { background: var(--u-soft) !important; border: 0 !important; border-radius: 18px !important; }
+.vn-gt, .vn-gt span { color: var(--u-ink) !important; font-weight: 500 !important; }
+.vn-gt em { color: var(--u-ink-3) !important; }
+.vn-row { color: var(--u-ink-2) !important; border-radius: 12px !important; }
+.vn-row b { font-family: 'Inter', sans-serif !important; }
+.vn-row.g b { color: var(--u-green) !important; } .vn-row.a b { color: var(--u-amber) !important; } .vn-row.r b { color: var(--u-red) !important; }
+.vn-row.on { background: #fff !important; box-shadow: 0 0 0 1.5px var(--u-blue) inset !important; }
+.vn-bar .g { background: var(--u-green) !important; } .vn-bar .a { background: var(--u-amber) !important; } .vn-bar .r { background: var(--u-red) !important; }
+
+/* მენიუ (drawer) */
+.drawer-item { background: var(--u-soft) !important; border: 0 !important; border-radius: 16px !important; color: var(--u-ink) !important; font-weight: 500 !important; }
+.drawer-ver { color: var(--u-ink-3) !important; }
+
+/* სკანირება / წაშლა - სრული ეკრანი */
+.sc-overlay, .g-overlay { background: var(--u-bg) !important; }
+.sc-title { color: var(--u-ink) !important; font-weight: 600 !important; font-size: 20px !important; }
+.sc-sub { color: var(--u-ink-2) !important; font-weight: 400 !important; }
+.sc-list { padding: 6px 16px !important; }
+.sc-item { border-color: var(--u-line) !important; }
+.sc-label { color: var(--u-ink-3) !important; font-weight: 500 !important; }
+.sc-item.on .sc-label { color: var(--u-ink) !important; }
+.sc-item.cur .sc-label { color: var(--u-blue) !important; }
+.sc-ic { background: var(--u-soft) !important; color: var(--u-ink-3) !important; border: 0 !important; }
+.sc-item.st-ok .sc-ic { background: var(--u-blue) !important; color: #fff !important; }
+.sc-item.st-warn .sc-ic { background: var(--u-amber) !important; color: #fff !important; }
+.sc-badge { background: var(--u-amber-soft) !important; color: var(--u-amber) !important; border: 0 !important; }
+.sc-radar, .sc-sweep, .cl-wave, .act-rings, .rev-glow { box-shadow: none !important; }
+.sc-sweep { display: none !important; }
+.sc-radar { background: var(--u-card) !important; border: 0 !important; }
+.sc-center strong { color: var(--u-ink) !important; font-weight: 600 !important; }
+.sc-center span { color: var(--u-ink-2) !important; }
+.cl-disc { background: var(--u-card) !important; color: var(--u-blue) !important; box-shadow: none !important; border: 0 !important; }
+.cl-stage.st-ok .cl-disc { color: var(--u-green) !important; }
+.cl-stage.st-fail .cl-disc, .cl-stage.st-conn .cl-disc { color: var(--u-red) !important; }
+.cl-wave { border-color: rgba(26,155,232,.25) !important; }
+.cl-bar { background: var(--u-card) !important; border: 1px solid var(--u-line) !important; height: 14px !important; border-radius: 999px !important; }
+.cl-bar span { background: var(--u-blue) !important; box-shadow: none !important; }
+.g-btn-main, .act-btn { background: var(--u-dark) !important; color: #fff !important; border: 0 !important; border-radius: 999px !important; box-shadow: none !important; font-weight: 600 !important; }
+.q-full { color: var(--u-ink-2) !important; }
+.sc-err-ic { background: var(--u-red-soft) !important; color: var(--u-red) !important; box-shadow: none !important; }
+
+/* „რა არის ახალი“ */
+.wn-overlay { background: rgba(18,20,23,.35) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.wn-card { background: var(--u-card) !important; border: 0 !important; border-radius: 28px !important; box-shadow: none !important; }
+.wn-badge { background: var(--u-blue-soft) !important; color: var(--u-blue) !important; box-shadow: none !important; }
+.wn-title { color: var(--u-ink) !important; font-weight: 600 !important; }
+.wn-ver { color: var(--u-ink-3) !important; }
+.wn-row { color: var(--u-ink-2) !important; } .wn-row b { color: var(--u-ink) !important; font-weight: 600 !important; }
+.wn-ri { background: var(--u-soft) !important; color: var(--u-blue) !important; border: 0 !important; }
+
+/* გზამკვლევი (როგორ დავაკავშირო) */
+.g-head-title, .q-body b, .q-title { color: var(--u-ink) !important; }
+.g-head-icon, .q-n { background: var(--u-blue) !important; color: #fff !important; box-shadow: none !important; }
+.g-close { background: var(--u-card) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; border-radius: 50% !important; }
+.g-fail { background: var(--u-red-soft) !important; color: var(--u-red) !important; border: 0 !important; }
+
+/* მოდალები (Tailwind-ით აწყობილი) */
+.fixed.inset-0.bg-black\/90, .fixed.inset-0.bg-black\/75 { background: rgba(18,20,23,.35) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* დამალული ძველი ელემენტები */
+.theme-btn, .wifi-select { display: none !important; }
+
+/* გრაფიკი (Live) */
+.ui-chart { height: 92px; margin-top: 16px; border-radius: 14px; background: var(--u-soft); overflow: hidden; }
+.ui-chart svg { width: 100%; height: 100%; display: block; }
+.ui-chart polygon { fill: rgba(26,155,232,.14); }
+.ui-chart polyline { fill: none; stroke: var(--u-blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.ui-textarea { height: auto; min-height: 110px; padding: 14px 16px; margin-top: 14px; resize: none; line-height: 1.5; font-size: 14.5px; }
+.ui-answer { font-size: 14px; line-height: 1.6; color: var(--u-ink); white-space: pre-line; }
+.ui-answer.bad { color: var(--u-red); }
+.ui-spin { display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; animation: ui-spin .8s linear infinite; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+.ui-btn.pulse-cta { animation: none !important; box-shadow: none !important; }
+
+/* არჩევის ეკრანი */
+.dc-choose { background: var(--u-bg) !important; }
+.dc-choose .act-bg-light, .dc-choose .act-floor, .dc-choose .act-privacy { display: none !important; }
+.dc-choose .act-wrap { padding: 0 16px 30px !important; max-width: 480px; margin: 0 auto; }
+.dc-choose .act-top { padding: 18px 0 0 !important; justify-content: center; gap: 10px !important; }
+.dc-choose .act-top span { color: var(--u-ink) !important; font-size: 16px !important; font-weight: 600 !important; }
+.dc-choose .act-logo { width: 36px !important; height: 36px !important; border-radius: 50% !important; background: #fff !important; border: 1px solid var(--u-line) !important; box-shadow: none !important; overflow: hidden; }
+.ui-choose .ui-hero { margin-top: 8px; }
+.ui-choose-h { text-align: center; margin: 10px 0 8px; }
+.ui-choose-h b { display: block; font-size: 22px; font-weight: 600; color: var(--u-ink); }
+.ui-choose-h span { display: block; font-size: 13.5px; color: var(--u-ink-2); margin-top: 4px; }
+.ui-pick { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer; padding: 14px 16px 14px 14px; }
+.ui-pick:active { transform: scale(.99); }
+.ui-pick-ic { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex-shrink: 0; }
+.ui-pick-ic.blue { background: var(--u-blue); } .ui-pick-ic.dark { background: var(--u-dark); }
+.ui-pick-ic svg { width: 24px; height: 24px; }
+.ui-pick-t { flex: 1; min-width: 0; }
+.ui-pick-t b { display: block; font-size: 16px; font-weight: 600; color: var(--u-ink); }
+.ui-pick-t small { display: block; font-size: 12.5px; color: var(--u-ink-2); margin-top: 3px; }
+.ui-pick-arr { width: 20px; height: 20px; color: var(--u-ink-3); }
+.ui-arc { bottom: 2px !important; }
+.ui-spin.dark { border-color: rgba(18,20,23,.12); border-top-color: var(--u-blue); }
+.ui-card-t + .ui-card-s:empty { display: none; }
+.ui-sheet-photo img[src$=".webp"] { object-fit: contain; padding: 8px 4px; }

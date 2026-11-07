@@ -12,7 +12,7 @@
   },
   "ios": {
     "contentInset": "always",
-    "backgroundColor": "#0a1533",
+    "backgroundColor": "#EDEFF2",
     "limitsNavigationsToAppBoundDomains": false,
     "includePlugins": [
       "octane-ios-native"

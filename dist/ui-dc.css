@@ -1,0 +1,118 @@
+/* ═════════════ ვიდეორეგისტრატორი - იგივე სტილი, რაც OBD-ს (ui.css) ═════════════ */
+.dc-app { background: var(--u-bg) !important; background-image: none !important; color: var(--u-ink) !important; }
+.dc-app::before, .dc-app::after { display: none !important; }
+.dc-app .dc-top { display: grid; grid-template-columns: 48px 1fr 48px; gap: 10px; padding: 18px 16px 6px; }
+.dc-app .dc-round { width: 48px; height: 48px; background: var(--u-card) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; box-shadow: none !important; }
+.dc-app .dc-round .ic { width: 20px !important; height: 20px !important; }
+.dc-app .dc-top-t b { font-size: 16px; font-weight: 600; color: var(--u-ink); }
+.dc-app .dc-top-t > span { margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--u-ink-3); }
+.dc-app .dc-top-t > span i { display: none; }
+.dc-app .dc-top-t > span.on, .dc-app .dc-top-t > span.search { color: var(--u-blue); }
+.dc-app .dc-top-t > span.fail { color: var(--u-red); }
+.dc-app .dc-page { padding: 10px 16px 130px; }
+.dc-app .dc-label { margin: 22px 4px 8px; font-size: 13px; font-weight: 600; color: var(--u-ink-2); }
+.dc-app .dc-label small { color: var(--u-ink-3); font-weight: 400; }
+
+/* ბარათები / სტრიქონები */
+.dc-app .dc-glass, .dc-app .dc-wide, .dc-app .dc-tile2, .dc-app .dc-kv, .dc-app .dc-empty, .dc-app .dc-alert {
+    background: var(--u-card) !important; border: 0 !important; border-radius: var(--u-r) !important; box-shadow: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.dc-app .dc-wide { min-height: 72px; padding: 16px 18px; color: var(--u-ink); }
+.dc-app .dc-wide-t b, .dc-app .dc-tile2 b { color: var(--u-ink); font-weight: 600; font-size: 15.5px; }
+.dc-app .dc-wide-t small, .dc-app .dc-tile2 small { color: var(--u-ink-2); font-weight: 400; font-size: 12.5px; }
+.dc-app .dc-wide-t small.v, .dc-app .dc-wide-v, .dc-app .dc-tile2-v { color: var(--u-blue); font-weight: 600; }
+.dc-app .dc-wide > .ic:last-child { color: var(--u-ink-3) !important; opacity: 1; }
+.dc-app .dc-wide.danger .dc-wide-t b { color: var(--u-red); }
+.dc-app .dc-ico { background: transparent !important; box-shadow: none !important; color: var(--u-blue) !important; width: 28px; height: 28px; }
+.dc-app .dc-ico.lg { width: 30px; height: 30px; }
+.dc-app .dc-ico .ic, .dc-app .dc-ico.lg .ic { width: 22px !important; height: 22px !important; stroke-width: 1.8; }
+.dc-app .dc-ico.c-red, .dc-app .dc-wide.danger .dc-ico { color: var(--u-red) !important; }
+.dc-app .dc-ico.c-amber { color: var(--u-amber) !important; }
+.dc-app .dc-ico.c-gray { color: var(--u-ink-3) !important; }
+.dc-app .dc-stack { gap: 10px; }
+.dc-app .dc-alert { color: var(--u-ink) !important; background: var(--u-red-soft) !important; }
+
+/* მეხსიერება - ზოლებიანი მაჩვენებელი */
+.dc-app .dc-bar { height: 50px; padding: 3px; border-radius: 14px; background: var(--u-soft) !important; border: 1px solid var(--u-line); margin-top: 16px !important; }
+.dc-app .dc-bar span { border-radius: 11px; background-color: var(--u-blue) !important;
+                       background-image: repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,.9) 28px 30px) !important; }
+.dc-app .dc-bar span.hot { background-color: var(--u-red) !important; }
+.dc-app .dc-progress .dc-bar, .dc-sheet .dc-bar { height: 12px; padding: 0; border-radius: 99px; }
+.dc-app .dc-progress .dc-bar span, .dc-sheet .dc-bar span { background-image: none !important; border-radius: 99px; }
+
+/* მართვის ღილაკები (როგორც „Vehicle Control“) */
+.dc-app .dc-acts { display: flex; justify-content: space-around; margin: 12px 0 0; padding: 18px 10px; background: var(--u-card); border-radius: var(--u-r); }
+.dc-app .dc-act { gap: 8px; color: var(--u-ink); }
+.dc-app .dc-act-c { width: 56px !important; height: 56px !important; border-radius: 50% !important; background: var(--u-blue) !important; color: #fff !important;
+                    box-shadow: none !important; border: 0 !important; }
+.dc-app .dc-act-c.red { background: var(--u-dark) !important; }
+.dc-app .dc-act-c .ic { width: 22px !important; height: 22px !important; }
+.dc-app .dc-act b { font-size: 12px !important; font-weight: 500 !important; color: var(--u-ink) !important; }
+
+/* ღილაკები */
+.dc-app .dc-btn, .dc-sheet .dc-btn, .dc-modal .dc-btn { min-height: 50px; border-radius: 999px; font-weight: 600; box-shadow: none !important; }
+.dc-btn-main { background: var(--u-dark) !important; color: #fff !important; }
+.dc-btn-soft, .dc-btn-ghost { background: var(--u-card) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; }
+.dc-btn-red { background: var(--u-red) !important; color: #fff !important; }
+.dc-app .dc-switch { background: #D9DDE2; }
+.dc-app .dc-switch.on, .dc-sheet .dc-switch.on { background: var(--u-blue) !important; box-shadow: none !important; }
+.dc-app .dc-switch i { box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+
+/* ცოცხალი ხედი */
+.dc-app .dc-live-slot { border-radius: var(--u-r) !important; border: 0 !important; background: #16181B !important; background-image: none !important; box-shadow: none !important; }
+.dc-app .dc-live-pill { background: rgba(255,255,255,.92) !important; color: var(--u-ink) !important; border: 0 !important; font-weight: 600 !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.dc-app .dc-live-full { background: rgba(255,255,255,.92) !important; color: var(--u-ink) !important; border: 0 !important; }
+.dc-app .dc-live-cam { background: rgba(255,255,255,.08) !important; border-color: rgba(255,255,255,.18) !important; box-shadow: none !important; }
+.dc-app .dc-live-cam em { border-color: #16181B !important; }
+.dc-app .dc-live-ph > span { font-weight: 500; color: rgba(255,255,255,.85); }
+.dc-app .dc-live-tags span { background: rgba(255,255,255,.14) !important; border: 0 !important; color: #fff !important; font-weight: 600; }
+.dc-app .dc-live-ph .dc-btn { background: #fff !important; color: var(--u-ink) !important; border: 0 !important; }
+
+/* გალერეა */
+.dc-app .dc-chips button { background: var(--u-card) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; font-weight: 500 !important; box-shadow: none !important; }
+.dc-app .dc-chips button em { color: var(--u-ink-3) !important; }
+.dc-app .dc-chips button.on { background: var(--u-dark) !important; border-color: var(--u-dark) !important; color: #fff !important; }
+.dc-app .dc-chips button.on em { color: rgba(255,255,255,.6) !important; }
+.dc-app .dc-chips button.on.red { background: var(--u-red) !important; border-color: var(--u-red) !important; }
+.dc-app .dc-hint { color: var(--u-ink-2) !important; font-weight: 400 !important; }
+.dc-app .dc-hint .ic { color: var(--u-blue) !important; }
+.dc-app .dc-day b { color: var(--u-ink) !important; font-weight: 600 !important; }
+.dc-app .dc-day span { background: var(--u-card) !important; color: var(--u-ink-2) !important; border: 0 !important; }
+.dc-app .dc-tile { border-radius: 16px !important; border: 0 !important; background: #DDE1E6 !important; }
+.dc-app .dc-tile-ph { background: #DDE1E6 !important; color: var(--u-ink-3) !important; }
+.dc-app .dc-empty { color: var(--u-ink-2) !important; font-weight: 500 !important; }
+.dc-app .dc-empty .ic { color: var(--u-ink-3) !important; }
+.dc-app .dc-spin { border-color: rgba(18,20,23,.12) !important; border-top-color: var(--u-blue) !important; }
+.dc-app .dc-btn-main .dc-spin { border-color: rgba(255,255,255,.3) !important; border-top-color: #fff !important; }
+
+/* პარამეტრები */
+.dc-app .dc-kv span { color: var(--u-ink-2) !important; font-weight: 400 !important; }
+.dc-app .dc-kv b { color: var(--u-ink) !important; font-weight: 600 !important; }
+.dc-app .dc-kv > * { border-color: var(--u-line) !important; }
+.dc-app .dc-opt { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; }
+.dc-app .dc-opt.on { background: var(--u-blue) !important; border-color: var(--u-blue) !important; color: #fff !important; }
+
+/* ქვედა ფანჯრები / მოდალები / შეტყობინება */
+.dc-scrim { background: rgba(18,20,23,.35) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.dc-sheet, .dc-modal-card { background: var(--u-card) !important; border: 0 !important; box-shadow: none !important; color: var(--u-ink) !important; }
+.dc-sheet { border-radius: 28px 28px 0 0 !important; }
+.dc-modal-card { border-radius: 28px !important; }
+.dc-sheet-grip { background: var(--u-line) !important; }
+.dc-sheet-t b, .dc-modal-t { color: var(--u-ink) !important; font-weight: 600 !important; }
+.dc-sheet .dc-wide, .dc-sheet .dc-glass { background: var(--u-soft) !important; border: 0 !important; box-shadow: none !important; }
+.dc-sheet .dc-wide-t b, .dc-sheet b { color: var(--u-ink); }
+.dc-sheet small, .dc-modal-p { color: var(--u-ink-2) !important; }
+.dc-modal-ic { background: var(--u-blue-soft) !important; color: var(--u-blue) !important; box-shadow: none !important; }
+.dc-toast { background: var(--u-dark) !important; color: #fff !important; border: 0 !important; box-shadow: none !important; border-radius: 999px !important; }
+
+/* ქვედა მენიუ - იგივე მცურავი „კაფსულა“ */
+.dc-app .dc-nav { position: fixed; left: 50%; right: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: auto;
+                  background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
+.dc-app .dc-nav-in { display: flex; gap: 8px; padding: 7px; border-radius: 999px; background: rgba(214,218,224,.72) !important;
+                     -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); border: 1px solid rgba(255,255,255,.6); box-shadow: none !important; }
+.dc-app .dc-nav button { width: 54px; height: 54px; padding: 0; flex: none; display: grid; place-items: center; }
+.dc-app .dc-nav b { display: none !important; }
+.dc-app .dc-nav-ic { width: 54px !important; height: 54px !important; border-radius: 50% !important; background: rgba(255,255,255,.55) !important;
+                     border: 1px solid rgba(255,255,255,.7) !important; color: var(--u-ink-2) !important; box-shadow: none !important; display: grid; place-items: center; }
+.dc-app .dc-nav button.on .dc-nav-ic { background: var(--u-blue) !important; border-color: var(--u-blue) !important; color: #fff !important; }
+.dc-app .dc-nav-ic .ic { width: 21px !important; height: 21px !important; }

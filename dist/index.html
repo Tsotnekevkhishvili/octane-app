@@ -17,7 +17,7 @@
         (function () {
             var theme = 'dark', count = 1;
             try {
-                theme = localStorage.getItem('octane_theme') === 'light' ? 'light' : 'dark';
+                theme = 'light';   // ახალი დიზაინი - მხოლოდ ღია
                 count = (parseInt(localStorage.getItem('octane_open_count'), 10) || 0) + 1;
                 localStorage.setItem('octane_open_count', String(count));
             } catch (e) {}
@@ -45,6 +45,7 @@
     <script src="keys.js"></script>
     <script src="articles.js"></script>
     <!-- 📹 ვიდეორეგისტრატორი (დეშ ქემი) - ცალკე ფაილი -->
+    <script src="car.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -1153,6 +1154,8 @@
         }
 
     </style>
+    <link rel="stylesheet" href="ui.css">
+    <link rel="stylesheet" href="ui-dc.css">
 </head>
 <body class="min-h-screen bg-[var(--bg-main)] max-w-md mx-auto relative pb-32">
 <!-- 🎨 ხატულების ნაკრები (გზამკვლევი + „როგორ დავაკავშირო?“ ღილაკი) -->
@@ -1215,6 +1218,30 @@
     <symbol id="i-dc-sd" viewBox="0 0 24 24"><path d="M7 2h8l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M9 6v3M12 6v3M15 6v3"/></symbol>
     <symbol id="i-dc-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L2 10l8-8z"/></symbol>
 </svg>
+
+<!-- 🚗 ჩემი მანქანა - სახელი და ფოტო -->
+<div x-data>
+    <div class="ui-sheet-bg" x-show="$store.car.open" x-cloak x-transition.opacity @click="$store.car.close()"></div>
+    <div class="ui-sheet" x-show="$store.car.open" x-cloak role="dialog" aria-modal="true" aria-label="ჩემი მანქანა">
+        <div class="ui-sheet-grab"></div>
+        <h3>ჩემი მანქანა</h3>
+        <div class="ui-sheet-photo"><img :src="$store.car.draftSrc" alt=""></div>
+        <div class="ui-btns">
+            <label class="ui-btn light" style="cursor:pointer;">
+                <input type="file" accept="image/*" style="display:none;" @change="$store.car.pick($event)">
+                <span x-text="$store.car.busy ? 'მუშავდება…' : 'ფოტოს არჩევა'">ფოტოს არჩევა</span>
+            </label>
+            <button type="button" class="ui-btn light" x-show="$store.car.draftPhoto" @click="$store.car.resetPhoto()">ნაგულისხმევი</button>
+        </div>
+        <label class="ui-label" for="ui-car-name">მანქანის სახელი</label>
+        <input id="ui-car-name" class="ui-input" type="text" maxlength="40" placeholder="მაგ.: Toyota Prius" x-model="$store.car.draftName" @keydown.enter="$store.car.submit()">
+        <p class="ui-err" x-show="$store.car.error" x-text="$store.car.error"></p>
+        <div class="ui-btns">
+            <button type="button" class="ui-btn light" @click="$store.car.close()">გაუქმება</button>
+            <button type="button" class="ui-btn dark" @click="$store.car.submit()">შენახვა</button>
+        </div>
+    </div>
+</div>
 
 <div id="diagnostic-app" x-data="obdApp()">
 
@@ -1757,24 +1784,14 @@
                 </button>
             </div>
 
-            <div class="flex gap-2">
-                <button @click="if(!darkMode) toggleTheme()"
-                        class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all"
-                        :class="darkMode ? 'border-[var(--accent)] bg-[var(--accent-light)]' : 'border-[var(--border)] bg-[var(--bg-elevated)]'">
-                    <span class="w-7 h-7 rounded-full bg-[#0a0b10] border border-white/15"></span>
-                    <span class="text-[10px] font-bold" :class="darkMode ? 'text-[var(--accent-2)]' : 'text-[var(--text-muted)]'">მუქი</span>
-                </button>
-                <button @click="if(darkMode) toggleTheme()"
-                        class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all"
-                        :class="!darkMode ? 'border-[var(--accent)] bg-[var(--accent-light)]' : 'border-[var(--border)] bg-[var(--bg-elevated)]'">
-                    <span class="w-7 h-7 rounded-full bg-white border border-black/10"></span>
-                    <span class="text-[10px] font-bold" :class="!darkMode ? 'text-[var(--accent-2)]' : 'text-[var(--text-muted)]'">ღია</span>
-                </button>
-            </div>
+            <button type="button" class="drawer-item" @click="menuOpen = false; $store.car.openEdit()">
+                <svg class="ic" style="color:var(--u-blue);"><use href="#i-dc-car"/></svg>
+                <span>ჩემი მანქანა</span>
+            </button>
 
             <a href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer"
                onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;" class="drawer-item">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="#ef4444" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--u-blue)" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
                 <span>როგორ დავაკავშირო? (ვიდეო)</span>
             </a>
 
@@ -1785,14 +1802,14 @@
             </button>
 
             <a href="https://octane.ge/privacy.php" target="_blank" class="drawer-item">
-                <span>🔒</span>
+                <svg class="ic" style="color:var(--u-ink-2);"><use href="#i-lock"/></svg>
                 <span>კონფიდენციალურობის პოლიტიკა</span>
             </a>
 
 
             <template x-if="connected">
-                <button @click="disconnectOBD(); menuOpen = false" class="drawer-item text-red-400 border-red-500/20 bg-red-500/10">
-                    <span>🔌</span>
+                <button @click="disconnectOBD(); menuOpen = false" class="drawer-item" style="color:var(--u-red) !important;">
+                    <svg class="ic"><use href="#i-dc-power"/></svg>
                     <span>სისტემის გათიშვა</span>
                 </button>
             </template>
@@ -1800,368 +1817,212 @@
             <div class="drawer-ver" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.1</div>
         </div>
 
-        <!-- 🎛️ TOP BAR - მუდმივად მუქი "ინსტრუმენტების ზოლი" (თემისგან დამოუკიდებელი), რომ ტექსტი/კონტროლები ყოველთვის კარგად ჩანდეს -->
-        <div class="px-4 pt-5 pb-4 flex items-center justify-between gap-2 relative z-10 bg-[var(--bg-nav)] rounded-b-[1.75rem]">
-            <button @click="menuOpen = true" class="icon-btn text-white">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-            </button>
-
-            <div class="text-center flex-1 min-w-0">
-                <h1 class="text-sm font-black tracking-tight leading-tight text-white truncate">Octane App</h1>
-                <span class="text-[8px] font-bold text-white/45 block leading-tight truncate">ქართული დიაგნოსტიკა</span>
+        <!-- ზედა ზოლი: მენიუ · მანქანის სახელი და სტატუსი · მოწყობილობის შეცვლა -->
+        <header class="ui-top">
+            <button type="button" class="ui-circle" @click="menuOpen = true" aria-label="მენიუ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+            <div class="ui-top-t">
+                <b x-text="$store.car.title">ჩემი მანქანა</b>
+                <span :class="connected || loading ? '' : 'off'" x-text="connected ? 'დაკავშირებულია' : (loading ? 'ვუკავშირდები…' : 'სკანერი არ არის დაკავშირებული')"></span>
             </div>
-
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-                <!-- ☀️/🌙 ერთი დაჭერით ნათელი ↔ მუქი ფონი -->
-                <button type="button" @click="toggleTheme()" class="theme-btn" :aria-label="darkMode ? 'ნათელი ფონი' : 'მუქი ფონი'">
-                    <svg class="ic" x-show="!darkMode"><use href="#i-moon"/></svg>
-                    <svg class="ic" x-show="darkMode"><use href="#i-sun"/></svg>
-                </button>
-                <select x-model="connectionType" :disabled="connected" class="wifi-select text-[10px] font-bold px-2 py-1 rounded-lg border border-white/12 outline-none">
-                    <option value="WIFI">Wi-Fi</option>
-                </select>
-
-                <div class="px-2 py-1 rounded-full text-[9px] font-bold flex items-center gap-1"
-                     :class="connected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/8 text-white/55'">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="connected ? 'bg-emerald-400 animate-pulse' : 'bg-white/35'"></span>
-                    <span x-text="connected ? 'ON' : 'OFF'"></span>
-                </div>
-            </div>
-        </div>
+            <button type="button" class="ui-circle" x-show="!window.OCTANE_FLAGS || window.OCTANE_FLAGS.showDashcam !== false" @click="$store.octaneMode.backToChooser()" aria-label="მოწყობილობის შეცვლა"><svg class="ic"><use href="#i-dc-swap"/></svg></button>
+        </header>
     </div>
 
-    <!-- Terminal Status -->
-    <div class="mx-4 mt-2 p-3 rounded-2xl text-[10px] font-bold text-left border bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-main)] flex items-center gap-1.5 relative z-10" x-show="activeTab !== 'ai_mechanic'">
-        <span class="text-[var(--accent-2)] font-black">❯</span> <span x-text="statusMessage"></span>
-    </div>
-
-    <!-- CONNECT VIEW & INSTRUCTIONS - დრამატული ტახომეტრის ფონი -->
-    <div class="px-4 pt-3" x-show="!connected && activeTab !== 'ai_mechanic'">
-        <div class="flex flex-col items-center py-8 relative">
-            <!-- სპიდომეტრის სტილის დეკორატიული დაფა: ნომრიანი ტიკები + გრადიენტული რკალი + მბრუნავი ისარი -->
-            <svg width="230" height="135" viewBox="0 0 200 118" class="absolute top-2 opacity-95 pointer-events-none">
-                <defs>
-                    <linearGradient id="gaugeGradConnect" x1="20" y1="60" x2="180" y2="60" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#2f6bff"/>
-                        <stop offset="55%" stop-color="#6ea1ff"/>
-                        <stop offset="100%" stop-color="#ff7a4a"/>
-                    </linearGradient>
-                </defs>
-                <path d="M 30 100 A 70 70 0 0 1 170 100" fill="none" stroke="url(#gaugeGradConnect)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
-                <line x1="22.0" y1="100.0" x2="32.0" y2="100.0" style="stroke: var(--gauge-tick);" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="44.8" y1="44.8" x2="51.9" y2="51.9" style="stroke: var(--gauge-tick);" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="100.0" y1="22.0" x2="100.0" y2="32.0" style="stroke: var(--gauge-tick);" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="155.2" y1="44.8" x2="148.1" y2="51.9" style="stroke: var(--gauge-tick);" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="178.0" y1="100.0" x2="168.0" y2="100.0" style="stroke: var(--gauge-tick);" stroke-width="2.5" stroke-linecap="round"/>
-
-                <!-- მბრუნავი ისარი (CSS keyframe ანიმაცია, სუფთა დეკორაცია) -->
-                <g class="rev-needle-anim" style="transform-box: view-box; transform-origin: 100px 100px;">
-                    <line x1="100" y1="100" x2="100" y2="34" style="stroke: var(--gauge-ink);" stroke-width="3.5" stroke-linecap="round"/>
-                </g>
-                <circle cx="100" cy="100" r="7" style="fill: var(--gauge-ink);"/>
-                <circle cx="100" cy="100" r="3" fill="var(--accent)"/>
-            </svg>
-            <div class="absolute top-4 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full pointer-events-none rev-glow" style="background: radial-gradient(circle, var(--glow), transparent 70%); filter: blur(10px);"></div>
-
-            <button @click="connectOBD()" :disabled="loading"
-                    class="pulse-cta w-32 h-32 rounded-full bg-[var(--accent)] text-white flex flex-col items-center justify-center shadow-2xl transition-all cursor-pointer border-4 border-[var(--accent-light)] relative z-10 mt-9">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="mb-1"><path d="M13 2 3 14h7l-1 8 11-14h-7l0-6z"/></svg>
-                <span class="text-xs font-black uppercase tracking-wider" x-text="loading ? 'ძებნა...' : 'დაკავშირება'"></span>
-            </button>
-            <!-- ▶️ ვიდეო ინსტრუქცია - პირდაპირ YouTube-ზე (ყვითელი „როგორ დავაკავშირო?“ ღილაკის ნაცვლად) -->
-            <a href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer"
-               onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;" class="video-cta relative z-10" style="margin-top:28px;">
-                <span class="video-cta-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>
-                <span style="flex:1; min-width:0;">
-                    <span class="help-cta-title">როგორ დავაკავშირო?</span>
-                    <span class="help-cta-sub">უყურე მოკლე ვიდეოს</span>
-                </span>
-                <svg class="ic"><use href="#i-chev-r"/></svg>
-            </a>
+    <!-- 🏠 მთავარი: მანქანა · სკანერი · მართვა · ხარვეზები -->
+    <div class="ui-page" x-show="activeTab === 'errors'">
+        <div class="ui-hero" @click="$store.car.openEdit()" role="button" aria-label="ჩემი მანქანა">
+            <img :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <svg class="ui-arc" viewBox="0 0 360 46" preserveAspectRatio="none" aria-hidden="true"><path d="M2 2 Q180 66 358 2"/></svg><span class="ui-arc-dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>
+            <span class="ui-hero-edit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
         </div>
 
-    </div>
-
-    <!-- DASHBOARD VIEW -->
-    <div x-show="connected && activeTab !== 'ai_mechanic'" class="px-4 pt-3">
-
-        <!-- ✅ მანქანა დაკავშირებულია - თვალსაჩინო მწვანე ბარათი (მხოლოდ მთავარ გვერდზე) -->
-        <template x-if="connected && !loading && activeTab === 'errors'">
-            <div class="car-ok mb-3" role="status">
-                <div class="car-ok-ic">
-                    <span class="car-ok-ring"></span><span class="car-ok-ring r2"></span>
-                    <svg class="ic" style="width:30px; height:30px; stroke-width:3;"><use href="#i-check"/></svg>
-                </div>
-                <div class="min-w-0">
-                    <div class="car-ok-badge"><span class="car-ok-dot"></span>დაკავშირებულია</div>
-                    <div class="car-ok-title">ავტომობილი ამოცნობილია!</div>
-                    <div class="car-ok-sub">სკანერი შენს მანქანას წარმატებით დაუკავშირდა. ახლა დააჭირე „სკანირებას“.</div>
-                </div>
-            </div>
-        </template>
-
-        <!-- TAB 1: ERRORS -->
-        <div class="space-y-3" x-show="activeTab === 'errors'">
-
-            <div class="main-actions">
-                <button @click="scanWithAnimation()" :disabled="loading || scanAnim.open || clearAnim.open" class="ma-btn ma-scan">
-                    <span x-show="!loading">🔍 სკანირება</span>
-                    <span x-show="loading" class="animate-spin">⏳</span>
+        <!-- სკანერი არ არის დაკავშირებული -->
+        <div class="ui-card" x-show="!connected">
+            <div class="ui-card-t">OBD სკანერი</div>
+            <div class="ui-card-s" x-text="statusMessage"></div>
+            <div class="ui-btns">
+                <button type="button" class="ui-btn dark pulse-cta" @click="connectOBD()" :disabled="loading">
+                    <span x-text="loading ? 'ვეძებ სკანერს…' : 'დაკავშირება'">დაკავშირება</span>
                 </button>
-                <!-- 🔴 შეცდომების წაშლა - როცა ხარვეზები ნაპოვნია, „ფეთქავს“ და რაოდენობას აჩვენებს -->
-                <button @click="showClearConfirmModal = true" :disabled="loading || scanAnim.open || clearAnim.open" class="ma-btn ma-clear" :class="errors.length ? 'hot' : ''">
-                    <span>🔥 შეცდომების წაშლა</span>
-                    <span class="ma-badge" x-show="errors.length" x-text="errors.length"></span>
-                </button>
+                <a class="ui-btn blue" href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;">ინსტრუქცია</a>
             </div>
+        </div>
 
-            <div class="space-y-2.5 mt-3">
-                <!-- 🚗 მარკის არჩევა - ჩანს მხოლოდ მაშინ, როცა ნაპოვნია მწარმოებლის კოდი -->
-                <div x-show="errors.some(e => e.mfr)" class="brand-box">
-                    <div class="brand-box-t">🚗 მწარმოებლის კოდის ზუსტი აღწერისთვის აირჩიე მანქანის მარკა</div>
-                    <select class="brand-select" :value="carBrand" @change="setBrand($event.target.value)" aria-label="მანქანის მარკა">
-                        <option value="">- აირჩიე მარკა -</option>
-                        <option value="toyota">Toyota / Lexus</option>
-                        <option value="hyundai">Hyundai / Kia</option>
-                        <option value="nissan">Nissan / Infiniti</option>
-                        <option value="vag">VW / Audi / Škoda / Seat</option>
-                        <option value="mercedes">Mercedes-Benz</option>
-                        <option value="bmw">BMW / MINI</option>
-                        <option value="ford">Ford</option>
-                        <option value="gm">Chevrolet / GMC / Cadillac</option>
-                        <option value="honda">Honda / Acura</option>
-                        <option value="subaru">Subaru</option>
-                        <option value="mazda">Mazda</option>
-                        <option value="mitsubishi">Mitsubishi</option>
-                        <option value="opel">Opel</option>
-                        <option value="other">სხვა მარკა</option>
-                    </select>
-                </div>
-
-                <template x-for="err in errors">
-                    <div class="p-4 panel space-y-2 border-l-4" style="border-left-color: var(--accent);">
-                        <div class="flex justify-between items-center">
-                            <span class="bg-[var(--accent-light)] text-[var(--accent-2)] px-2 py-0.5 rounded-lg text-[11px] font-black uppercase" x-text="err.code"></span>
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-amber-500/30 text-amber-400 bg-amber-500/10" x-text="err.level"></span>
-                        </div>
-                        <h3 class="text-xs font-black text-[var(--text-main)] leading-snug" x-text="err.title"></h3>
-                        <div class="bg-[var(--bg-elevated)] p-2.5 rounded-xl border border-[var(--border)] space-y-1">
-                            <span class="text-[8px] font-bold text-[var(--accent-2)] uppercase block">განმარტება & სავარაუდო მიზეზი:</span>
-                            <p class="text-[10px] text-[var(--text-muted)] leading-relaxed" x-text="err.desc"></p>
-                        </div>
-                        <p class="text-[9px] font-medium text-amber-400" x-text="err.symptoms"></p>
-
-                        <!-- ℹ️ მწარმოებლის კოდის ახსნა - რომ მომხმარებელმა არ იფიქროს, რომ სკანერი ან აპი ცუდად მუშაობს -->
-                        <div x-show="err.mfr && !err.brandExact" class="mfr-note" x-data="{ why: false }">
-                            <button type="button" class="mfr-note-t mfr-why" @click="why = !why" :aria-expanded="why">
-                                <svg class="ic ic-sm"><use href="#i-info"/></svg><span>მწარმოებლის კოდი - სკანერი სწორად მუშაობს</span>
-                                <em x-text="why ? 'დამალვა' : 'რატომ?'"></em>
-                            </button>
-                            <div x-show="why" x-cloak>
-                                <p>ასეთ კოდებს (<b>P1, P3, B1, C1, U1</b>…) ყველა მარკა თავისებურად განსაზღვრავს, ამიტომ ზუსტ აღწერას მარკის ცოდნის გარეშე ვერცერთი სკანერი ვერ მოგცემს.</p>
-                                <p><b>რა ქნა:</b> ზემოთ აირჩიე მარკა ან დააჭირე „ჰკითხე AI-ს“.</p>
-                            </div>
-                        </div>
-                        <div x-show="err.brandExact" class="mfr-note mfr-note-ok">
-                            <div class="mfr-note-t"><svg class="ic ic-sm"><use href="#i-check"/></svg><span>მწარმოებლის კოდი - აღწერა შენი მარკისთვისაა</span></div>
-                        </div>
-
-                        <button @click="openAiModal(err.code, err.title, err.desc)"
-                                class="w-full mt-1 py-2 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                                style="background: rgba(168,85,247,0.14); color: #c084fc; border: 1px solid rgba(168,85,247,0.3);">
-                            <span>🤖</span>
-                            <span>ჰკითხე AI-ს</span>
-                        </button>
+        <div x-show="connected">
+            <!-- ძრავის მდგომარეობა (როგორც „Battery Information“) -->
+            <div class="ui-card">
+                <div class="ui-card-t">ძრავის მდგომარეობა</div>
+                <div class="ui-card-s" x-text="statusMessage"></div>
+                <div class="ui-meter">
+                    <div class="ui-seg" :class="!hasScanned ? '' : (errors.length ? 'amber' : 'green')">
+                        <template x-for="i in 10" :key="i"><i :class="i <= (hasScanned ? Math.max(1, 10 - errors.length * 2) : 0) ? 'on' : ''"></i></template>
                     </div>
-                </template>
-
-                <div x-show="!hasScanned && errors.length === 0" class="p-6 panel text-center space-y-1">
-                    <span class="text-[var(--accent-2)] text-xl block">🚗</span>
-                    <span class="text-[var(--text-main)] font-bold text-xs block">სკანირება არ არის დაწყებული</span>
-                    <p class="text-[10px] text-[var(--text-muted)]">დააჭირეთ „სკანირების“ ღილაკს ხარვეზების წასაკითხად. გაითვალისწინეთ! რომ ეს არის OBD II სკანერი, რომელმაც შესაძლოა დაუშვას შეცდომები. თვითნებურად გადაწყვეტილების მიღებამდე, ავტომობილი აუცილებლად მიიყვანეთ სპეციალისტთან!</p>
+                    <svg class="ic"><use href="#i-bolt"/></svg>
                 </div>
-
-                <div x-show="hasScanned && errors.length === 0" class="p-5 panel text-center space-y-1">
-                    <span class="text-emerald-400 font-black text-xs block">✓ ხარვეზები არ არის!</span>
-                    <p class="text-[10px] text-[var(--text-muted)]">ძრავის მართვის ბლოკში შეცდომები არ დაფიქსირებულა/ან დიაგნოსტიკის ბლოკი არ არის დაკავშირებული.</p>
+                <div class="ui-figs">
+                    <div>
+                        <div class="ui-big" x-text="hasScanned ? errors.length : '—'">—</div>
+                        <div class="ui-big-s" x-text="hasScanned ? (errors.length ? 'ნაპოვნი ხარვეზი' : 'ხარვეზები არ არის') : 'სკანირება ჯერ არ ჩატარებულა'"></div>
+                    </div>
+                    <div class="ui-accent" x-show="voltage > 0" x-text="voltage + ' V'"></div>
                 </div>
             </div>
 
-            <!-- 🧊 Freeze Frame -->
-            <div class="mt-3">
-                <button @click="fetchFreezeFrame()" class="w-full panel hover:bg-[var(--accent-light)] text-[var(--text-main)] py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-1.5">
-                    🧊 Freeze Frame - რა ხდებოდა ჩეკის ანთებისას
+            <!-- მართვა (როგორც „Vehicle Control“) -->
+            <div class="ui-card">
+                <div class="ui-card-t">მართვა</div>
+                <div class="ui-ctrls">
+                    <button type="button" class="ui-ctrl blue ma-scan" @click="scanWithAnimation()" :disabled="loading || scanAnim.open || clearAnim.open">
+                        <span class="ui-ctrl-c"><svg class="ic"><use href="#i-search"/></svg></span><b>სკანირება</b>
+                    </button>
+                    <button type="button" class="ui-ctrl" @click="activeTab = 'live'">
+                        <span class="ui-ctrl-c"><svg class="ic"><use href="#i-gauge"/></svg></span><b>Live</b>
+                    </button>
+                    <button type="button" class="ui-ctrl" @click="activeTab = 'battery'">
+                        <span class="ui-ctrl-c"><svg class="ic"><use href="#i-dc-battery"/></svg></span><b>ძაბვა</b>
+                    </button>
+                    <button type="button" class="ui-ctrl dark" @click="showClearConfirmModal = true" :disabled="loading || scanAnim.open || clearAnim.open">
+                        <span class="ui-ctrl-c"><svg class="ic"><use href="#i-trash"/></svg></span><b>წაშლა</b>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 🚗 მარკა - მხოლოდ მწარმოებლის კოდის შემთხვევაში -->
+            <div x-show="errors.some(e => e.mfr)" class="brand-box" style="margin-top:12px;">
+                <div class="brand-box-t">მწარმოებლის კოდის ზუსტი აღწერისთვის აირჩიე მარკა</div>
+                <select class="brand-select" :value="carBrand" @change="setBrand($event.target.value)" aria-label="მანქანის მარკა">
+                    <option value="">აირჩიე მარკა</option>
+                    <template x-for="(name, key) in brandNames" :key="key">
+                        <option :value="key" :selected="key === carBrand" x-text="name"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- ხარვეზები -->
+            <div class="ui-sec" x-show="errors.length">ხარვეზები</div>
+            <template x-for="err in errors">
+                <div class="ui-card">
+                    <div class="ui-card-h" style="align-items:center;">
+                        <span class="ui-chip" x-text="err.code"></span>
+                        <span class="ui-chip" :class="/კრიტ/.test(err.level || '') ? 'red' : 'amber'" x-text="err.level"></span>
+                    </div>
+                    <div class="ui-card-t" style="margin-top:12px;" x-text="err.title"></div>
+                    <p class="ui-card-s" x-text="err.desc"></p>
+                    <p class="ui-card-s" style="color:var(--u-ink-3);" x-show="err.symptoms" x-text="(err.symptoms || '').replace(/^\W*სიმპტომები:\s*/, 'სიმპტომები: ')"></p>
+
+                    <div x-show="err.mfr && !err.brandExact" class="mfr-note" x-data="{ why: false }" style="margin-top:12px;">
+                        <button type="button" class="mfr-note-t mfr-why" @click="why = !why" :aria-expanded="why">
+                            <svg class="ic ic-sm"><use href="#i-info"/></svg><span>მწარმოებლის კოდი - სკანერი სწორად მუშაობს</span>
+                            <em x-text="why ? 'დამალვა' : 'რატომ?'"></em>
+                        </button>
+                        <div x-show="why" x-cloak>
+                            <p>ასეთ კოდებს (<b>P1, P3, B1, C1, U1</b>…) ყველა მარკა თავისებურად განსაზღვრავს, ამიტომ ზუსტ აღწერას მარკის ცოდნის გარეშე ვერცერთი სკანერი ვერ მოგცემს.</p>
+                            <p><b>რა ქნა:</b> ზემოთ აირჩიე მარკა ან დააჭირე „ჰკითხე AI-ს“.</p>
+                        </div>
+                    </div>
+                    <div x-show="err.brandExact" class="mfr-note mfr-note-ok" style="margin-top:12px;">
+                        <div class="mfr-note-t"><svg class="ic ic-sm"><use href="#i-check"/></svg><span>მწარმოებლის კოდი - აღწერა შენი მარკისთვისაა</span></div>
+                    </div>
+
+                    <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="openAiModal(err.code, err.title, err.desc)">
+                        <svg class="ic"><use href="#i-sparkle"/></svg><span>ჰკითხე AI-ს</span>
+                    </button>
+                </div>
+            </template>
+
+            <div class="ui-card" x-show="hasScanned && errors.length === 0">
+                <div class="ui-card-t" style="color:var(--u-green);">ხარვეზები არ არის</div>
+                <div class="ui-card-s">ძრავის მართვის ბლოკში შეცდომები არ დაფიქსირებულა.</div>
+            </div>
+            <p class="ui-note" x-show="!hasScanned">OBD II სკანერი შეიძლება ცდებოდეს. მნიშვნელოვანი გადაწყვეტილების წინ მანქანა სპეციალისტს აჩვენე.</p>
+
+            <!-- Freeze Frame -->
+            <div class="ui-card">
+                <button type="button" class="ui-link" @click="fetchFreezeFrame()">
+                    <svg class="ic ui-ic-blue"><use href="#i-clock"/></svg>
+                    <span class="ui-card-t">Freeze Frame</span>
+                    <svg class="ic"><use href="#i-chev-r"/></svg>
                 </button>
                 <template x-if="freezeFrame">
-                    <div class="mt-2 p-3 panel grid grid-cols-3 gap-2 text-center">
-                        <div>
-                            <span class="text-[8px] font-bold text-[var(--text-muted)] block">RPM</span>
-                            <span class="text-xs font-black text-[var(--accent-2)] font-mono" x-text="freezeFrame.rpm !== undefined ? freezeFrame.rpm : '--'"></span>
-                        </div>
-                        <div>
-                            <span class="text-[8px] font-bold text-[var(--text-muted)] block">სიჩქარე</span>
-                            <span class="text-xs font-black text-[var(--accent-2)] font-mono" x-text="freezeFrame.speed !== undefined ? freezeFrame.speed + ' კმ/სთ' : '--'"></span>
-                        </div>
-                        <div>
-                            <span class="text-[8px] font-bold text-[var(--text-muted)] block">ტემპერატურა</span>
-                            <span class="text-xs font-black text-[var(--accent-2)] font-mono" x-text="freezeFrame.coolant !== undefined ? freezeFrame.coolant + '°C' : '--'"></span>
-                        </div>
+                    <div style="margin-top:14px;">
+                        <div class="ui-row"><span class="ui-row-l">RPM</span><span class="ui-row-v" x-text="freezeFrame.rpm !== undefined ? freezeFrame.rpm : '—'"></span></div>
+                        <div class="ui-row"><span class="ui-row-l">სიჩქარე</span><span class="ui-row-v" x-text="freezeFrame.speed !== undefined ? freezeFrame.speed + ' კმ/სთ' : '—'"></span></div>
+                        <div class="ui-row"><span class="ui-row-l">ტემპერატურა</span><span class="ui-row-v" x-text="freezeFrame.coolant !== undefined ? freezeFrame.coolant + '°C' : '—'"></span></div>
                     </div>
                 </template>
             </div>
 
-            <!-- 🔴 სისტემის გათიშვის ღილაკი -->
-            <div class="pt-3 mt-4 border-t border-[var(--border)]">
-                <button @click="disconnectOBD()"
-                        class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 active:scale-95 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>🔌 კავშირის გათიშვა</span>
-                </button>
-            </div>
+            <button type="button" class="ui-btn light wide" style="margin-top:12px; color:var(--u-red);" @click="disconnectOBD()">კავშირის გათიშვა</button>
         </div>
+    </div>
+
+    <!-- DASHBOARD VIEW (Live / ძაბვა / წაშლა) -->
+    <div x-show="connected && activeTab !== 'ai_mechanic' && activeTab !== 'errors'" class="ui-page">
 
         <!-- TAB 2: LIVE DATA -->
-        <div class="space-y-4" x-show="activeTab === 'live'">
-            <div class="flex justify-between items-center panel p-2.5">
-                <span class="text-[11px] font-bold text-[var(--text-main)]">Live RPM მონიტორინგი</span>
-                <button @click="toggleLiveStream()" class="px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all" :class="liveStreaming ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-600 text-white'" x-text="liveStreaming ? 'STOP ⏹' : 'START ⚡'"></button>
-            </div>
-
-            <!-- 🎛️ სპიდომეტრის სტილის RPM გეიჯი - ნომრიანი ტიკები + გრადიენტი + რეალურ მონაცემზე მბრუნავი ისარი -->
-            <div class="rounded-[1.75rem] p-5 flex flex-col items-center relative overflow-hidden" style="background: var(--bg-nav);">
-                <svg width="240" height="140" viewBox="0 0 200 118">
-                    <defs>
-                        <linearGradient id="gaugeGradRpm" x1="20" y1="60" x2="180" y2="60" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="#2f6bff"/>
-                            <stop offset="55%" stop-color="#6ea1ff"/>
-                            <stop offset="100%" stop-color="#ff5a4a"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M 30 100 A 70 70 0 0 1 170 100" fill="none" stroke="url(#gaugeGradRpm)" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
-                    <line x1="22.0" y1="100.0" x2="32.0" y2="100.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="8" y="103" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">0</text>
-                    <line x1="44.8" y1="44.8" x2="51.9" y2="51.9" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="35" y="38" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">2</text>
-                    <line x1="100.0" y1="22.0" x2="100.0" y2="32.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="100" y="12" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">4</text>
-                    <line x1="155.2" y1="44.8" x2="148.1" y2="51.9" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="165" y="38" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">6</text>
-                    <line x1="178.0" y1="100.0" x2="168.0" y2="100.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="192" y="103" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">8</text>
-
-                    <g :transform="'rotate(' + (((Math.min((liveData.rpm||0)/8000,1))-0.5)*180) + ' 100 100)'" style="transition: transform 0.3s ease-out;">
-                        <line x1="100" y1="100" x2="100" y2="34" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
-                    </g>
-                    <circle cx="100" cy="100" r="7" fill="#ffffff"/>
-                    <circle cx="100" cy="100" r="3" fill="var(--accent)"/>
-                </svg>
-                <div class="mt-1 flex flex-col items-center">
-                    <span class="text-3xl font-black text-white font-mono" x-text="liveData.rpm !== null ? liveData.rpm : '0'"></span>
-                    <span class="text-[9px] font-bold text-white/40 uppercase tracking-wider">ძრავის ბრუნი (RPM)</span>
-                    <span class="text-[8px] font-bold text-white/25">BRUN/MIN</span>
-                </div>
-
-                <!-- 📈 LIVE RPM SVG CHART -->
-                <div class="bg-white/5 p-3 rounded-2xl border border-white/10 mt-5 w-full">
-                    <div class="flex justify-between text-[8px] font-bold text-white/40 mb-1">
-                        <span>8000 RPM</span>
-                        <span class="text-[var(--accent-2)]">LIVE CHART</span>
-                        <span>0 RPM</span>
+        <div x-show="activeTab === 'live'">
+            <div class="ui-card">
+                <div class="ui-card-h">
+                    <div>
+                        <div class="ui-card-t">ძრავის ბრუნი</div>
+                        <div class="ui-card-s">რეალურ დროში</div>
                     </div>
-
-                    <div class="h-24 w-full relative flex items-end overflow-hidden rounded-xl bg-black/30 p-2 border border-white/10">
-                        <svg class="w-full h-full overflow-visible" viewBox="0 0 100 50" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="rpmGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#6ea1ff" stop-opacity="0.6" />
-                                    <stop offset="100%" stop-color="#6ea1ff" stop-opacity="0.0" />
-                                </linearGradient>
-                            </defs>
-                            <polygon :points="getChartPolygonPoints()" fill="url(#rpmGrad)" />
-                            <polyline :points="getChartPolylinePoints()" fill="none" stroke="#6ea1ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                    <button type="button" class="ui-btn" :class="liveStreaming ? 'red' : 'blue'" style="flex:none; height:38px; padding:0 18px; font-size:13.5px;" @click="toggleLiveStream()" x-text="liveStreaming ? 'გაჩერება' : 'დაწყება'">დაწყება</button>
+                </div>
+                <div class="ui-meter">
+                    <div class="ui-seg">
+                        <template x-for="i in 16" :key="i"><i :class="i <= Math.round(Math.min((liveData.rpm || 0) / 8000, 1) * 16) ? 'on' : ''"></i></template>
                     </div>
                 </div>
+                <div class="ui-figs">
+                    <div>
+                        <div class="ui-big" x-text="liveData.rpm !== null ? liveData.rpm : '0'">0</div>
+                        <div class="ui-big-s">ბრ/წთ</div>
+                    </div>
+                    <div class="ui-accent" x-show="liveData.speed !== null" x-text="liveData.speed + ' კმ/სთ'"></div>
+                </div>
+                <div class="ui-chart">
+                    <svg viewBox="0 0 100 50" preserveAspectRatio="none">
+                        <polygon :points="getChartPolygonPoints()"/>
+                        <polyline :points="getChartPolylinePoints()" vector-effect="non-scaling-stroke"/>
+                    </svg>
+                </div>
             </div>
 
-            <!-- 📟 დამატებითი Live PID-ები -->
-            <div class="grid grid-cols-2 gap-2.5">
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">🚗</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">სიჩქარე</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.speed !== null ? liveData.speed + ' კმ/სთ' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">🌡️</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">ანტიფრიზი</span>
-                    <span class="text-lg font-black font-mono" :class="liveData.coolant !== null && liveData.coolant > 105 ? 'text-red-400' : 'text-[var(--accent-2)]'" x-text="liveData.coolant !== null ? liveData.coolant + '°C' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">🎚️</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">დროსელი</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.throttle !== null ? liveData.throttle + '%' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">📊</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">ძრავის დატვირთვა</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.engineLoad !== null ? liveData.engineLoad + '%' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">🌬️</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">ჰაერის ტემპ.</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.intakeTemp !== null ? liveData.intakeTemp + '°C' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">⏱️</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">მუშაობის დრო</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.runtime !== null ? liveData.runtime + ' წმ' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">🛢️</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">საწვავის დონე</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.fuelLevel !== null ? liveData.fuelLevel + '%' : '--'"></span>
-                </div>
-                <div class="info-box text-center">
-                    <div class="info-icon mx-auto">💨</div>
-                    <span class="text-[9px] font-bold text-[var(--text-muted)] block">ჰაერმზომი</span>
-                    <span class="text-lg font-black text-[var(--accent-2)] font-mono" x-text="liveData.maf !== null ? liveData.maf + ' გ/წმ' : '--'"></span>
-                </div>
+            <div class="ui-tiles">
+                <div class="ui-tile"><small>ანტიფრიზი</small><b :class="liveData.coolant !== null && liveData.coolant > 105 ? 'hot' : ''" x-text="liveData.coolant !== null ? liveData.coolant + '°C' : '—'"></b></div>
+                <div class="ui-tile"><small>დროსელი</small><b x-text="liveData.throttle !== null ? liveData.throttle + '%' : '—'"></b></div>
+                <div class="ui-tile"><small>დატვირთვა</small><b x-text="liveData.engineLoad !== null ? liveData.engineLoad + '%' : '—'"></b></div>
+                <div class="ui-tile"><small>ჰაერის ტემპ.</small><b x-text="liveData.intakeTemp !== null ? liveData.intakeTemp + '°C' : '—'"></b></div>
+                <div class="ui-tile"><small>მუშაობის დრო</small><b x-text="liveData.runtime !== null ? liveData.runtime + ' წმ' : '—'"></b></div>
+                <div class="ui-tile"><small>საწვავი</small><b x-text="liveData.fuelLevel !== null ? liveData.fuelLevel + '%' : '—'"></b></div>
+                <div class="ui-tile"><small>ჰაერმზომი</small><b x-text="liveData.maf !== null ? liveData.maf + ' გ/წმ' : '—'"></b></div>
+                <div class="ui-tile"><small>სიჩქარე</small><b x-text="liveData.speed !== null ? liveData.speed + ' კმ/სთ' : '—'"></b></div>
             </div>
-            <p class="text-[9px] text-[var(--text-muted)] text-center px-2">დამატებითი მაჩვენებლები ნელა ახლდება - ეს ნორმალურია. თუ რომელიმე --ს აჩვენებს, თქვენს მანქანას ეს კონკრეტული სენსორი შესაძლოა არ გააჩნდეს.</p>
+            <p class="ui-note">„—“ ნიშნავს, რომ ამ მანქანას ეს სენსორი არ აქვს ან ჯერ არ განახლებულა.</p>
         </div>
 
         <!-- TAB 3: BATTERY -->
         <div class="space-y-3" x-show="activeTab === 'battery'">
-            <div class="rounded-[1.75rem] p-5 flex flex-col items-center relative" style="background: var(--bg-nav);">
-                <span class="text-[9px] font-bold text-white/40 uppercase block">ბორტ-ძაბვა (ECU)</span>
-                <svg width="240" height="140" viewBox="0 0 200 118" class="mt-1">
-                    <defs>
-                        <linearGradient id="gaugeGradBattery" x1="20" y1="60" x2="180" y2="60" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="#ef4444"/>
-                            <stop offset="45%" stop-color="#fbbf24"/>
-                            <stop offset="100%" stop-color="#34d399"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M 30 100 A 70 70 0 0 1 170 100" fill="none" stroke="url(#gaugeGradBattery)" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
-                    <line x1="22.0" y1="100.0" x2="32.0" y2="100.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="8" y="103" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">0</text>
-                    <line x1="44.8" y1="44.8" x2="51.9" y2="51.9" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="35" y="38" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">4</text>
-                    <line x1="100.0" y1="22.0" x2="100.0" y2="32.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="100" y="12" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">8</text>
-                    <line x1="155.2" y1="44.8" x2="148.1" y2="51.9" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="165" y="38" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">12</text>
-                    <line x1="178.0" y1="100.0" x2="168.0" y2="100.0" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="192" y="103" font-size="9" fill="rgba(255,255,255,0.55)" text-anchor="middle" font-weight="700">16</text>
-
-                    <g :transform="'rotate(' + (((Math.min((voltage||0)/16,1))-0.5)*180) + ' 100 100)'" style="transition: transform 0.3s ease-out;">
-                        <line x1="100" y1="100" x2="100" y2="34" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
-                    </g>
-                    <circle cx="100" cy="100" r="7" fill="#ffffff"/>
-                    <circle cx="100" cy="100" r="3" fill="#fbbf24"/>
-                </svg>
-                <span class="text-3xl font-black text-amber-400 block mt-1" x-text="voltage > 0 ? voltage + ' V' : '--'"></span>
+            <div class="ui-card">
+                <div class="ui-card-t">აკუმულატორი</div>
+                <div class="ui-card-s">ბორტ-ძაბვა</div>
+                <div class="ui-meter">
+                    <div class="ui-seg" :class="voltage > 0 ? (voltage < 12.2 || voltage > 14.8 ? 'red' : (voltage < 12.6 ? 'amber' : '')) : ''">
+                        <template x-for="i in 10" :key="i"><i :class="i <= Math.round(Math.min(Math.max(((voltage || 0) - 10) / 5, 0), 1) * 10) ? 'on' : ''"></i></template>
+                    </div>
+                    <svg class="ic"><use href="#i-bolt"/></svg>
+                </div>
+                <div class="ui-figs">
+                    <div>
+                        <div class="ui-big" x-text="voltage > 0 ? voltage + ' V' : '—'">—</div>
+                        <div class="ui-big-s" x-text="voltage > 0 ? 'ბოლო გაზომვა' : 'ჯერ არ გაზომილა'"></div>
+                    </div>
+                    <div class="ui-accent" :class="voltage < 12.2 || voltage > 14.8 ? 'red' : (voltage < 12.6 ? 'amber' : '')" x-show="voltage > 0"
+                         x-text="voltage < 12.2 ? 'დაბალი' : (voltage > 14.8 ? 'მაღალი' : (voltage < 12.6 ? 'საშუალო' : 'ნორმა'))"></div>
+                </div>
+                <button type="button" class="ui-btn dark wide" style="margin-top:16px;" @click="testBattery()">ძაბვის გაზომვა</button>
             </div>
-            <button @click="testBattery()" class="w-full bg-[var(--accent)] text-white py-3.5 rounded-2xl text-[11px] font-bold uppercase shadow-md active:scale-95 transition-all">🔎 ძაბვის გაზომვა</button>
 
             <!-- 🔋 ძაბვის ნორმები - ფერადი შკალით; გაზომვის შემდეგ შესაბამისი სტრიქონი ინიშნება -->
             <div class="vn-card">
@@ -2193,80 +2054,45 @@
         </div>
 
         <!-- TAB 4: CLEAR - Check Engine-ის ჩაქრობა -->
-        <div class="space-y-3" x-show="activeTab === 'clear'">
-            <div class="clr-hero">
-                <div class="clr-engine">
-                    <span class="clr-glow"></span>
-                    <svg class="ic" style="width:44px; height:44px; stroke-width:1.8;"><use href="#i-engine"/></svg>
+        <div x-show="activeTab === 'clear'">
+            <div class="ui-card">
+                <div class="ui-card-t">Check Engine-ის ჩაქრობა</div>
+                <div class="ui-card-s">წაიშლება შენახული ხარვეზები და Freeze Frame, ნათურა ჩაქრება.</div>
+                <div style="margin-top:14px;">
+                    <div class="ui-row"><span class="ui-row-l">შენახული ხარვეზები</span><span class="ui-row-v" x-text="hasScanned ? errors.length : '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">აალება</span><span class="ui-row-v blue">ჩართული</span></div>
+                    <div class="ui-row"><span class="ui-row-l">ძრავა</span><span class="ui-row-v blue">ჩამქრალი</span></div>
                 </div>
-                <h3 class="clr-title">Check Engine-ის ჩაქრობა</h3>
-                <p class="clr-sub">ერთი დაჭერით წაშლი ძრავის კომპიუტერში შენახულ ხარვეზებს და ჩააქრობ ნათურას.</p>
+                <button type="button" class="ui-btn dark wide" style="margin-top:18px;" @click="showClearConfirmModal = true" :disabled="loading || clearAnim.open">ჩეკის ჩაქრობა</button>
             </div>
-
-            <div class="clr-list">
-                <div class="clr-row"><span class="clr-ri"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><span>ჩაქრება Check Engine-ის ნათურა</span></div>
-                <div class="clr-row"><span class="clr-ri"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><span>წაიშლება ხარვეზების კოდები და Freeze Frame</span></div>
-                <div class="clr-row"><span class="clr-ri tip"><svg class="ic ic-sm"><use href="#i-key"/></svg></span><span><b>რჩევა:</b> აალება ჩართე, ძრავა ჩააქრე - ასე წაშლა უფრო საიმედოა</span></div>
-            </div>
-
-            <div class="clr-warn">
-                <svg class="ic"><use href="#i-alert"/></svg>
-                <span>ჩეკის ჩაქრობა <b>პრობლემას არ აგვარებს</b>. თუ მიზეზი არ გამოსწორდა, ჩეკი რამდენიმე მგზავრობაში ისევ აინთება.</span>
-            </div>
-
-            <button @click="showClearConfirmModal = true" :disabled="loading || clearAnim.open" class="clr-btn">
-                <svg class="ic"><use href="#i-trash"/></svg>
-                <span>ჩეკის ჩაქრობა</span>
-            </button>
+            <p class="ui-note">ჩაქრობა პრობლემას არ აგვარებს - თუ მიზეზი არ გამოსწორდა, ჩეკი ისევ აინთება.</p>
         </div>
-
     </div>
 
-    <!-- TAB: AI მექანიკოსი - დამოუკიდებელი, ხელმისაწვდომია დაკავშირებამდეც -->
-    <div class="px-4 pt-5 space-y-3" x-show="activeTab === 'ai_mechanic'">
-        <button type="button" @click="activeTab = 'errors'"
-                class="flex items-center gap-1.5 text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors mb-1">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            <span>უკან დაბრუნება</span>
-        </button>
-
-        <div class="panel p-4 text-center space-y-2" style="border-color: rgba(168,85,247,0.3);">
-            <div class="w-11 h-11 rounded-full flex items-center justify-center mx-auto text-xl" style="background: rgba(168,85,247,0.14); color: #c084fc;">
-                🤖
+    <!-- TAB: AI მექანიკოსი - ხელმისაწვდომია დაკავშირებამდეც -->
+    <div x-show="activeTab === 'ai_mechanic'">
+        <header class="ui-top">
+            <button type="button" class="ui-circle" @click="activeTab = 'errors'" aria-label="უკან"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <div class="ui-top-t"><b>AI მექანიკოსი</b><span>აღწერე პრობლემა</span></div>
+            <span></span>
+        </header>
+        <div class="ui-page">
+            <div class="ui-card">
+                <div class="ui-card-t">რა ხდება მანქანას?</div>
+                <div class="ui-card-s">ხმაური, კანკალი, სუნი ან სხვა - დაწერე თავისუფლად.</div>
+                <textarea x-model="aiMechInput" rows="4" class="ui-input ui-textarea" placeholder="მაგ.: ცივ ძრავაზე ჩართვისას კანკალებს"></textarea>
+                <button type="button" class="ui-btn dark wide" style="margin-top:12px;" @click="askAIMechanic()" :disabled="aiMechLoading || !aiMechInput.trim()">
+                    <span x-show="!aiMechLoading">ჰკითხე AI-ს</span>
+                    <span x-show="aiMechLoading" class="ui-spin"></span>
+                </button>
             </div>
-            <h3 class="text-sm font-black text-[var(--text-main)]">AI მექანიკოსი</h3>
-            <p class="text-[10px] text-[var(--text-muted)] leading-relaxed">
-                აღწერეთ პრობლემა თავისუფალი ტექსტით - ხმაური, კანკალი, სუნი, ან ნებისმიერი სხვა საკითხი. AI შეეცდება დაგეხმაროთ.
-            </p>
-        </div>
-
-        <div class="panel p-4 space-y-3">
-            <textarea x-model="aiMechInput" rows="3" placeholder="აღწერეთ ავტომობილის პრობლემა მაქსიმალურად გასაგებად..."
-                      class="w-full text-xs font-medium py-2.5 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-main)] outline-none resize-none"
-                      style="focus:border-color: rgba(168,85,247,0.5);"></textarea>
-
-            <button @click="askAIMechanic()" :disabled="aiMechLoading || !aiMechInput.trim()"
-                    class="w-full py-3 rounded-xl text-xs font-black uppercase active:scale-95 transition-all"
-                    style="background: rgba(168,85,247,0.9); color: white;">
-                <span x-show="!aiMechLoading">ჰკითხე AI-ს</span>
-                <span x-show="aiMechLoading" class="animate-spin inline-block">⏳</span>
-            </button>
-
             <template x-if="aiMechAnswer && !aiMechLoading">
-                <div class="p-3.5 rounded-xl border" style="background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25);">
-                    <p class="text-[11px] text-[var(--text-main)] leading-relaxed whitespace-pre-line" x-text="aiMechAnswer"></p>
-                </div>
+                <div class="ui-card"><p class="ui-answer" x-text="aiMechAnswer"></p></div>
             </template>
-
             <template x-if="aiMechErrorMsg && !aiMechLoading">
-                <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25">
-                    <p class="text-[11px] text-red-400 leading-relaxed" x-text="aiMechErrorMsg"></p>
-                </div>
+                <div class="ui-card"><p class="ui-answer bad" x-text="aiMechErrorMsg"></p></div>
             </template>
-
-            <p class="text-[9px] text-[var(--text-muted)] text-center pt-1 border-t border-[var(--border)]">
-                📶 საჭიროა მობილური ინტერნეტი (WiFi ამ დროს OBD ადაპტერთანაა დაკავებული)
-            </p>
+            <p class="ui-note">საჭიროა მობილური ინტერნეტი - Wi-Fi ამ დროს სკანერთანაა დაკავებული.</p>
         </div>
     </div>
 
@@ -2308,7 +2134,7 @@
                         </div>
                         <h4 class="lk-r-title" x-text="manualSearchResult.title"></h4>
                         <p class="lk-r-desc" x-text="manualSearchResult.desc"></p>
-                        <p class="lk-r-sym" x-text="manualSearchResult.symptoms"></p>
+                        <p class="lk-r-sym" x-text="(manualSearchResult.symptoms || '').replace(/^\W*სიმპტომები:\s*/, 'სიმპტომები: ')"></p>
 
                         <div x-show="manualSearchResult.mfr && !manualSearchResult.brandExact" class="mfr-note">
                             <div class="mfr-note-t"><svg class="ic ic-sm"><use href="#i-info"/></svg><span>რატომ არ ჩანს ზუსტი აღწერა?</span></div>
@@ -2324,7 +2150,7 @@
                             <div class="mfr-note-t"><svg class="ic ic-sm"><use href="#i-check"/></svg><span>მწარმოებლის კოდი - აღწერა შენი მარკისთვისაა</span></div>
                         </div>
 
-                        <button @click="openAiModal(manualSearchResult.code, manualSearchResult.title, manualSearchResult.desc)" class="lk-ai">🤖 ჰკითხე AI-ს</button>
+                        <button @click="openAiModal(manualSearchResult.code, manualSearchResult.title, manualSearchResult.desc)" class="lk-ai">ჰკითხე AI-ს</button>
                     </div>
                 </template>
                 <button type="button" class="lk-clear" @click="manualSearchResult = null; manualCodeInput = ''">გასუფთავება</button>
@@ -2343,12 +2169,12 @@
             <div @click.away="closeAiModal()"
                  class="panel w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl relative flex flex-col box-border">
 
-                <div class="p-4 border-b border-[var(--border)] flex items-center justify-between gap-2 flex-shrink-0" style="background: rgba(168,85,247,0.1);">
+                <div class="p-4 border-b border-[var(--border)] flex items-center justify-between gap-2 flex-shrink-0">
                     <div>
-                        <span class="text-[9px] font-black uppercase" style="color:#c084fc;" x-text="aiActiveCode"></span>
-                        <h3 class="text-xs font-black text-[var(--text-main)] leading-snug mt-0.5" x-text="aiActiveTitle"></h3>
+                        <span class="ui-chip" x-text="aiActiveCode"></span>
+                        <h3 class="ui-card-t" style="margin-top:8px; font-size:15px;" x-text="aiActiveTitle"></h3>
                     </div>
-                    <button @click="closeAiModal()" class="w-8 h-8 rounded-full bg-[var(--bg-elevated)] text-[var(--text-main)] flex items-center justify-center text-sm shrink-0">✕</button>
+                    <button @click="closeAiModal()" class="ui-circle" style="width:40px; height:40px; flex-shrink:0;" aria-label="დახურვა"><svg class="ic"><use href="#i-x"/></svg></button>
                 </div>
 
                 <div class="p-4 overflow-y-auto space-y-3 flex-grow">
@@ -2358,33 +2184,33 @@
                         <button @click="askAI('რას ნიშნავს ზუსტად ეს კოდი?')" :disabled="aiLoading"
                                 class="w-full text-left p-3 rounded-xl text-[11px] font-bold transition-all active:scale-95"
                                 :class="aiQuestion === 'რას ნიშნავს ზუსტად ეს კოდი?' ? 'text-white' : 'bg-[var(--bg-elevated)] text-[var(--text-main)] border border-[var(--border)]'"
-                                :style="aiQuestion === 'რას ნიშნავს ზუსტად ეს კოდი?' ? 'background: rgba(168,85,247,0.5);' : ''">
-                            💬 რას ნიშნავს ზუსტად ეს კოდი?
+                                :style="aiQuestion === 'რას ნიშნავს ზუსტად ეს კოდი?' ? 'background: var(--u-blue);' : ''">
+                            რას ნიშნავს ზუსტად ეს კოდი?
                         </button>
                         <button @click="askAI('შემიძლია მაინც ვიმოძრავო ამ ხარვეზით? რამდენად საშიშია?')" :disabled="aiLoading"
                                 class="w-full text-left p-3 rounded-xl text-[11px] font-bold transition-all active:scale-95"
                                 :class="aiQuestion.startsWith('შემიძლია') ? 'text-white' : 'bg-[var(--bg-elevated)] text-[var(--text-main)] border border-[var(--border)]'"
-                                :style="aiQuestion.startsWith('შემიძლია') ? 'background: rgba(168,85,247,0.5);' : ''">
-                            🚗 შემიძლია მაინც ვიმოძრავო ამ ხარვეზით?
+                                :style="aiQuestion.startsWith('შემიძლია') ? 'background: var(--u-blue);' : ''">
+                            შემიძლია მაინც ვიმოძრავო ამ ხარვეზით?
                         </button>
                         <button @click="askAI('როგორ მოვაგვარო ეს პრობლემა? მომეცი ნაბიჯ-ნაბიჯ ახსნა.')" :disabled="aiLoading"
                                 class="w-full text-left p-3 rounded-xl text-[11px] font-bold transition-all active:scale-95"
                                 :class="aiQuestion.startsWith('როგორ') ? 'text-white' : 'bg-[var(--bg-elevated)] text-[var(--text-main)] border border-[var(--border)]'"
-                                :style="aiQuestion.startsWith('როგორ') ? 'background: rgba(168,85,247,0.5);' : ''">
-                            🔧 როგორ მოვაგვარო?
+                                :style="aiQuestion.startsWith('როგორ') ? 'background: var(--u-blue);' : ''">
+                            როგორ მოვაგვარო?
                         </button>
                     </div>
 
                     <!-- Loading -->
                     <div x-show="aiLoading" class="p-4 text-center">
-                        <span class="text-2xl animate-spin inline-block">⏳</span>
+                        <span class="ui-spin dark" style="width:28px; height:28px;"></span>
                         <p class="text-[10px] text-[var(--text-muted)] mt-2">AI პასუხს ამზადებს...</p>
                     </div>
 
                     <!-- პასუხი -->
                     <template x-if="aiAnswer && !aiLoading">
-                        <div class="p-3.5 rounded-xl border" style="background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25);">
-                            <p class="text-[11px] text-[var(--text-main)] leading-relaxed whitespace-pre-line" x-text="aiAnswer"></p>
+                        <div class="p-3.5 rounded-xl" style="background: var(--u-soft);">
+                            <p class="ui-answer" x-text="aiAnswer"></p>
                         </div>
                     </template>
 
@@ -2397,7 +2223,7 @@
 
                     <!-- მუდმივი შეხსენება -->
                     <p class="text-[9px] text-[var(--text-muted)] text-center pt-1 border-t border-[var(--border)]">
-                        📶 ამ ფუნქციის გამოსაყენებლად ტელეფონი დაკავშირებული უნდა იყოს <strong>მობილურ ინტერნეტთან</strong> (WiFi ამ დროს OBD ადაპტერთანაა დაკავებული)
+                        ამ ფუნქციის გამოსაყენებლად ტელეფონი დაკავშირებული უნდა იყოს <strong>მობილურ ინტერნეტთან</strong> (WiFi ამ დროს OBD ადაპტერთანაა დაკავებული)
                     </p>
                 </div>
             </div>
@@ -2414,8 +2240,8 @@
                  class="panel w-full max-w-sm overflow-hidden shadow-2xl relative flex flex-col box-border">
 
                 <div class="p-5 text-center space-y-3">
-                    <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto text-xl">
-                        ⚠️
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style="background:var(--u-amber-soft); color:var(--u-amber);">
+                        <svg class="ic"><use href="#i-alert"/></svg>
                     </div>
                     <h3 class="text-sm font-black text-[var(--text-main)]">დარწმუნებული ხართ?</h3>
                     <p class="text-[11px] text-[var(--text-muted)] leading-relaxed">
@@ -2440,58 +2266,14 @@
     </template>
     </div>
 
-    <!-- 📱 BOTTOM NAVIGATION - მოცურავე, გამოცალკევებული "პილი" (ყოველთვის ჩანს, არააქტიურია დაკავშირებამდე) -->
-    <div class="fixed bottom-4 left-4 right-4 max-w-[368px] mx-auto bottom-nav px-3 py-2.5 z-50 flex justify-around items-center rounded-[2rem]" x-show="activeTab !== 'ai_mechanic'">
-
-        <button type="button" @click="activeTab = 'errors'" :disabled="!connected"
-                class="flex-1 mx-1 py-1 rounded-2xl text-center flex flex-col items-center gap-1 transition-all active:scale-95"
-                :class="!connected ? 'nav-off cursor-not-allowed' : 'cursor-pointer'"
-                :style="!connected ? 'pointer-events:none' : ''">
-            <span class="w-9 h-9 rounded-2xl flex items-center justify-center text-sm transition-all"
-                  :class="connected && activeTab === 'errors' ? 'bg-[var(--accent)] text-white' : 'nav-ic'"
-                  :style="connected && activeTab === 'errors' ? 'box-shadow: 0 0 16px 2px var(--glow);' : ''"><svg class="ic"><use href="#i-alert"/></svg></span>
-            <span class="text-[8px] font-bold" :class="connected && activeTab === 'errors' ? 'nav-lbl-on' : 'nav-lbl'">ხარვეზები</span>
-        </button>
-
-        <button type="button" @click="activeTab = 'live'" :disabled="!connected"
-                class="flex-1 mx-1 py-1 rounded-2xl text-center flex flex-col items-center gap-1 transition-all active:scale-95"
-                :class="!connected ? 'nav-off cursor-not-allowed' : 'cursor-pointer'"
-                :style="!connected ? 'pointer-events:none' : ''">
-            <span class="w-9 h-9 rounded-2xl flex items-center justify-center text-sm transition-all"
-                  :class="connected && activeTab === 'live' ? 'bg-[var(--accent)] text-white' : 'nav-ic'"
-                  :style="connected && activeTab === 'live' ? 'box-shadow: 0 0 16px 2px var(--glow);' : ''"><svg class="ic"><use href="#i-gauge"/></svg></span>
-            <span class="text-[8px] font-bold" :class="connected && activeTab === 'live' ? 'nav-lbl-on' : 'nav-lbl'">Live Data</span>
-        </button>
-
-        <button type="button" @click="activeTab = 'ai_mechanic'"
-                class="flex-1 mx-1 py-1 rounded-2xl text-center flex flex-col items-center gap-1 transition-all active:scale-95 cursor-pointer">
-            <span class="w-9 h-9 rounded-2xl flex items-center justify-center text-sm transition-all"
-                  :class="activeTab === 'ai_mechanic' ? 'text-white' : 'nav-ic'"
-                  :style="activeTab === 'ai_mechanic' ? 'background: rgba(168,85,247,0.9); box-shadow: 0 0 16px 2px rgba(168,85,247,0.5);' : ''"><svg class="ic"><use href="#i-sparkle"/></svg></span>
-            <span class="text-[8px] font-bold" :class="activeTab === 'ai_mechanic' ? 'nav-lbl-on' : 'nav-lbl'">AI მექანიკოსი</span>
-        </button>
-
-        <button type="button" @click="activeTab = 'battery'" :disabled="!connected"
-                class="flex-1 mx-1 py-1 rounded-2xl text-center flex flex-col items-center gap-1 transition-all active:scale-95"
-                :class="!connected ? 'nav-off cursor-not-allowed' : 'cursor-pointer'"
-                :style="!connected ? 'pointer-events:none' : ''">
-            <span class="w-9 h-9 rounded-2xl flex items-center justify-center text-sm transition-all"
-                  :class="connected && activeTab === 'battery' ? 'bg-[var(--accent)] text-white' : 'nav-ic'"
-                  :style="connected && activeTab === 'battery' ? 'box-shadow: 0 0 16px 2px var(--glow);' : ''"><svg class="ic"><use href="#i-dc-battery"/></svg></span>
-            <span class="text-[8px] font-bold" :class="connected && activeTab === 'battery' ? 'nav-lbl-on' : 'nav-lbl'">ძაბვა</span>
-        </button>
-
-        <button type="button" @click="activeTab = 'clear'" :disabled="!connected"
-                class="flex-1 mx-1 py-1 rounded-2xl text-center flex flex-col items-center gap-1 transition-all active:scale-95"
-                :class="!connected ? 'nav-off cursor-not-allowed' : 'cursor-pointer'"
-                :style="!connected ? 'pointer-events:none' : ''">
-            <span class="w-9 h-9 rounded-2xl flex items-center justify-center text-sm transition-all"
-                  :class="connected && activeTab === 'clear' ? 'bg-red-500 text-white' : 'nav-ic'"
-                  :style="connected && activeTab === 'clear' ? 'box-shadow: 0 0 16px 2px rgba(239,68,68,0.5);' : ''"><svg class="ic"><use href="#i-trash"/></svg></span>
-            <span class="text-[8px] font-bold" :class="connected && activeTab === 'clear' ? 'nav-lbl-on' : 'nav-lbl'">წაშლა</span>
-        </button>
-
-    </div>
+    <!-- 📱 ქვედა მენიუ (მცურავი) -->
+    <nav class="ui-nav" x-show="isActivated && $store.octaneMode.screen === 'obd'" x-cloak>
+        <button type="button" :class="activeTab === 'errors' ? 'on' : ''" @click="activeTab = 'errors'" aria-label="მთავარი"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></button>
+        <button type="button" :class="activeTab === 'live' ? 'on' : ''" @click="activeTab = 'live'" :disabled="!connected" aria-label="Live Data"><svg class="ic"><use href="#i-gauge"/></svg></button>
+        <button type="button" :class="activeTab === 'ai_mechanic' ? 'on' : ''" @click="activeTab = 'ai_mechanic'" aria-label="AI მექანიკოსი"><svg class="ic"><use href="#i-sparkle"/></svg></button>
+        <button type="button" :class="activeTab === 'battery' ? 'on' : ''" @click="activeTab = 'battery'" :disabled="!connected" aria-label="ძაბვა"><svg class="ic"><use href="#i-dc-battery"/></svg></button>
+        <button type="button" :class="activeTab === 'clear' ? 'on' : ''" @click="activeTab = 'clear'" :disabled="!connected" aria-label="წაშლა"><svg class="ic"><use href="#i-trash"/></svg></button>
+    </nav>
 
     <!-- ═══════════ 🔀 რეჟიმის არჩევა: OBD სკანერი / ვიდეორეგისტრატორი (ახალი) ═══════════
          ჩნდება აპის ყოველ გახსნაზე. გააქტიურებულ რეჟიმზე კოდს აღარ ითხოვს. -->
@@ -2506,25 +2288,24 @@
             </div>
 
             <!-- ნაბიჯი 1: არჩევანი -->
-            <div x-show="$store.octaneMode.step === 'pick'">
-                <div class="act-hello dc-hello">
-                    <h1>მოგესალმებით!</h1>
-                    <p>აირჩიე, რომელი მოწყობილობა გაქვს</p>
-                </div>
+            <div x-show="$store.octaneMode.step === 'pick'" class="ui-choose">
+                <div class="ui-hero" @click="$store.car.openEdit()" role="button" aria-label="ჩემი მანქანა">
+            <img :src="$store.car.src" :class="$store.car.custom ? 'own' : 'def'" src="img/default-car.webp" alt="">
+            <svg class="ui-arc" viewBox="0 0 360 46" preserveAspectRatio="none" aria-hidden="true"><path d="M2 2 Q180 66 358 2"/></svg><span class="ui-arc-dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>
+            <span class="ui-hero-edit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+        </div>
 
-                <div class="dc-picks">
-                    <button type="button" class="dc-pick dc-pick2 obd" @click="$store.octaneMode.pick('obd')">
-                        <span class="dc-pick-ic"><svg class="ic"><use href="#i-engine"/></svg></span>
-                        <span class="dc-pick-t">OBD სკანერი</span>
-                        <svg class="ic dc-pick-arr"><use href="#i-chev-r"/></svg>
-                    </button>
-
-                    <button type="button" class="dc-pick dc-pick2 cam" @click="$store.octaneMode.pick('dashcam')">
-                        <span class="dc-pick-ic"><svg class="ic"><use href="#i-dc-dashcam"/></svg></span>
-                        <span class="dc-pick-t">ვიდეორეგისტრატორი</span>
-                        <svg class="ic dc-pick-arr"><use href="#i-chev-r"/></svg>
-                    </button>
-                </div>
+                <div class="ui-choose-h"><b x-text="$store.car.title">ჩემი მანქანა</b><span>აირჩიე მოწყობილობა</span></div>
+                <button type="button" class="ui-card ui-pick" @click="$store.octaneMode.pick('obd')">
+                    <span class="ui-pick-ic blue"><svg class="ic"><use href="#i-engine"/></svg></span>
+                    <span class="ui-pick-t"><b>OBD სკანერი</b><small>დიაგნოსტიკა და ხარვეზები</small></span>
+                    <svg class="ic ui-pick-arr"><use href="#i-chev-r"/></svg>
+                </button>
+                <button type="button" class="ui-card ui-pick" @click="$store.octaneMode.pick('dashcam')">
+                    <span class="ui-pick-ic dark"><svg class="ic"><use href="#i-dc-cam"/></svg></span>
+                    <span class="ui-pick-t"><b>ვიდეორეგისტრატორი</b><small>ცოცხალი ხედი და ჩანაწერები</small></span>
+                    <svg class="ic ui-pick-arr"><use href="#i-chev-r"/></svg>
+                </button>
             </div>
 
             <!-- ნაბიჯი 2: ვიდეორეგისტრატორის კოდი (კოდი 2000) -->
@@ -2582,15 +2363,14 @@
             <!-- 🎛️ ზედა ნაწილი: მენიუ, სათაური და სტატუსი, თემა -->
             <header class="dc-top">
                 <button type="button" class="dc-round" @click="dcSheet = 'menu'" aria-label="მენიუ">
-                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg>
+                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
                 <div class="dc-top-t">
                     <b>ვიდეორეგისტრატორი</b>
                     <span :class="dcConnecting ? 'search' : (dcConnected ? 'on' : (dcFailed ? 'fail' : ''))"><i></i><span x-text="dcStatus"></span></span>
                 </div>
-                <button type="button" class="dc-round" @click="toggleTheme()" :aria-label="darkMode ? 'ნათელი ფონი' : 'მუქი ფონი'">
-                    <svg class="ic" x-show="!darkMode"><use href="#i-moon"/></svg>
-                    <svg class="ic" x-show="darkMode"><use href="#i-sun"/></svg>
+                <button type="button" class="dc-round" @click="$store.octaneMode.backToChooser()" aria-label="მოწყობილობის შეცვლა">
+                    <svg class="ic"><use href="#i-dc-swap"/></svg>
                 </button>
             </header>
 

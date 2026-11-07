@@ -15,6 +15,15 @@ public class MainActivity extends BridgeActivity {
             getBridge().getWebView().getSettings().setTextZoom(100);
         }
 
+        // ღია დიზაინი: საათის/ნავიგაციის ზოლი აპის ფონის ფერისაა, ხატულები - მუქი
+        int bg = android.graphics.Color.parseColor("#EDEFF2");
+        getWindow().setStatusBarColor(bg);
+        getWindow().setNavigationBarColor(bg);
+        androidx.core.view.WindowInsetsControllerCompat ic =
+                androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        ic.setAppearanceLightStatusBars(true);
+        ic.setAppearanceLightNavigationBars(true);
+
         // „უკან“ ღილაკი: ჯერ აპი ხურავს ღია ფანჯარას / გვერდს (window.octaneBack, dashcam.js), მერე - აპს
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
