@@ -730,7 +730,7 @@
                     document.addEventListener('fullscreenchange', onFs);
                     document.addEventListener('webkitfullscreenchange', onFs);
                     try {
-                        P.addListener('liveState', function (e) { if (self.dcLiveOn && e && e.state) self.dcLiveState = e.state; });
+                        P.addListener('liveState', function (e) { if (self.dcLiveOn && e && e.state) { self.dcLiveState = e.state; self.dcLiveDetail = e.detail || ''; } });
                         P.addListener('lost', function () {
                             if (!self.dcConnected) return;
                             self.dcLiveStop();
@@ -1274,6 +1274,7 @@
 
             // ─────────── 📺 ცოცხალი ხედი ეკრანზევე (დაჭერის გარეშე) ───────────
             // HiDvr (RTSP): ნატიური ვიდეო „ედება“ .dc-live-slot ბარათს. Novatek (MJPEG): <img> ბარათშივე.
+            dcLiveDetail: '',             // iPhone: VLC-ის დიაგნოსტიკა
             dcLiveState: 'idle',          // idle | loading | playing | error | unavailable
             dcLiveOn: false,
             dcLiveRaf: 0,
