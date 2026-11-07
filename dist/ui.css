@@ -345,3 +345,13 @@ body { padding-bottom: 110px !important; }
 .ui-textbtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 46px; margin-top: 6px;
               font-size: 13.5px; font-weight: 500; color: var(--u-ink-2); text-decoration: none; }
 .ui-textbtn svg { width: 14px; height: 14px; color: var(--u-blue); }
+
+/* მანქანის არჩევა */
+.ui-select { -webkit-appearance: none; appearance: none; padding-right: 40px;
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6670' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+             background-repeat: no-repeat; background-position: right 14px center; background-size: 18px; }
+.ui-input:disabled { opacity: .55; }
+.ui-label small { color: var(--u-ink-3); }
+.ui-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ui-chips button { height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--u-line); background: var(--u-card); color: var(--u-ink); font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.ui-chips button.on { background: var(--u-dark); border-color: var(--u-dark); color: #fff; }

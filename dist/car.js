@@ -1,7 +1,7 @@
-/* ═══════════ 🚗 „ჩემი მანქანა“ - სახელი და ფოტო (სურვილისამებრ) ═══════════
-   ინახება ტელეფონში (localStorage). ფოტო არჩევისას პატარავდება (მაქს. 1280px, JPEG), რომ მეხსიერება არ გაივსოს.
-   ფოტოს გარეშე ჩანს ნაგულისხმევი მანქანა (img/default-car.webp).
-   გამოყენება: $store.car.name, $store.car.src, $store.car.custom, $store.car.openEdit() */
+/* ═══════════ 🚗 „ჩემი მანქანა“ - ბრენდი, მოდელი, ძარის ტიპი, სახელი და ფოტო (ყველაფერი სურვილისამებრ) ═══════════
+   ინახება ტელეფონში (localStorage). ბრენდები/მოდელები: cars-db.js, ძარის ტიპი: car-body.js.
+   ფოტო არჩევისას პატარავდება (მაქს. 1280px, JPEG), რომ მეხსიერება არ გაივსოს.
+   ჩვენება: საკუთარი ფოტო → 3D მოდელი (ძარის ტიპით, თუ ფაილი არსებობს) → ნაგულისხმევი ფოტო. */
 (function () {
     var KEY = 'octane_car';
     var DEFAULT_NAME = 'ჩემი მანქანა';
@@ -14,7 +14,6 @@
         try { localStorage.setItem(KEY, JSON.stringify(o)); return true; } catch (e) { return false; }
     }
 
-    // ფოტოს შემცირება: მაქს. 1280px გრძელ მხარეზე, JPEG 0.85
     function shrink(file) {
         return new Promise(function (resolve, reject) {
             var reader = new FileReader();
@@ -36,30 +35,54 @@
         });
     }
 
+    function cars() { return window.OCTANE_CARS || {}; }
+    function body() { return window.OCTANE_BODY || { types: [], guess: function () { return 'sedan'; }, label: function () { return ''; } }; }
+
     document.addEventListener('alpine:init', function () {
         var saved = load();
         window.Alpine.store('car', {
             name: saved.name || '',
             photo: saved.photo || '',
+            brand: saved.brand || '',
+            model: saved.model || '',
+            body: saved.body || '',
             open: false,
-            // რედაქტირების ფორმის დროებითი მნიშვნელობები
-            draftName: '',
-            draftPhoto: '',
+            draftName: '', draftPhoto: '', draftBrand: '', draftModel: '', draftBody: '', bodyManual: false,
             busy: false,
             error: '',
 
-            get title() { return this.name || DEFAULT_NAME; },
+            get autoName() { return [this.brand, this.model].filter(Boolean).join(' '); },
+            get title() { return this.name || this.autoName || DEFAULT_NAME; },
             get src() { return this.photo || DEFAULT_PHOTO; },
             get custom() { return !!this.photo; },
             get draftSrc() { return this.draftPhoto || DEFAULT_PHOTO; },
+            get draftAutoName() { return [this.draftBrand, this.draftModel].filter(Boolean).join(' '); },
+
+            get brands() { return Object.keys(cars()); },
+            get models() { return cars()[this.draftBrand] || []; },
+            get bodyTypes() { return body().types; },
+            bodyLabel: function (k) { return body().label(k); },
 
             openEdit: function () {
                 this.draftName = this.name;
                 this.draftPhoto = this.photo;
+                this.draftBrand = this.brand;
+                this.draftModel = this.model;
+                this.draftBody = this.body || (this.model ? body().guess(this.brand, this.model) : '');
+                this.bodyManual = !!this.body && this.body !== body().guess(this.brand, this.model);
                 this.error = '';
                 this.open = true;
             },
             close: function () { this.open = false; },
+
+            brandChanged: function () {
+                this.draftModel = '';
+                if (!this.bodyManual) this.draftBody = '';
+            },
+            modelChanged: function () {
+                if (!this.bodyManual && this.draftModel) this.draftBody = body().guess(this.draftBrand, this.draftModel);
+            },
+            pickBody: function (k) { this.draftBody = k; this.bodyManual = true; },
 
             pick: async function (ev) {
                 var f = ev && ev.target && ev.target.files && ev.target.files[0];
@@ -73,17 +96,22 @@
             resetPhoto: function () { this.draftPhoto = ''; },
 
             submit: function () {
-                var name = String(this.draftName || '').trim().slice(0, 40);
-                var o = { name: name, photo: this.draftPhoto || '' };
+                var o = {
+                    name: String(this.draftName || '').trim().slice(0, 40),
+                    brand: String(this.draftBrand || '').trim().slice(0, 40),
+                    model: String(this.draftModel || '').trim().slice(0, 40),
+                    body: this.draftBody || '',
+                    photo: this.draftPhoto || ''
+                };
                 if (!save(o)) {
-                    // ტელეფონის მეხსიერება სავსეა - ფოტოს გარეშე მაინც შევინახოთ სახელი
+                    // ტელეფონის მეხსიერება სავსეა - ფოტოს გარეშე მაინც შევინახოთ დანარჩენი
                     o.photo = '';
                     save(o);
                     this.error = 'ფოტო ვერ შეინახა - ტელეფონის მეხსიერება სავსეა.';
-                    this.name = name; this.photo = '';
+                    Object.assign(this, o);
                     return;
                 }
-                this.name = name; this.photo = o.photo;
+                Object.assign(this, o);
                 this.open = false;
             }
         });

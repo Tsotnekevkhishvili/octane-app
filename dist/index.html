@@ -45,6 +45,8 @@
     <script src="keys.js"></script>
     <script src="articles.js"></script>
     <!-- 📹 ვიდეორეგისტრატორი (დეშ ქემი) - ცალკე ფაილი -->
+    <script src="cars-db.js"></script>
+    <script src="car-body.js"></script>
     <script src="car.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
@@ -1226,15 +1228,39 @@
         <div class="ui-sheet-grab"></div>
         <h3>ჩემი მანქანა</h3>
         <div class="ui-sheet-photo"><img :src="$store.car.draftSrc" alt=""></div>
-        <div class="ui-btns">
+
+        <label class="ui-label" for="ui-car-brand">ბრენდი</label>
+        <select id="ui-car-brand" class="ui-input ui-select" x-model="$store.car.draftBrand" @change="$store.car.brandChanged()">
+            <option value="">აირჩიე ბრენდი</option>
+            <template x-for="b in $store.car.brands" :key="b"><option :value="b" x-text="b" :selected="b === $store.car.draftBrand"></option></template>
+        </select>
+
+        <label class="ui-label" for="ui-car-model">მოდელი</label>
+        <input id="ui-car-model" class="ui-input" type="text" list="ui-car-models" maxlength="40" autocomplete="off"
+               :placeholder="$store.car.draftBrand ? 'აირჩიე ან ჩაწერე მოდელი' : 'ჯერ აირჩიე ბრენდი'" :disabled="!$store.car.draftBrand"
+               x-model="$store.car.draftModel" @change="$store.car.modelChanged()" @input.debounce.400ms="$store.car.modelChanged()">
+        <datalist id="ui-car-models">
+            <template x-for="m in $store.car.models" :key="m"><option :value="m"></option></template>
+        </datalist>
+
+        <label class="ui-label">ძარის ტიპი</label>
+        <div class="ui-chips">
+            <template x-for="t in $store.car.bodyTypes" :key="t.key">
+                <button type="button" :class="$store.car.draftBody === t.key ? 'on' : ''" @click="$store.car.pickBody(t.key)" x-text="t.ka"></button>
+            </template>
+        </div>
+
+        <label class="ui-label" for="ui-car-name">სახელი <small>(სურვილისამებრ)</small></label>
+        <input id="ui-car-name" class="ui-input" type="text" maxlength="40" :placeholder="$store.car.draftAutoName || 'მაგ.: ჩემი Prius'" x-model="$store.car.draftName" @keydown.enter="$store.car.submit()">
+
+        <label class="ui-label">ფოტო <small>(სურვილისამებრ)</small></label>
+        <div class="ui-btns" style="margin-top:0;">
             <label class="ui-btn light" style="cursor:pointer;">
                 <input type="file" accept="image/*" style="display:none;" @change="$store.car.pick($event)">
-                <span x-text="$store.car.busy ? 'მუშავდება…' : 'ფოტოს არჩევა'">ფოტოს არჩევა</span>
+                <span x-text="$store.car.busy ? 'მუშავდება…' : ($store.car.draftPhoto ? 'ფოტოს შეცვლა' : 'ფოტოს არჩევა')">ფოტოს არჩევა</span>
             </label>
-            <button type="button" class="ui-btn light" x-show="$store.car.draftPhoto" @click="$store.car.resetPhoto()">ნაგულისხმევი</button>
+            <button type="button" class="ui-btn light" x-show="$store.car.draftPhoto" @click="$store.car.resetPhoto()">წაშლა</button>
         </div>
-        <label class="ui-label" for="ui-car-name">მანქანის სახელი</label>
-        <input id="ui-car-name" class="ui-input" type="text" maxlength="40" placeholder="მაგ.: Toyota Prius" x-model="$store.car.draftName" @keydown.enter="$store.car.submit()">
         <p class="ui-err" x-show="$store.car.error" x-text="$store.car.error"></p>
         <div class="ui-btns">
             <button type="button" class="ui-btn light" @click="$store.car.close()">გაუქმება</button>
