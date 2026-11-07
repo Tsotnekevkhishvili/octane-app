@@ -362,6 +362,8 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     private var liveShown = true
     private var liveRetries = 0
     private var liveFirstFrame = false
+    private var liveTimer: Timer?
+    private var liveStats = ""
 
     private func readRect(_ call: CAPPluginCall) {
         liveRect = CGRect(x: call.getDouble("x", Double(liveRect.minX)), y: call.getDouble("y", Double(liveRect.minY)),
@@ -390,7 +392,8 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         var st = "-"
         if let p = livePlayer { st = VLCMediaPlayerStateToString(p.state) }
         let err = vlcLog.lastError
-        return "ცდა \(liveRetries + 1)/7 · \(st) · \(vlcLog.last)" + (err.isEmpty ? "" : " ⚠ \(err)")
+        st = st.replacingOccurrences(of: "VLCMediaPlayerState", with: "")
+        return "ცდა \(liveRetries + 1)/7 · \(st) · \(liveStats.isEmpty ? "-" : liveStats)" + (err.isEmpty ? "" : " ⚠ \(err)")
     }
 
     private func createLivePlayer() {
@@ -410,13 +413,40 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         // წინა ნაკადის გაჩერება ფონზე მიდის - ახალს მისი დასრულების შემდეგ ვრთავთ (კამერა ერთ ნაკადს აძლევს);
         // play() -ც ფონზე, რომ ეკრანი არ გაიჭედოს
         OctaneVlc.queue.async { p.play() }
-        // 15 წამში კადრი არ მოვიდა → თავიდან ვცდით
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
-            if self.livePlayer === p && !self.liveFirstFrame { self.liveFailed() }
+        // ყოველ წამს: რამდენი მოვიდა კამერიდან / რამდენი კადრი გამოჩნდა.
+        // VLC ზოგჯერ „Buffering“-ში რჩება და დროის სიგნალს არ გზავნის, თუმცა სურათი უკვე მოდის.
+        liveStats = ""
+        liveTimer?.invalidate()
+        var ticks = 0
+        liveTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] t in
+            guard let self = self, self.livePlayer === p else { t.invalidate(); return }
+            ticks += 1
+            var shown: Int32 = 0
+            if let m = p.media {
+                shown = m.numberOfDisplayedPictures
+                let kb = Int(m.numberOfReadBytesOnInput) / 1024
+                self.liveStats = "\(kb)KB · dec \(m.numberOfDecodedVideoBlocks) · pic \(shown) · lost \(m.numberOfLostPictures) · vout \(p.hasVideoOut ? 1 : 0)"
+            }
+            if !self.liveFirstFrame && (shown > 0 || p.hasVideoOut) {
+                self.markFirstFrame()
+            } else if !self.liveFirstFrame {
+                self.liveState("loading")
+                if ticks >= 20 { t.invalidate(); self.liveFailed() }   // 20 წამი უშედეგოდ → თავიდან
+            }
         }
     }
 
+    private func markFirstFrame() {
+        if liveFirstFrame || livePlayer == nil { return }
+        liveFirstFrame = true
+        liveRetries = 0
+        applyRect()
+        liveState("playing")
+    }
+
     private func releaseLivePlayer() {
+        liveTimer?.invalidate()
+        liveTimer = nil
         if let p = livePlayer { p.delegate = nil; livePlayer = nil; OctaneVlc.stop(p) }
         liveView?.isHidden = true
     }
@@ -439,13 +469,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     }
 
     public func mediaPlayerTimeChanged(_ aNotification: Notification) {
-        DispatchQueue.main.async {
-            if self.liveFirstFrame || self.livePlayer == nil { return }
-            self.liveFirstFrame = true
-            self.liveRetries = 0
-            self.applyRect()
-            self.liveState("playing")
-        }
+        DispatchQueue.main.async { self.markFirstFrame() }
     }
 
     public func mediaPlayerStateChanged(_ aNotification: Notification) {
