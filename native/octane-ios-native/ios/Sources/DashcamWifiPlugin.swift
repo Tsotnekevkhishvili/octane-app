@@ -389,7 +389,8 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     private func liveDetail() -> String {
         var st = "-"
         if let p = livePlayer { st = VLCMediaPlayerStateToString(p.state) }
-        return "ცდა \(liveRetries + 1)/7 · \(st) · \(vlcLog.last)"
+        let err = vlcLog.lastError
+        return "ცდა \(liveRetries + 1)/7 · \(st) · \(vlcLog.last)" + (err.isEmpty ? "" : " ⚠ \(err)")
     }
 
     private func createLivePlayer() {
@@ -399,9 +400,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         v.isHidden = true
         let p = VLCMediaPlayer()
         let m = VLCMedia(url: u)
-        m.addOption(":rtsp-tcp")
-        m.addOption(":rtsp-frame-buffer-size=1000000")   // 1296P-ის დიდი კადრები
-        m.addOption(":network-caching=500")
+        OctaneVlc.liveOptions(m)
         m.addOption(":no-audio")        // ბარათში ხმა არ გვჭირდება
         p.media = m
         p.drawable = v
@@ -548,7 +547,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
                 self.liveState("loading")
             }
         }
-        VLCLibrary.shared().debugLoggingLevel = 2
+        VLCLibrary.shared().debugLoggingLevel = 4
         VLCLibrary.shared().debugLoggingTarget = vlcLog
         VLCLibrary.shared().debugLogging = true
         // აპი ფონზე → ნაკადს ვაჩერებთ, დაბრუნებისას ვაგრძელებთ
@@ -663,9 +662,7 @@ class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
         status.isHidden = false
         retry.isHidden = true
         let m = VLCMedia(url: url)
-        m.addOption(":rtsp-tcp")
-        m.addOption(":rtsp-frame-buffer-size=1000000")
-        m.addOption(":network-caching=500")
+        OctaneVlc.liveOptions(m)
         player.media = m
         player.drawable = videoView
         player.delegate = self
@@ -708,18 +705,41 @@ class OctaneLiveViewController: UIViewController, VLCMediaPlayerDelegate {
 class OctaneVlcLog: NSObject, VLCLibraryLogReceiverProtocol {
     private let lock = NSLock()
     private var _last = ""
+    private var _lastError = ""
+    private var lastFire: TimeInterval = 0
     var onChange: (() -> Void)?
     var last: String { lock.lock(); defer { lock.unlock() }; return _last }
+    var lastError: String { lock.lock(); defer { lock.unlock() }; return _lastError }
     func handleMessage(_ message: String, debugLevel level: Int32) {
         let m = message.count > 90 ? String(message.prefix(90)) : message
-        lock.lock(); _last = m; lock.unlock()
-        onChange?()
+        let low = m.lowercased()
+        let isErr = ["error", "fail", "cannot", "unable", "timeout", "timed out", "refused", "no data", "corrupt", "not supported", "unsupported"].contains { low.contains($0) }
+        let now = Date().timeIntervalSince1970
+        lock.lock()
+        _last = m
+        if isErr { _lastError = m }
+        let fire = now - lastFire > 0.7   // ბევრი შეტყობინებაა - ეკრანს წამში ~1-ჯერ ვაახლებთ
+        if fire { lastFire = now }
+        lock.unlock()
+        if fire { onChange?() }
     }
 }
 
 /// VLC-ის გაჩერება მთავარ ნაკადზე ეკრანს ყინავს (და iOS აპს ხურავს) - ყოველთვის ფონზე, რიგით
 enum OctaneVlc {
     static let queue = DispatchQueue(label: "ge.octane.vlc")
+
+    /// ცოცხალი ნაკადი: TCP, დიდი კადრები, პროგრამული დეკოდერი (iPhone-ის ჩაშენებული კამერის ნაკადზე „Buffering“-ზე იჭედება)
+    static func liveOptions(_ m: VLCMedia) {
+        m.addOption(":rtsp-tcp")
+        m.addOption(":rtsp-frame-buffer-size=1000000")
+        m.addOption(":network-caching=400")
+        m.addOption(":codec=avcodec")
+        m.addOption(":avcodec-hw=none")
+        m.addOption(":avcodec-threads=0")
+        m.addOption(":clock-jitter=0")
+        m.addOption(":clock-synchro=0")
+    }
     static func stop(_ p: VLCMediaPlayer, then: (() -> Void)? = nil) {
         queue.async {
             p.stop()
