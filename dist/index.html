@@ -2147,22 +2147,30 @@
         </div>
 
         <div x-show="connected">
-            <!-- ძრავის მდგომარეობა (როგორც „Battery Information“) -->
+            <!-- ძრავის მდგომარეობა: სწრაფი შემოწმება დაკავშირებისას (quickHealth) + სკანირების შედეგი -->
             <div class="ui-card">
-                <div class="ui-card-t">ძრავის მდგომარეობა</div>
-                <div class="ui-card-s" x-text="statusMessage"></div>
-                <div class="ui-meter">
-                    <div class="ui-seg" :class="!hasScanned ? '' : (errors.length ? 'amber' : 'green')">
-                        <template x-for="i in 10" :key="i"><i :class="i <= (hasScanned ? Math.max(1, 10 - errors.length * 2) : 0) ? 'on' : ''"></i></template>
+                <div class="ui-card-h">
+                    <div style="min-width:0;">
+                        <div class="ui-card-t">ძრავის მდგომარეობა</div>
+                        <div class="ui-card-s" x-text="$store.car.title || 'მანქანა დაკავშირებულია'"></div>
                     </div>
-                    <svg class="ic"><use href="#i-bolt"/></svg>
+                    <span class="ui-chip" :class="engView().tone" x-text="engView().chip"></span>
                 </div>
-                <div class="ui-figs">
-                    <div>
-                        <div class="ui-big" x-text="hasScanned ? errors.length : '—'">—</div>
-                        <div class="ui-big-s" x-text="hasScanned ? (errors.length ? 'ნაპოვნი ხარვეზი' : 'ხარვეზები არ არის') : 'სკანირება ჯერ არ ჩატარებულა'"></div>
+                <div class="ui-eng">
+                    <span class="ui-eng-ic" :class="engView().tone"><svg class="ic"><use :href="engView().tone === 'green' ? '#i-check' : (engView().tone ? '#i-alert' : '#i-engine')"/></svg></span>
+                    <div style="min-width:0;">
+                        <b x-text="engView().title"></b>
+                        <span x-text="engView().text"></span>
                     </div>
-                    <div class="ui-accent" x-show="voltage > 0" x-text="voltage + ' V'"></div>
+                </div>
+                <div class="ui-eng-stats">
+                    <div><small>Check Engine</small><b :class="health.mil ? 'hot' : ''" x-text="health.mil === null ? '—' : (health.mil ? 'ანთია' : 'ჩამქრალი')"></b></div>
+                    <div><small>ძაბვა</small><b x-text="(health.volt || voltage) ? Number(health.volt || voltage).toFixed(1) + ' V' : '—'"></b></div>
+                    <div><small>ანტიფრიზი</small><b x-text="health.temp === null ? '—' : health.temp + '°C'"></b></div>
+                </div>
+                <div class="ui-eng-foot">
+                    <svg class="ic"><use href="#i-clock"/></svg>
+                    <span x-text="hasScanned ? 'სკანირება ახლახან ჩატარდა' : ($store.hist.last ? 'ბოლო სკანირება: ' + $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : 'ჯერ არ დაგისკანერებია - დააჭირე „სკანირებას“')"></span>
                 </div>
             </div>
 
@@ -3864,6 +3872,7 @@ function obdApp() {
             // (წაკითხვის ფუნქცია მთლიანად ამოღებულია - VIN მხოლოდ ხელით შეიყვანება „ჩემი მანქანის“ გვერდზე)
             this.loading = false;
             this.statusMessage = 'სისტემა მზადაა!';
+            this.quickHealth();
         },
 
         // ჯერ ცდილობს ავტომატურ პროტოკოლის ამოცნობას (AT SP0), ხოლო წარუუმატებლობის
@@ -4088,6 +4097,7 @@ function obdApp() {
             this.errors = this.errors.map(e => this.getOfflineFaultDetails(e.code));
             if (this.manualSearchResult && !this.manualSearchResult.invalid) this.searchManualCode();
         },
+        health: { mil: null, count: 0, temp: null, volt: 0, busy: false },
         scanAnim: { open: false, state: 'run', step: -1, progress: 0, items: [] },
         async scanWithAnimation() {
             const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -4250,6 +4260,45 @@ function obdApp() {
                            : (brandName ? 'ეს კოდი ' + brandName + '-ის მწარმოებლის კოდია. ' : '') + 'ზუსტი მიზეზის დასადგენად შეამოწმეთ სერვისში.';
             return { code: code, mfr: !!brandName, brandExact: !!brandName, level: (rel && rel.level) || 'სერვისში მისასვლელი',
                      title: a.title + (brandName ? ' (' + brandName + ')' : ''), desc: desc, symptoms: '', tip: rel ? (rel.tip || '') : '' };
+        },
+        // ძრავის ბარათის ტექსტი: სკანირების შედეგი, ან (სკანირებამდე) სწრაფი შემოწმება
+        engView() {
+            const h = this.health;
+            if (this.hasScanned) {
+                const n = this.errors.length;
+                if (!n) return { tone: 'green', chip: 'გამართულია', title: 'ხარვეზები არ არის', text: 'მანქანის კომპიუტერში შეცდომები არ დაფიქსირდა.' };
+                return { tone: h.mil ? 'red' : 'amber', chip: n + ' ხარვეზი', title: 'ნაპოვნია ' + n + ' ხარვეზი', text: 'იხილე „შეცდომების“ ჩანართში - თითოეულს ახსნა და რჩევა აქვს.' };
+            }
+            if (h.mil === null) return { tone: '', chip: h.busy ? 'მოწმდება…' : 'მზადაა', title: h.busy ? 'მოწმდება…' : 'მზადაა სკანირებისთვის', text: 'სკანირება აჩვენებს ხარვეზებს და მათ ახსნას.' };
+            if (h.mil) return { tone: 'red', chip: 'Check Engine', title: 'Check Engine ანთია', text: (h.count ? 'კომპიუტერი ' + h.count + ' შეცდომას ინახავს. ' : '') + 'დაასკანერე, რომ ნახო რა ხდება.' };
+            if (h.count) return { tone: 'amber', chip: 'ყურადღება', title: h.count + ' შენახული შეცდომა', text: 'Check Engine არ ანთია, მაგრამ კომპიუტერში ჩანაწერია. დაასკანერე.' };
+            return { tone: 'green', chip: 'კარგია', title: 'Check Engine ჩამქრალია', text: 'სწრაფმა შემოწმებამ პრობლემა ვერ აღმოაჩინა. სრული სურათისთვის დაასკანერე.' };
+        },
+        // სწრაფი შემოწმება დაკავშირებისას: 0101 (Check Engine + შეცდომების რაოდენობა), 0105, AT RV.
+        // მხოლოდ კითხულობს; სკანირების ლოგიკას არ ეხება.
+        async quickHealth() {
+            this.health = { mil: null, count: 0, temp: null, volt: 0, busy: true };
+            const pid = async (p) => {
+                const raw = await this.sendELMCommand('01' + p, 3000);
+                if (this.elmTimedOut) await this.elmResync();
+                const c = this.cleanELMResponse(raw, '01' + p);
+                for (const l of c.lines) {
+                    if (this.isErrorResponse(l)) continue;
+                    const hex = l.replace(/\s+/g, '').toUpperCase().replace(/^[0-9A-F]:/, ''), k = hex.indexOf('41' + p);
+                    if (k >= 0) return (hex.substring(k + 4).match(/../g) || []).map(x => parseInt(x, 16));
+                }
+                return null;
+            };
+            try {
+                const a = await pid('01');
+                if (a && a.length) { this.health.mil = !!(a[0] & 0x80); this.health.count = a[0] & 0x7F; }
+                const t = await pid('05');
+                if (t && t.length) this.health.temp = t[0] - 40;
+                const rv = this.cleanELMResponse(await this.sendELMCommand('AT RV', 3000), 'AT RV');
+                const m = (rv.lines.join(' ').match(/(\d+(?:\.\d+)?)\s*V/i) || [])[1];
+                if (m) this.health.volt = parseFloat(m);
+            } catch (e) {}
+            this.health.busy = false;
         },
         getOfflineFaultDetails(code) {
             // 0. მწარმოებლის კოდი + არჩეული მარკა → მარკის ზუსტი აღწერა (codes.js → OBD_BRAND_CODES)
