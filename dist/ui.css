@@ -455,3 +455,5 @@ body { padding-bottom: 110px !important; }
 .ui-hv-bar.weak i span { background: var(--u-red); }
 .ui-hv-bar.weak b { color: var(--u-red); }
 .ui-chip.red { background: var(--u-red-soft); color: var(--u-red); }
+/* სრული ეკრანის გვერდები: ფართო ეკრანზეც ტელეფონის სიგანით (როგორც მთავარი გვერდი) */
+.ui-full > .ui-top, .ui-full > .ui-page { max-width: 480px; margin-left: auto; margin-right: auto; }

@@ -2279,6 +2279,18 @@
                 </div>
             </div>
 
+            <!-- 🔋 ჰიბრიდის / ელექტრომობილის ბატარეა (hybrid.js) - მხოლოდ ჰიბრიდზე/ელექტრომობილზე -->
+            <div class="ui-card" x-show="$store.hv.applies" x-cloak>
+                <div class="ui-card-h" style="align-items:center;">
+                    <div>
+                        <div class="ui-card-t" x-text="$store.hv.kindLabel"></div>
+                        <div class="ui-card-s">ბლოკების ძაბვა და ბალანსი - რომელი სუსტდება.</div>
+                    </div>
+                    <svg class="ic ui-ic-blue" style="width:26px; height:26px;"><use href="#i-dc-battery"/></svg>
+                </div>
+                <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="$store.hv.show()" :disabled="loading || scanAnim.open || clearAnim.open">ბატარეის შემოწმება</button>
+            </div>
+
             <!-- 🔎 შეძენამდე შემოწმება -->
             <div class="ui-card">
                 <div class="ui-card-h" style="align-items:center;">
@@ -2291,17 +2303,6 @@
                 <button type="button" class="ui-btn dark wide" style="margin-top:14px;" @click="$store.pp.start($data)" :disabled="loading || scanAnim.open || clearAnim.open">შეამოწმე შეძენამდე</button>
             </div>
 
-            <!-- 🔋 ჰიბრიდის / ელექტრომობილის ბატარეა (hybrid.js) - მხოლოდ ჰიბრიდზე/ელექტრომობილზე -->
-            <div class="ui-card" x-show="$store.hv.applies" x-cloak>
-                <div class="ui-card-h" style="align-items:center;">
-                    <div>
-                        <div class="ui-card-t" x-text="$store.hv.kindLabel"></div>
-                        <div class="ui-card-s">ბლოკების ძაბვა და ბალანსი - რომელი სუსტდება.</div>
-                    </div>
-                    <svg class="ic ui-ic-blue" style="width:26px; height:26px;"><use href="#i-dc-battery"/></svg>
-                </div>
-                <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="$store.hv.show()" :disabled="loading || scanAnim.open || clearAnim.open">ბატარეის შემოწმება</button>
-            </div>
 
             <!-- 🚗 მარკა - მხოლოდ მწარმოებლის კოდის შემთხვევაში -->
             <div x-show="errors.some(e => e.mfr && !e.brandExact) && !$store.car.brand" class="brand-box" style="margin-top:12px;">
