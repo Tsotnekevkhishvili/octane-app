@@ -29,7 +29,7 @@ import MobileVLCKit
 }
 
 /**
- * Octane App (iPhone) — ვიდეორეგისტრატორის WiFi და ფაილები.
+ * Octane App (iPhone) - ვიდეორეგისტრატორის WiFi და ფაილები.
  * ანდროიდის DashcamWifiPlugin-ის იგივე JS ინტერფეისი (dist/dashcam.js ორივეზე ერთნაირად მუშაობს).
  * ცოცხალი ხედი (RTSP) - MobileVLCKit; ჩანაწერები - AVPlayer (iPhone 1296P-ს თავისით ხსნის).
  */
@@ -76,7 +76,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         if !ssid.isEmpty {
             cfg = password.count >= 8 ? NEHotspotConfiguration(ssid: ssid, passphrase: password, isWEP: false) : NEHotspotConfiguration(ssid: ssid)
         } else if !prefix.isEmpty {
-            // მაგ. „HiDvr_“ → HiDvr_15C628 ... (ზუსტი სახელის ცოდნა არ სჭირდება)
+            // მაგ. HiDvr_ → HiDvr_15C628 ... (ზუსტი სახელის ცოდნა არ სჭირდება)
             cfg = password.count >= 8 ? NEHotspotConfiguration(ssidPrefix: prefix, passphrase: password, isWEP: false) : NEHotspotConfiguration(ssidPrefix: prefix)
         } else {
             call.reject("NO_SSID")
@@ -95,7 +95,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         }
     }
 
-    /// iPhone თავად აგზავნის ლოკალურ (192.168.x) მოთხოვნებს WiFi-ით - „მიბმა“ საჭირო არ არის
+    /// iPhone თავად აგზავნის ლოკალურ (192.168.x) მოთხოვნებს WiFi-ით - მიბმა საჭირო არ არის
     @objc func bindToWifi(_ call: CAPPluginCall) {
         call.resolve(["connected": true])
     }
@@ -283,7 +283,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         if u.isFileURL { OctaneMp4Fix.fixInPlace(u) }
         DispatchQueue.main.async {
             self.stopInline()
-            // ტელეფონში გადმოწერილი - პირდაპირ; კამერაზე მყოფი - „შუამავლით“, რომელიც ცარიელ კადრებს მაშინვე აშორებს
+            // ტელეფონში გადმოწერილი - პირდაპირ; კამერაზე მყოფი - შუამავლით, რომელიც ცარიელ კადრებს მაშინვე აშორებს
             var avPlayer: AVPlayer? = nil
             var camLoader: OctaneCamVideoLoader? = nil
             if u.isFileURL {
@@ -338,7 +338,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         }
     }
 
-    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / „Octane App“ წარწერა (გადმოწერა) ═══════════
+    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / Octane App წარწერა (გადმოწერა) ═══════════
     // { path, overlay (PNG base64, width×height), width, height, fileName, suffix } → { path, size }
     // ვიდეო ჩაიწერება width×height კადრში (პროპორციით, ცენტრში), ზემოდან - აპის დახატული სურათი.
 
@@ -608,7 +608,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
     }
 
     // ═══════════ 📱 ეკრანის ზედა ზოლი (საათი/ბატარეა) ═══════════
-    // iPhone-ზე გვერდი არ უნდა „ხტოდეს“ და შიგთავსი საათის ქვეშ არ უნდა გადიოდეს
+    // iPhone-ზე გვერდი არ უნდა ხტოდეს და შიგთავსი საათის ქვეშ არ უნდა გადიოდეს
     private var topCover: UIView?
 
     private func setupScreen() {
@@ -795,7 +795,7 @@ class OctaneLiveViewController: UIViewController {
 enum OctaneVlc {
     static let queue = DispatchQueue(label: "ge.octane.vlc")
 
-    /// ცოცხალი ნაკადი: TCP, დიდი კადრები, პროგრამული დეკოდერი (iPhone-ის ჩაშენებული კამერის ნაკადზე „Buffering“-ზე იჭედება)
+    /// ცოცხალი ნაკადი: TCP, დიდი კადრები, პროგრამული დეკოდერი (iPhone-ის ჩაშენებული კამერის ნაკადზე Buffering-ზე იჭედება)
     static func liveOptions(_ m: VLCMedia) {
         m.addOption(":rtsp-tcp")
         m.addOption(":rtsp-frame-buffer-size=1000000")
@@ -950,7 +950,7 @@ class OctaneFilePlayerViewController: UIViewController, VLCMediaPlayerDelegate {
         ended = false
         let m = VLCMedia(url: url)
         m.addOption(":network-caching=1500")
-        // iPhone-ის აპარატული დეკოდერი კამერის ფაილის ცარიელ კადრებზე „ბრმავდება“ (შავი ეკრანი, ხმა ისმის)
+        // iPhone-ის აპარატული დეკოდერი კამერის ფაილის ცარიელ კადრებზე ბრმავდება (შავი ეკრანი, ხმა ისმის)
         m.addOption(":codec=avcodec")
         m.addOption(":avcodec-hw=none")
         if startMs > 0 { m.addOption(":start-time=\(Double(startMs) / 1000.0)") }

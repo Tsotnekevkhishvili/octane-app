@@ -3,17 +3,17 @@ import Capacitor
 import Network
 
 /**
- * Octane App (iPhone) — TCP კავშირი OBD სკანერთან (192.168.0.10:35000).
+ * Octane App (iPhone) - TCP კავშირი OBD სკანერთან (192.168.0.10:35000).
  *
  * ანდროიდზე იგივეს cordova-plugin-chrome-apps-sockets-tcp აკეთებს. iPhone-ზე JS-ის
- * ფენა (dist/ios-shim.js) window.chrome.sockets.tcp-ს ამ პლაგინზე „გადაამისამართებს“,
+ * ფენა (dist/ios-shim.js) window.chrome.sockets.tcp-ს ამ პლაგინზე გადაამისამართებს,
  * ამიტომ index.html-ის OBD ლოგიკა უცვლელი რჩება.
  *
  *   create()                              → { socketId }
  *   connect({ socketId, host, port, timeout }) → { result: 0 } (ან შეცდომა)
  *   send({ socketId, data })              → data = base64
  *   close({ socketId })
- *   „data“ მოვლენა                        → { socketId, data(base64) }
+ *   data მოვლენა                        → { socketId, data(base64) }
  */
 @objc(ObdTcpPlugin)
 public class ObdTcpPlugin: CAPPlugin, CAPBridgedPlugin {

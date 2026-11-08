@@ -24,10 +24,10 @@ import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 
 /**
- * Octane App — ვიდეორეგისტრატორის ცოცხალი ხედი (RTSP), სრულ ეკრანზე.
+ * Octane App - ვიდეორეგისტრატორის ცოცხალი ხედი (RTSP), სრულ ეკრანზე.
  * WebView-ს RTSP-ს ჩვენება არ შეუძლია, ამიტომ ვიყენებთ ExoPlayer-ს (Media3).
  * HiDvr: rtsp://192.168.0.1:554/livestream/1, TCP-ით (ისე, როგორც GoLook-ში).
- * ქსელი უკვე „მიბმულია“ კამერის WiFi-ზე DashcamWifiPlugin-ის მიერ.
+ * ქსელი უკვე მიბმულია კამერის WiFi-ზე DashcamWifiPlugin-ის მიერ.
  */
 public class DashcamLiveActivity extends Activity {
 

@@ -10,7 +10,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ObdWifiPlugin.class);
         registerPlugin(DashcamWifiPlugin.class);
         super.onCreate(savedInstanceState);
-        // ტელეფონის „დიდი შრიფტის“ პარამეტრი აპის ტექსტს არ ადიდებს - დიზაინი ყველა ტელეფონზე ერთნაირად ეტევა
+        // ტელეფონის დიდი შრიფტის პარამეტრი აპის ტექსტს არ ადიდებს - დიზაინი ყველა ტელეფონზე ერთნაირად ეტევა
         if (getBridge() != null && getBridge().getWebView() != null) {
             getBridge().getWebView().getSettings().setTextZoom(100);
         }
@@ -24,7 +24,7 @@ public class MainActivity extends BridgeActivity {
         ic.setAppearanceLightStatusBars(true);
         ic.setAppearanceLightNavigationBars(true);
 
-        // „უკან“ ღილაკი: ჯერ აპი ხურავს ღია ფანჯარას / გვერდს (window.octaneBack, dashcam.js), მერე - აპს
+        // უკან ღილაკი: ჯერ აპი ხურავს ღია ფანჯარას / გვერდს (window.octaneBack, dashcam.js), მერე - აპს
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

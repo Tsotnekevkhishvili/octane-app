@@ -4,12 +4,12 @@ import NetworkExtension
 import Network
 
 /**
- * Octane App (iPhone) — OBD სკანერის WiFi-სთან ავტომატური მიერთება.
+ * Octane App (iPhone) - OBD სკანერის WiFi-სთან ავტომატური მიერთება.
  * ანდროიდის ObdWifiPlugin-ის იგივე JS ინტერფეისი: isSupported(), connect({ pattern }), disconnect().
  *
  * iPhone-ზე ქსელის სახელის მხოლოდ დასაწყისით (prefix) ძებნა შეიძლება. WiFi OBD სკანერების
- * უმეტესობას „WiFi_OBD...“ ჰქვია. თუ ტელეფონი სკანერზე უკვე შეერთებულია, სისტემურ ფანჯარას არ ვაჩვენებთ.
- * საჭიროა „Hotspot Configuration“ უფლება (App ID-ზე Apple Developer-ში და App.entitlements-ში).
+ * უმეტესობას WiFi_OBD... ჰქვია. თუ ტელეფონი სკანერზე უკვე შეერთებულია, სისტემურ ფანჯარას არ ვაჩვენებთ.
+ * საჭიროა Hotspot Configuration უფლება (App ID-ზე Apple Developer-ში და App.entitlements-ში).
  */
 @objc(ObdWifiPlugin)
 public class ObdWifiPlugin: CAPPlugin, CAPBridgedPlugin {

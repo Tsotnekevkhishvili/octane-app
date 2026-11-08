@@ -4,11 +4,11 @@ import AVFoundation
 /**
  * ▶️ კამერაზე მყოფი ვიდეოს ჩვენება iPhone-ის ჩაშენებული ფლეერით - გადმოწერის გარეშე.
  *
- * კამერის MP4-ში ყოველი მე-6 კადრი ცარიელია და iPhone-ის დეკოდერი მასზე „ბრმავდება“ (შავი ეკრანი, ხმა ისმის).
- * ფლეერს ფაილს ამ „შუამავლით“ ვაწვდით: ვიდეოს მონაცემებს (mdat) კამერიდან ნაწილ-ნაწილ (HTTP Range) ვკითხულობთ,
- * ბოლოში მდებარე „სარჩევს“ (moov) კი ერთხელ ვტვირთავთ, ცარიელ კადრებს ვშლით (OctaneMp4Fix) და გასწორებულს ვაძლევთ.
+ * კამერის MP4-ში ყოველი მე-6 კადრი ცარიელია და iPhone-ის დეკოდერი მასზე ბრმავდება (შავი ეკრანი, ხმა ისმის).
+ * ფლეერს ფაილს ამ შუამავლით ვაწვდით: ვიდეოს მონაცემებს (mdat) კამერიდან ნაწილ-ნაწილ (HTTP Range) ვკითხულობთ,
+ * ბოლოში მდებარე სარჩევს (moov) კი ერთხელ ვტვირთავთ, ცარიელ კადრებს ვშლით (OctaneMp4Fix) და გასწორებულს ვაძლევთ.
  *
- * ლეპტოპით შემოწმდა: კამერა Range-ს იღებს (206, Accept-Ranges: bytes), „bytes=-N“ ფორმას - არა; სიჩქარე ~3.6 MB/წმ.
+ * ლეპტოპით შემოწმდა: კამერა Range-ს იღებს (206, Accept-Ranges: bytes), bytes=-N ფორმას - არა; სიჩქარე ~3.6 MB/წმ.
  */
 final class OctaneCamVideoLoader: NSObject, AVAssetResourceLoaderDelegate, URLSessionDataDelegate {
     static let scheme = "octanecam"
@@ -52,7 +52,7 @@ final class OctaneCamVideoLoader: NSObject, AVAssetResourceLoaderDelegate, URLSe
         session = URLSession(configuration: cfg, delegate: self, delegateQueue: oq)
     }
 
-    /// AVURLAsset „octanecam://“ მისამართით - ფლეერი მონაცემებს ამ კლასს სთხოვს
+    /// AVURLAsset octanecam:// მისამართით - ფლეერი მონაცემებს ამ კლასს სთხოვს
     static func makeAsset(_ url: URL) -> (AVURLAsset, OctaneCamVideoLoader)? {
         guard var c = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
         c.scheme = scheme

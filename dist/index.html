@@ -7,8 +7,8 @@
     <script>
         // ⚙️ დროებითი გადამრთველები (მთელი აპისთვის ერთ ადგილას):
         //   requireCode  - true: შესასვლელად კოდი სჭირდება / false: კოდის ველი არ ჩანს, აპი პირდაპირ იხსნება
-        //   showDashcam  - true: ჩანს „ვიდეორეგისტრატორი“ / false: დამალულია (კოდი ადგილზეა, უბრალოდ არ ჩანს)
-        //   dashcamDemo  - true: ვიდეორეგისტრატორი საცდელ რეჟიმში, „ვითომ“ კამერასთან დაკავშირებული (მხოლოდ საჩვენებლად!)
+        //   showDashcam  - true: ჩანს ვიდეორეგისტრატორი / false: დამალულია (კოდი ადგილზეა, უბრალოდ არ ჩანს)
+        //   dashcamDemo  - true: ვიდეორეგისტრატორი საცდელ რეჟიმში, ვითომ კამერასთან დაკავშირებული (მხოლოდ საჩვენებლად!)
         // დასაბრუნებლად requireCode და showDashcam true გახადე. dashcamDemo Play Store-ში ყოველთვის false.
         window.OCTANE_FLAGS = { requireCode: false, showDashcam: true, dashcamDemo: false };
     </script>
@@ -22,7 +22,7 @@
                 localStorage.setItem('octane_open_count', String(count));
             } catch (e) {}
             document.documentElement.setAttribute('data-theme', theme);
-            // ჯერ არ არის გააქტიურებული → აქტივაციის ეკრანი მაშინვე გამოჩნდება, ინტერფეისის „გაელვების“ გარეშე
+            // ჯერ არ არის გააქტიურებული → აქტივაციის ეკრანი მაშინვე გამოჩნდება, ინტერფეისის გაელვების გარეშე
             try { if (window.OCTANE_FLAGS.requireCode && localStorage.getItem('octane_activated') !== 'true') document.documentElement.classList.add('needs-activation'); } catch (e) {}
             if (!window.OCTANE_FLAGS.showDashcam) document.documentElement.classList.add('dc-hidden');
             window.OCTANE_OPEN_COUNT = count; // მაგ.: if (window.OCTANE_OPEN_COUNT >= 3) { ...შეტყობინება... }
@@ -89,7 +89,7 @@
             --bg-main: #eaf3ff;
             --bg-card: #ffffff;
             --bg-elevated: #f2f7ff;
-            --bg-nav: #0f2a5c; /* ზედა ზოლი და ქვედა „პილი“ - მუქი ლურჯი, რომ თეთრი ტექსტი კარგად იკითხებოდეს */
+            --bg-nav: #0f2a5c; /* ზედა ზოლი და ქვედა პილი - მუქი ლურჯი, რომ თეთრი ტექსტი კარგად იკითხებოდეს */
             --text-main: #0c1a33;
             --text-muted: #5a6b88;
             --accent: #1f74ff;
@@ -104,7 +104,7 @@
             --gauge-tick: rgba(22,58,122,0.3);
         }
 
-        /* 🍎 iPhone: გვერდი კიდეებზე არ „ხტება“ */
+        /* 🍎 iPhone: გვერდი კიდეებზე არ ხტება */
         html.ios, html.ios body { overscroll-behavior: none; }
         body {
             background: radial-gradient(circle at 50% -10%, var(--bg-glow-top) 0%, var(--bg-main) 55%);
@@ -192,7 +192,7 @@
         .ic-lg { width: 26px; height: 26px; }
         .ic-inline { width: 17px; height: 17px; vertical-align: -3px; display: inline-block; }
 
-        /* „როგორ დავაკავშირო?“ - მთავარი ეკრანის ღილაკი */
+        /* როგორ დავაკავშირო? - მთავარი ეკრანის ღილაკი */
         .help-cta {
             width: 100%; display: flex; align-items: center; gap: 14px;
             padding: 12px 14px 12px 12px; border-radius: 22px;
@@ -323,7 +323,7 @@
         .g-dialog-btns span { font-size: 13.5px; font-weight: 800; padding: 8px 15px; border-radius: 99px; color: #80868b; position: relative; }
         .g-dialog-btns .yes { color: #fff; background: #1a73e8; }
 
-        /* „შეტყობინება არ ამოვიდა?“ - დამატებითი ბლოკი */
+        /* შეტყობინება არ ამოვიდა? - დამატებითი ბლოკი */
         .g-trouble-btn { width: 100%; margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; cursor: pointer; text-align: left;
                          background: rgba(255,176,32,.09); border: 1.5px solid rgba(255,176,32,.45); color: var(--text-main); }
         .g-trouble-btn .lead { width: 36px; height: 36px; border-radius: 12px; background: var(--amber); color: var(--amber-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -359,7 +359,7 @@
                         background:
                             radial-gradient(60% 38% at 50% 24%, rgba(120,190,255,.55), transparent 70%),
                             radial-gradient(40% 30% at 85% 8%, rgba(255,255,255,.18), transparent 70%); }
-        /* 3D „იატაკი“ - პერსპექტივაში გაწოლილი ბადე */
+        /* 3D იატაკი - პერსპექტივაში გაწოლილი ბადე */
         .act-floor { position: absolute; left: -60%; right: -60%; top: 236px; height: 300px; pointer-events: none; opacity: .8;
                      background-image:
                         linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
@@ -441,7 +441,7 @@
         .theme-btn:active { transform: scale(.9); }
         .theme-btn .ic { width: 15px; height: 15px; }
 
-        /* ნათელ თემაზე გზამკვლევის „დაჭერის“ წრე ლურჯია, რომ თეთრ ფონზე გამოჩნდეს */
+        /* ნათელ თემაზე გზამკვლევის დაჭერის წრე ლურჯია, რომ თეთრ ფონზე გამოჩნდეს */
         :root[data-theme="light"] .g-tap { background: rgba(31,116,255,.22); }
         :root[data-theme="light"] .g-tap::after { border-color: rgba(31,116,255,.75); }
 
@@ -529,7 +529,7 @@
         .mfr-why span { flex: 1; min-width: 0; }
         .mfr-why em { font-style: normal; flex: none; font-size: 10.5px; text-decoration: underline; text-underline-offset: 2px; opacity: .85; }
 
-        /* ✅ „ავტომობილი ამოცნობილია“ ბარათი */
+        /* ✅ ავტომობილი ამოცნობილია ბარათი */
         .car-ok { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 26px; color: #fff;
                   background: linear-gradient(135deg, #15803d 0%, #16a34a 45%, #22c55e 100%);
                   box-shadow: 0 16px 34px -16px rgba(22,163,74,.75), inset 0 1px 0 rgba(255,255,255,.25);
@@ -660,7 +660,7 @@
         @media (prefers-reduced-motion: reduce) { .clr-glow, .cl-eng, .cl-wave, .ma-clear.hot, .cl-disc { animation: none !important; } }
 
 
-        /* 🎉 „რა არის ახალი“ */
+        /* 🎉 რა არის ახალი */
         .wn-overlay { position: fixed; inset: 0; z-index: 995; display: flex; align-items: center; justify-content: center; padding: 20px;
                       background: rgba(5,12,30,.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
         .wn-card { width: 100%; max-width: 360px; max-height: 100%; overflow-y: auto; padding: 24px 20px 20px; border-radius: 28px; text-align: center;
@@ -683,7 +683,7 @@
         html.needs-activation .act-screen[x-cloak] { display: block !important; }
         @media (prefers-reduced-motion: reduce) { .wn-card { animation: none; } }
 
-        /* ═══════════ 🌌 OBD - „მინის“ დიზაინი მუქ თემაში (იგივე, რაც ვიდეორეგისტრატორში) ═══════════
+        /* ═══════════ 🌌 OBD - მინის დიზაინი მუქ თემაში (იგივე, რაც ვიდეორეგისტრატორში) ═══════════
            მხოლოდ ფერები და ფორმებია - OBD-ის მარკაპი და ლოგიკა უცვლელია. ნათელ თემაში ძველი დიზაინი რჩება. */
         :root[data-theme="dark"] {
             --bg-main: #0a1533; --bg-card: rgba(255,255,255,.055); --bg-elevated: rgba(255,255,255,.085); --bg-nav: rgba(255,255,255,.05);
@@ -702,7 +702,7 @@
             background-color: #0a1533; background-attachment: fixed;
         }
 
-        /* „მინის“ ბარათები */
+        /* მინის ბარათები */
         :root[data-theme="dark"] :is(.panel, .info-box, .lk-card, .vn-card, .clr-list, .sc-list, .q-step, .g-note, .brand-box, .g-trouble, .lk-result) {
             background: var(--og-glass); border: 1px solid var(--og-line); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
         }
@@ -738,7 +738,7 @@
         :root[data-theme="dark"] .lk-input { border-radius: 20px; background: rgba(255,255,255,.06); border-color: var(--og-line); }
         :root[data-theme="dark"] .lk-chips button { border-radius: 99px; background: rgba(255,255,255,.05); border-color: var(--og-line); color: #cfe0ff; }
 
-        /* „როგორ დავაკავშირო?“ - მინის ბარათი ყვითელი მრგვალი ხატულით */
+        /* როგორ დავაკავშირო? - მინის ბარათი ყვითელი მრგვალი ხატულით */
         :root[data-theme="dark"] .help-cta { border-radius: 26px; background: var(--og-glass); border: 1px solid var(--og-line); color: #fff; box-shadow: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
         :root[data-theme="dark"] .help-cta-icon { border-radius: 50%; background: linear-gradient(145deg, #fcd34d, #f59e0b); color: #1f1500; box-shadow: 0 0 22px -4px rgba(245,158,11,.6); }
         :root[data-theme="dark"] .help-cta-sub { opacity: 1; color: var(--text-muted); }
@@ -786,7 +786,7 @@
         .dc-pick-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
         .dc-pick-chips i { font-style: normal; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 800; color: #155fe0; background: #e8f1ff; white-space: nowrap; }
         .dc-pick-cam .dc-pick-arr { width: 34px; height: 34px; padding: 7px; border-radius: 50%; color: #fff; background: #1f74ff; flex-shrink: 0; }
-        /* 🔀 არჩევანის ეკრანი - აპის „მინის“ ფერებში, ორი მარტივი ღილაკი */
+        /* 🔀 არჩევანის ეკრანი - აპის მინის ფერებში, ორი მარტივი ღილაკი */
         .dc-choose { background: radial-gradient(70% 38% at 50% 30%, rgba(37,99,235,.38) 0%, transparent 70%), radial-gradient(45% 28% at 92% 94%, rgba(124,58,237,.2) 0%, transparent 70%),
                                  linear-gradient(180deg, #0d1d48 0%, #0a1535 42%, #070d22 100%); }
         .dc-choose .act-bg-light { opacity: .35; }
@@ -810,7 +810,7 @@
         .dc-code-hero span { width: 108px; height: 108px; border-radius: 34px; display: flex; align-items: center; justify-content: center; color: #fff;
                              background: linear-gradient(160deg, #38bdf8 0%, #1f74ff 60%, #1d4ed8 100%); box-shadow: 0 26px 40px -16px rgba(3,14,60,.65); animation: act-float 5s ease-in-out infinite; }
         .dc-code-hero .ic { width: 62px; height: 62px; stroke-width: 1.6; }
-        /* 🔑 დეშ ქემის კოდის ეკრანი - „მინის“ სტილი, ყველა სიგანის ეკრანზე ეტევა */
+        /* 🔑 დეშ ქემის კოდის ეკრანი - მინის სტილი, ყველა სიგანის ეკრანზე ეტევა */
         .dc-code-step .dc-back { position: absolute; top: 22px; right: 20px; margin: 0; height: 36px; padding: 0 14px 0 8px; border-radius: 99px; font-size: 13.5px;
                                  background: rgba(255,255,255,.08); border-color: rgba(150,180,255,.3); }
         .dc-code-step .dc-code-hero { height: 128px; margin-top: 18px; }
@@ -834,7 +834,7 @@
         .dc-code-step .act-btn { border-radius: 99px; background: linear-gradient(160deg, #6a9bff 0%, #2f6bff 100%); box-shadow: 0 0 30px -6px rgba(59,130,246,.7); }
         .dc-code-step .act-btn:disabled { opacity: .4; box-shadow: none; }
 
-        /* ═══ 📹 დეშ ქემი - მოკაპის დიზაინი: მუქი ლურჯი ფონი ნათებით, „მინის“ ბარათები, მრგვალი ღილაკები ═══ */
+        /* ═══ 📹 დეშ ქემი - მოკაპის დიზაინი: მუქი ლურჯი ფონი ნათებით, მინის ბარათები, მრგვალი ღილაკები ═══ */
         .dc-app {
             /* საკუთარი მუქი პალიტრა (თემისგან დამოუკიდებლად) - შიგნით ყველა ელემენტი ამას იყენებს */
             --bg-main: #0a1533; --bg-card: rgba(255,255,255,.055); --bg-elevated: rgba(255,255,255,.09);
@@ -875,7 +875,7 @@
         .dc-label small { font-weight: 600; color: var(--text-muted); }
         .dc-page > .dc-label:first-child, .dc-page > div:first-child > .dc-label:first-child { margin-top: 6px; }
 
-        /* „მინის“ ბარათი */
+        /* მინის ბარათი */
         .dc-glass { border-radius: 26px; background: var(--dc-glass); border: 1px solid var(--dc-line); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 
         /* ფერადი მრგვალი ხატულა */
@@ -1166,7 +1166,7 @@
     <link rel="stylesheet" href="ui-dc.css">
 </head>
 <body class="min-h-screen bg-[var(--bg-main)] max-w-md mx-auto relative pb-32">
-<!-- 🎨 ხატულების ნაკრები (გზამკვლევი + „როგორ დავაკავშირო?“ ღილაკი) -->
+<!-- 🎨 ხატულების ნაკრები (გზამკვლევი + როგორ დავაკავშირო? ღილაკი) -->
 <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
     <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></symbol>
     <symbol id="i-wifi-alert" viewBox="0 0 24 24"><path d="M1.42 9a16 16 0 0 1 17.6-2.8"/><path d="M5 12.55a11 11 0 0 1 10.6-2"/><path d="M8.53 16.11a6 6 0 0 1 5.4-1"/><path d="M12 20h.01"/><path d="M20 11v5"/><path d="M20 20h.01"/></symbol>
@@ -1227,7 +1227,7 @@
     <symbol id="i-dc-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L2 10l8-8z"/></symbol>
 </svg>
 
-<!-- 🚗 „ჩემი მანქანის“ გვერდი (ანგარიშის მსგავსი) - ქვედა მენიუში ყველაზე მარჯვნივ -->
+<!-- 🚗 ჩემი მანქანის გვერდი (ანგარიშის მსგავსი) - ქვედა მენიუში ყველაზე მარჯვნივ -->
 <div x-data>
     <div class="ui-full ui-carpage" x-show="$store.car.page" x-cloak x-transition.opacity.duration.150ms>
         <header class="ui-top">
@@ -1249,10 +1249,10 @@
                     <svg class="ic"><use href="#i-chev-r"/></svg>
                 </button>
                 <div style="margin-top:10px;">
-                    <div class="ui-row"><span class="ui-row-l">მარკა</span><span class="ui-row-v" x-text="$store.car.brand || '—'"></span></div>
-                    <div class="ui-row"><span class="ui-row-l">მოდელი</span><span class="ui-row-v" x-text="$store.car.model || '—'"></span></div>
-                    <div class="ui-row"><span class="ui-row-l">წელი</span><span class="ui-row-v" x-text="$store.car.year || '—'"></span></div>
-                    <div class="ui-row"><span class="ui-row-l">ძარის ტიპი</span><span class="ui-row-v" x-text="$store.car.bodyLabel($store.car.body) || '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">მარკა</span><span class="ui-row-v" x-text="$store.car.brand || '-'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">მოდელი</span><span class="ui-row-v" x-text="$store.car.model || '-'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">წელი</span><span class="ui-row-v" x-text="$store.car.year || '-'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">ძარის ტიპი</span><span class="ui-row-v" x-text="$store.car.bodyLabel($store.car.body) || '-'"></span></div>
                 </div>
             </div>
 
@@ -1317,8 +1317,8 @@
             <div class="ui-card">
                 <div class="ui-card-t">სტატისტიკა</div>
                 <div style="margin-top:10px;">
-                    <div class="ui-row"><span class="ui-row-l">ბოლო სკანირება</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : '—'"></span></div>
-                    <div class="ui-row"><span class="ui-row-l">ნაპოვნი ხარვეზი</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.last.codes.length : '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">ბოლო სკანირება</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : '-'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">ნაპოვნი ხარვეზი</span><span class="ui-row-v" x-text="$store.hist.last ? $store.hist.last.codes.length : '-'"></span></div>
                     <button type="button" class="ui-row ui-row-btn" @click="$store.hist.open = true" x-show="$store.hist.items.length">
                         <span class="ui-row-l">ისტორია</span><span class="ui-row-v blue" x-text="$store.hist.items.length + ' ჩანაწერი'"></span>
                     </button>
@@ -1368,7 +1368,7 @@
         </select>
 
         <label class="ui-label" for="ui-car-model">მოდელი</label>
-        <!-- ჩამოსაშლელი სია (ბაზიდან) + „სხვა მოდელი“ - ხელით ჩასაწერად -->
+        <!-- ჩამოსაშლელი სია (ბაზიდან) + სხვა მოდელი - ხელით ჩასაწერად -->
         <div x-data="{ manual: false, get other() { var c = Alpine.store('car'); return this.manual || !!(c.draftModel && c.models.indexOf(c.draftModel) < 0); } }"
              x-effect="$store.car.draftBrand; manual = false">
             <select id="ui-car-model" class="ui-input ui-select" :disabled="!$store.car.draftBrand"
@@ -1500,7 +1500,7 @@
         </div>
     </div>
 
-    <!-- ═══════════ 🎉 „რა არის ახალი“ - ჩნდება ერთხელ, ვერსიის განახლების შემდეგ (აქტივაციის შემდეგ) ═══════════ -->
+    <!-- ═══════════ 🎉 რა არის ახალი - ჩნდება ერთხელ, ვერსიის განახლების შემდეგ (აქტივაციის შემდეგ) ═══════════ -->
     <div x-show="whatsNewOpen && isActivated" x-cloak class="wn-overlay" x-transition.opacity.duration.200ms>
         <div class="wn-card" role="dialog" aria-modal="true" aria-labelledby="wn-title">
             <div class="wn-badge"><svg class="ic" style="width:30px; height:30px;"><use href="#i-sparkle"/></svg></div>
@@ -1708,7 +1708,7 @@
                 <div class="ui-hv-steps">
                     <div><b>1</b><span>მანქანა ჩართე (READY), დააყენე ადგილზე.</span></div>
                     <div><b>2</b><span>კონდიციონერი და დიდი მომხმარებლები გამორთე.</span></div>
-                    <div><b>3</b><span>დააჭირე „შემოწმებას“ - რამდენიმე წამი.</span></div>
+                    <div><b>3</b><span>დააჭირე შემოწმებას - რამდენიმე წამი.</span></div>
                 </div>
                 <p class="ui-sheet-p" style="margin-top:12px;" x-show="$store.hv.prof" x-text="'მოდელი: ' + ($store.hv.prof ? $store.hv.prof.label : '')"></p>
                 <p class="ui-tip" x-show="$store.hv.prof && $store.hv.prof.exp" style="margin-top:10px;"><b>ტესტის რეჟიმი:</b> ამ მოდელზე შემოწმება ჯერ ყველა მანქანაზე არ არის გამოცდილი. თუ მონაცემი არარეალისტური იქნება, აპი მას არ აჩვენებს.</p>
@@ -1717,7 +1717,7 @@
             </div>
             <div class="ui-card" x-show="$store.hv.state === 'unsupported' || ($store.hv.state === 'idle' && !$store.hv.prof)">
                 <div class="ui-card-t">ამ მოდელზე შემოწმება ჯერ არ არის</div>
-                <div class="ui-card-s">ბატარეის წაკითხვის მეთოდი ყველა მარკას თავისი აქვს. ახლა ხელმისაწვდომია: Toyota / Lexus ჰიბრიდები, Nissan Leaf, Hyundai / Kia ელექტრო და ჰიბრიდი. შეამოწმე, სწორად არის თუ არა მითითებული მოდელი და წელი „ჩემი მანქანის“ გვერდზე.</div>
+                <div class="ui-card-s">ბატარეის წაკითხვის მეთოდი ყველა მარკას თავისი აქვს. ახლა ხელმისაწვდომია: Toyota / Lexus ჰიბრიდები, Nissan Leaf, Hyundai / Kia ელექტრო და ჰიბრიდი. შეამოწმე, სწორად არის თუ არა მითითებული მოდელი და წელი ჩემი მანქანის გვერდზე.</div>
             </div>
             <!-- მიმდინარეობს -->
             <div class="ui-card" x-show="$store.hv.state === 'run'" style="text-align:center;">
@@ -1762,7 +1762,7 @@
                             </template>
                         </div>
                     </div>
-                    <p class="ui-note" style="margin-top:14px;">ეს არის ბლოკების ძაბვა და მათი ბალანსი ამ მომენტში - არა ბატარეის „ჯანმრთელობის პროცენტი“. ზუსტი სურათისთვის შემოწმება გაიმეორე სხვადასხვა დროს.</p>
+                    <p class="ui-note" style="margin-top:14px;">ეს არის ბლოკების ძაბვა და მათი ბალანსი ამ მომენტში - არა ბატარეის ჯანმრთელობის პროცენტი. ზუსტი სურათისთვის შემოწმება გაიმეორე სხვადასხვა დროს.</p>
                     <button type="button" class="ui-btn light wide" style="margin-top:12px;" @click="$store.hv.start()">თავიდან შემოწმება</button>
                 </div>
             </template>
@@ -1910,8 +1910,8 @@
                 <div class="q-step">
                     <span class="q-n">4</span>
                     <div class="q-body">
-                        <h3 class="q-title">დააჭირე „დაკავშირება“</h3>
-                        <p class="q-text">დააჭირე ქვემოთ ლურჯ ღილაკს. ამოვა ასეთი ფანჯარა - დააჭირე <b>სკანერის სახელს</b> (მაგ. WIFIOBD II), მერე <b>„დაკავშირება“</b>. სულ რამდენიმე წამი და მზადაა!</p>
+                        <h3 class="q-title">დააჭირე დაკავშირებას</h3>
+                        <p class="q-text">დააჭირე ქვემოთ ლურჯ ღილაკს. ამოვა ასეთი ფანჯარა - დააჭირე <b>სკანერის სახელს</b> (მაგ. WIFIOBD II), მერე <b>დაკავშირება</b>. სულ რამდენიმე წამი და მზადაა!</p>
                         <div class="q-dialog">
                             <div class="q-dialog-t">აირჩიე მოწყობილობა</div>
                             <div class="q-dialog-row"><svg class="ic ic-sm"><use href="#i-wifi"/></svg><span>WIFIOBD II</span><div class="g-tap dark" style="left:70%; top:50%;"></div></div>
@@ -1931,7 +1931,7 @@
         </div>
     </div>
 
-    <!-- ═══════════ 🧭 „როგორ დავაკავშირო?“ - ნაბიჯ-ნაბიჯ გზამკვლევი (სრულ ეკრანზე) ═══════════ -->
+    <!-- ═══════════ 🧭 როგორ დავაკავშირო? - ნაბიჯ-ნაბიჯ გზამკვლევი (სრულ ეკრანზე) ═══════════ -->
     <div x-show="guideOpen && isActivated" x-cloak class="g-overlay"
          x-transition.opacity.duration.200ms
          @touchstart.passive="guideTouchX = $event.changedTouches[0].clientX"
@@ -2040,7 +2040,7 @@
                     <div class="g-num">ნაბიჯი 3</div>
                     <h3 class="g-title">დაელოდე 15 წამი</h3>
                     <p class="g-text" x-show="guideCountdown > 0">სკანერი ირთვება. <b class="g-hl">უბრალოდ დაელოდე.</b></p>
-                    <p class="g-text" x-show="guideCountdown === 0">მზადაა! დააჭირე <b class="g-hl">„შემდეგი“</b>.</p>
+                    <p class="g-text" x-show="guideCountdown === 0">მზადაა! დააჭირე <b class="g-hl">შემდეგი</b>.</p>
                 </div>
 
                 <!-- 4 - WiFi-ს გახსნა -->
@@ -2072,10 +2072,10 @@
                         <svg class="ic"><use href="#i-alert"/></svg>
                         <span>აპში ჯერ <b>ნუ დაბრუნდები!</b> თორემ შეტყობინება არ ამოვა.</span>
                     </div>
-                    <div class="g-note"><svg class="ic"><use href="#i-info"/></svg><span>თუ წერია „ინტერნეტი არ არის“ - ეს ნორმალურია.</span></div>
+                    <div class="g-note"><svg class="ic"><use href="#i-info"/></svg><span>თუ წერია ინტერნეტი არ არის - ეს ნორმალურია.</span></div>
                 </div>
 
-                <!-- 7 - ⭐ შეტყობინებაზე „დიახ“ + რა ვქნა, თუ არ ამოვიდა -->
+                <!-- 7 - ⭐ შეტყობინებაზე დიახ + რა ვქნა, თუ არ ამოვიდა -->
                 <div x-show="guideStep === 5" x-data="{ trouble: false }">
                     <div class="g-art">
                         <div class="g-phone-scr">
@@ -2088,8 +2088,8 @@
                         </div>
                     </div>
                     <div class="g-num key"><svg class="ic ic-sm" style="fill:currentColor; stroke:none;"><use href="#i-star"/></svg> ყველაზე მთავარი ნაბიჯი</div>
-                    <h3 class="g-title">დააჭირე „დიახ“</h3>
-                    <p class="g-text">ამოვა ასეთი კითხვა. დააჭირე <b class="g-hl">„დიახ“</b> (ან „Yes“). „არა“-ს <b>არ დააჭირო</b>.</p>
+                    <h3 class="g-title">დააჭირე ღილაკს დიახ</h3>
+                    <p class="g-text">ამოვა ასეთი კითხვა. დააჭირე <b class="g-hl">დიახ</b> (ან Yes). არა-ს <b>არ დააჭირო</b>.</p>
 
                     <button class="g-trouble-btn" @click="trouble = !trouble">
                         <span class="lead"><svg class="ic"><use href="#i-help"/></svg></span>
@@ -2119,7 +2119,7 @@
                             <div class="g-ts">
                                 <span class="g-ts-n">3</span>
                                 <div class="g-ts-body">
-                                    დააჭირე <b class="g-hl">„დავიწყება“</b> (ან „Forget“).
+                                    დააჭირე <b class="g-hl">დავიწყება</b> (ან Forget).
                                     <div class="g-mini">
                                         <div class="g-sheet" style="margin-top:0;">
                                             <span><svg class="ic ic-sm"><use href="#i-x"/></svg>გაუქმება</span>
@@ -2144,12 +2144,12 @@
                 <div x-show="guideStep === 6">
                     <div class="g-num">ნაბიჯი 7 - ბოლო!</div>
                     <h3 class="g-title">დაბრუნდი აპში</h3>
-                    <p class="g-text">დააჭირე ლურჯ ღილაკს <b class="g-hl">„დაკავშირება“</b>:</p>
+                    <p class="g-text">დააჭირე ლურჯ ღილაკს <b class="g-hl">დაკავშირება</b>:</p>
                     <button class="g-connect-round pulse-cta" @click="guideConnect()">
                         <svg class="ic ic-lg" style="fill:currentColor; stroke:none;"><use href="#i-bolt"/></svg>
                         დაკავშირება
                     </button>
-                    <div class="g-note" style="margin-top:24px;"><svg class="ic"><use href="#i-search"/></svg><span>მერე დააჭირე <b>„სკანირება“</b>. მორჩა!</span></div>
+                    <div class="g-note" style="margin-top:24px;"><svg class="ic"><use href="#i-search"/></svg><span>მერე დააჭირე <b>სკანირება</b>. მორჩა!</span></div>
                     <a href="https://www.youtube.com/shorts/bBhUcSQuYiY" target="_blank" rel="noopener noreferrer"
                        onclick="event.stopPropagation(); window.open(this.href, '_blank'); return false;" class="g-video">
                         <svg class="ic"><use href="#i-play"/></svg>
@@ -2251,16 +2251,16 @@
                 </div>
                 <div class="ui-eng-stats">
                     <button type="button" class="ui-eng-oil" @click="$store.car.openPage()"><small>ზეთამდე</small><b :class="$store.car.oilLeft !== null && $store.car.oilLeft <= 500 ? 'hot' : ''" x-text="$store.car.oilLeft === null ? 'მიუთითე' : ($store.car.oilLeft <= 0 ? 'დროა' : $store.car.oilLeft.toLocaleString('ka-GE') + ' კმ')"></b></button>
-                    <div><small>ძაბვა</small><b x-text="health.volt ? health.volt.toFixed(1) + ' V' : (voltage >= 9 && voltage <= 16.5 ? Number(voltage).toFixed(1) + ' V' : '—')"></b></div>
-                    <div><small>ანტიფრიზი</small><b x-text="health.temp === null ? '—' : health.temp + '°C'"></b></div>
+                    <div><small>ძაბვა</small><b x-text="health.volt ? health.volt.toFixed(1) + ' V' : (voltage >= 9 && voltage <= 16.5 ? Number(voltage).toFixed(1) + ' V' : '-')"></b></div>
+                    <div><small>ანტიფრიზი</small><b x-text="health.temp === null ? '-' : health.temp + '°C'"></b></div>
                 </div>
                 <div class="ui-eng-foot">
                     <svg class="ic"><use href="#i-clock"/></svg>
-                    <span x-text="hasScanned ? 'სკანირება ახლახან ჩატარდა' : ($store.hist.last ? 'ბოლო სკანირება: ' + $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : 'ჯერ არ დაგისკანერებია - დააჭირე „სკანირებას“')"></span>
+                    <span x-text="hasScanned ? 'სკანირება ახლახან ჩატარდა' : ($store.hist.last ? 'ბოლო სკანირება: ' + $store.hist.dayLabel($store.hist.last.at) + ', ' + $store.hist.time($store.hist.last.at) : 'ჯერ არ დაგისკანერებია - დააჭირე სკანირებას')"></span>
                 </div>
             </div>
 
-            <!-- მართვა (როგორც „Vehicle Control“) -->
+            <!-- მართვა (როგორც Vehicle Control) -->
             <div class="ui-card">
                 <div class="ui-card-t">მართვა</div>
                 <div class="ui-ctrls">
@@ -2335,7 +2335,7 @@
                         </button>
                         <div x-show="why" x-cloak>
                             <p>ასეთ კოდებს (<b>P1, P3, B1, C1, U1</b>…) ყველა მარკა თავისებურად განსაზღვრავს, ამიტომ ზუსტ აღწერას მარკის ცოდნის გარეშე ვერცერთი სკანერი ვერ მოგცემს.</p>
-                            <p><b>რა ქნა:</b> <span x-text="$store.car.brand ? 'ამ კოდის აღწერა ' + $store.car.brand + '-ისთვის ჯერ არ გვაქვს - დააჭირე „ჰკითხე AI-ს“ ან გადაამოწმე სერვისში.' : 'ზემოთ აირჩიე მარკა ან დააჭირე „ჰკითხე AI-ს“.'"></span></p>
+                            <p><b>რა ქნა:</b> <span x-text="$store.car.brand ? 'ამ კოდის აღწერა ' + $store.car.brand + '-ისთვის ჯერ არ გვაქვს - დააჭირე ღილაკს ჰკითხე AI-ს ან გადაამოწმე სერვისში.' : 'ზემოთ აირჩიე მარკა ან დააჭირე ღილაკს ჰკითხე AI-ს.'"></span></p>
                         </div>
                     </div>
                     <div x-show="err.brandExact" class="mfr-note mfr-note-ok" style="margin-top:12px;">
@@ -2363,9 +2363,9 @@
                 </button>
                 <template x-if="freezeFrame">
                     <div style="margin-top:14px;">
-                        <div class="ui-row"><span class="ui-row-l">RPM</span><span class="ui-row-v" x-text="freezeFrame.rpm !== undefined ? freezeFrame.rpm : '—'"></span></div>
-                        <div class="ui-row"><span class="ui-row-l">სიჩქარე</span><span class="ui-row-v" x-text="freezeFrame.speed !== undefined ? freezeFrame.speed + ' კმ/სთ' : '—'"></span></div>
-                        <div class="ui-row"><span class="ui-row-l">ტემპერატურა</span><span class="ui-row-v" x-text="freezeFrame.coolant !== undefined ? freezeFrame.coolant + '°C' : '—'"></span></div>
+                        <div class="ui-row"><span class="ui-row-l">RPM</span><span class="ui-row-v" x-text="freezeFrame.rpm !== undefined ? freezeFrame.rpm : '-'"></span></div>
+                        <div class="ui-row"><span class="ui-row-l">სიჩქარე</span><span class="ui-row-v" x-text="freezeFrame.speed !== undefined ? freezeFrame.speed + ' კმ/სთ' : '-'"></span></div>
+                        <div class="ui-row"><span class="ui-row-l">ტემპერატურა</span><span class="ui-row-v" x-text="freezeFrame.coolant !== undefined ? freezeFrame.coolant + '°C' : '-'"></span></div>
                     </div>
                 </template>
             </div>
@@ -2434,7 +2434,7 @@
                     </div>
                 </div>
             </template>
-            <p class="ui-note" x-show="!liveStreaming">დააჭირე „დაწყებას“ - მაჩვენებლები რეალურ დროში გამოჩნდება.</p>
+            <p class="ui-note" x-show="!liveStreaming">დააჭირე დაწყებას - მაჩვენებლები რეალურ დროში გამოჩნდება.</p>
             <p class="ui-note" x-show="liveStreaming">ზოგი მაჩვენებელი რამდენიმე წამში გამოჩნდება. რასაც მანქანა არ გადმოსცემს, აქ არ ჩანს.</p>
 
             <!-- მაჩვენებლის ახსნა -->
@@ -2479,7 +2479,7 @@
                 </div>
                 <div class="ui-figs">
                     <div>
-                        <div class="ui-big" x-text="voltage > 0 ? voltage + ' V' : '—'">—</div>
+                        <div class="ui-big" x-text="voltage > 0 ? voltage + ' V' : '-'">-</div>
                         <div class="ui-big-s" x-text="voltage > 0 ? 'ბოლო გაზომვა' : 'ჯერ არ გაზომილა'"></div>
                     </div>
                     <div class="ui-accent" :class="voltage < 12.2 || voltage > 14.8 ? 'red' : (voltage < 12.6 ? 'amber' : '')" x-show="voltage > 0"
@@ -2495,7 +2495,7 @@
                     <div>
                         <div class="vn-title">როგორ წავიკითხო ძაბვა?</div>
                         <div class="vn-hint" x-show="voltage > 0" x-text="'შენი ძაბვა: ' + voltage + ' V - ნახე შესაბამისი სტრიქონი ქვემოთ'"></div>
-                        <div class="vn-hint" x-show="!(voltage > 0)">ჯერ დააჭირე „ძაბვის გაზომვას“</div>
+                        <div class="vn-hint" x-show="!(voltage > 0)">ჯერ დააჭირე ძაბვის გაზომვას</div>
                     </div>
                 </div>
 
@@ -2523,7 +2523,7 @@
                 <div class="ui-card-t">Check Engine-ის ჩაქრობა</div>
                 <div class="ui-card-s">წაიშლება შენახული ხარვეზები და Freeze Frame, ნათურა ჩაქრება.</div>
                 <div style="margin-top:14px;">
-                    <div class="ui-row"><span class="ui-row-l">შენახული ხარვეზები</span><span class="ui-row-v" x-text="hasScanned ? errors.length : '—'"></span></div>
+                    <div class="ui-row"><span class="ui-row-l">შენახული ხარვეზები</span><span class="ui-row-v" x-text="hasScanned ? errors.length : '-'"></span></div>
                     <div class="ui-row"><span class="ui-row-l">აალება</span><span class="ui-row-v blue">ჩართული</span></div>
                     <div class="ui-row"><span class="ui-row-l">ძრავა</span><span class="ui-row-v blue">ჩამქრალი</span></div>
                 </div>
@@ -2918,7 +2918,7 @@
                     </div>
                     <p class="dc-hint" x-show="dcConnected && dcFolder !== 'phone'">
                         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M8 5v14M16 5v14"/></svg>
-                        <span>გალერეის ნახვისას კამერა ჩაწერას აჩერებს. „კამერაზე“ დაბრუნებისას ისევ ჩაირთვება.</span>
+                        <span>გალერეის ნახვისას კამერა ჩაწერას აჩერებს. კამერაზე დაბრუნებისას ისევ ჩაირთვება.</span>
                     </p>
 
                     <div class="dc-empty" x-show="dcConnected && dcListLoading && !dcFiles.length && dcFolder !== 'phone'"><span class="dc-spin" style="width:28px; height:28px; margin-bottom:12px;"></span><br>ვიდეოების სიას ვტვირთავ...</div>
@@ -3064,7 +3064,7 @@
                 <div class="dc-label">კავშირი</div>
                 <div class="dc-tiles">
                     <button type="button" class="dc-tile2 dc-glass" @click="dcEditOpen('password')">
-                        <div class="dc-tile2-top"><span class="dc-ico lg c-amber"><svg class="ic"><use href="#i-key"/></svg></span><span class="dc-tile2-v" x-text="dcSettings.password || '—'"></span></div>
+                        <div class="dc-tile2-top"><span class="dc-ico lg c-amber"><svg class="ic"><use href="#i-key"/></svg></span><span class="dc-tile2-v" x-text="dcSettings.password || '-'"></span></div>
                         <div><b>WiFi-ს პაროლი</b></div>
                     </button>
                     <button type="button" class="dc-tile2 dc-glass" @click="dcEditOpen('ssid')">
@@ -3155,8 +3155,8 @@
                 <div class="dc-sheet-t"><span class="dc-ico lg c-blue"><svg class="ic"><use href="#i-help"/></svg></span><b>როგორ დავაკავშირო?</b></div>
                 <div class="dc-glass">
                     <div class="dc-step2"><span>1</span><div><b>ჩართე კამერა</b><small>ჩართე აალება და დაელოდე, სანამ კამერა ჩაირთვება</small></div></div>
-                    <div class="dc-step2"><span>2</span><div><b>დააჭირე „დაკავშირებას“</b><small>ამოვა ფანჯარა - აირჩიე <span class="dc-code">HiDvr_...</span>, პაროლი <span class="dc-code" x-text="dcSettings.password || '12345678'">12345678</span></small></div></div>
-                    <div class="dc-step2"><span>3</span><div><b>დააჭირე „დიახ“</b><small>თუ ტელეფონი იკითხავს „ინტერნეტი არ აქვს, გავაგრძელო?“ - დააჭირე „დიახ“</small></div></div>
+                    <div class="dc-step2"><span>2</span><div><b>დააჭირე დაკავშირებას</b><small>ამოვა ფანჯარა - აირჩიე <span class="dc-code">HiDvr_...</span>, პაროლი <span class="dc-code" x-text="dcSettings.password || '12345678'">12345678</span></small></div></div>
+                    <div class="dc-step2"><span>3</span><div><b>დააჭირე ღილაკს დიახ</b><small>თუ ტელეფონი იკითხავს ინტერნეტი არ აქვს, გავაგრძელო? - დააჭირე ღილაკს დიახ</small></div></div>
                 </div>
                 <button type="button" class="dc-btn dc-btn-main dc-btn-wide" style="margin-top:14px;" @click="dcGuideConnect()"><svg class="ic"><use href="#i-wifi"/></svg>დაკავშირება</button>
             </div>
@@ -3166,7 +3166,7 @@
                 <div class="dc-sheet-t"><span class="dc-ico lg c-amber"><svg class="ic"><use href="#i-alert"/></svg></span><b>ხშირი პრობლემები</b></div>
                 <div class="dc-stack">
                     <template x-for="(t, i) in [
-                        { ic: '#i-wifi', c: 'c-blue', q: 'კითხვა „დიახ“ არ ამოვიდა', a: 'ტელეფონის WiFi-ში ქსელი HiDvr_ „დაივიწყე“, ტელეფონი გადატვირთე და თავიდან დაუკავშირდი.' },
+                        { ic: '#i-wifi', c: 'c-blue', q: 'კითხვა დიახ არ ამოვიდა', a: 'ტელეფონის WiFi-ში ქსელი HiDvr_ დაივიწყე, ტელეფონი გადატვირთე და თავიდან დაუკავშირდი.' },
                         { ic: '#i-key', c: 'c-amber', q: 'პაროლი არ მიიღო', a: 'კამერაზე reset ღილაკს 6 წამი დააჭირე - პაროლი ისევ 12345678 გახდება.' },
                         { ic: '#i-bolt', c: 'c-orange', q: 'კამერა თავისით ითიშება', a: 'შეამოწმე დენის კაბელი. საჭიროა 5V / 1A დამტენი.' },
                         { ic: '#i-dc-sd', c: 'c-purple', q: 'ვიდეო არ იწერება', a: 'გამოიყენე ცნობილი ბრენდის, Class 10 მეხსიერების ბარათი, 8-დან 128 GB-მდე.' }
@@ -3215,8 +3215,8 @@
                 <div x-show="dcDiag.rows.length || dcDiag.done" x-cloak style="margin-top:12px;">
                     <div class="dc-glass">
                         <div class="dc-kv"><span>ტელეფონის WiFi</span><b x-text="dcDiag.wifi || 'სახელი ვერ წავიკითხე'"></b></div>
-                        <div class="dc-kv"><span>ტელეფონის მისამართი</span><b x-text="dcDiag.phoneIp || '—'"></b></div>
-                        <div class="dc-kv"><span>კამერის მისამართი</span><b x-text="dcDiag.gateway || '—'"></b></div>
+                        <div class="dc-kv"><span>ტელეფონის მისამართი</span><b x-text="dcDiag.phoneIp || '-'"></b></div>
+                        <div class="dc-kv"><span>კამერის მისამართი</span><b x-text="dcDiag.gateway || '-'"></b></div>
                     </div>
                     <template x-for="r in dcDiag.rows" :key="r.ip">
                         <div class="dc-diag-row" :class="r.state === 'ok' ? 'ok' : ''">
@@ -3309,7 +3309,7 @@
                         <button type="button" class="dc-soc tt" @click="dcShareTo(dcPlayer.file, 'tiktok')" :disabled="!!dcBusy"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.5 3h-3v12.2a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V9.5a5.8 5.8 0 1 0 4.9 5.7V9.1a7.3 7.3 0 0 0 3.9 1.2V7.2c-2.1 0-3.9-1.8-3.9-4.2z"/></svg></i><span>TikTok</span></button>
                     </div>
                     <div class="dc-pl-acts" :class="dcPlayer.file && dcPlayer.file.kind === 'photo' ? 'three' : 'four'">
-                        <!-- „გადმოწერა“ = ტელეფონის გალერეაში შენახვა (ცალკე „გალერეა“ ღილაკი აღარ არის) -->
+                        <!-- გადმოწერა = ტელეფონის გალერეაში შენახვა (ცალკე გალერეა ღილაკი აღარ არის) -->
                         <button type="button" class="dc-pl-btn" :class="dcInGallery(dcPlayer.file) ? 'ok' : ''" @click="dcSaveToGallery(dcPlayer.file)" :disabled="!!dcBusy || dcInGallery(dcPlayer.file)">
                             <i><svg class="ic"><use :href="dcInGallery(dcPlayer.file) ? '#i-check' : '#i-dc-download'"/></svg></i>
                             <span x-text="dcInGallery(dcPlayer.file) ? 'შენახულია' : 'გადმოწერა'"></span>
@@ -3319,7 +3319,7 @@
                         <button type="button" class="dc-pl-btn red" x-show="!dcIsLocal(dcPlayer.file)" @click="dcAskDelete(dcPlayer.file)" :disabled="!!dcBusy || !dcConnected"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                         <button type="button" class="dc-pl-btn red" x-show="dcIsLocal(dcPlayer.file)" x-cloak @click="dcAskDeleteClip(dcPlayer.file)"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                     </div>
-                    <p class="dc-pl-note" x-text="dcPlayer.file && dcPlayer.file.kind === 'video' ? 'Instagram, Facebook, TikTok - ვერტიკალურ ჩარჩოში. „გადმოწერა“ - Octane App წარწერით.' : '„გაგზავნა“ - Messenger, WhatsApp, Viber, Telegram და სხვა.'"></p>
+                    <p class="dc-pl-note" x-text="dcPlayer.file && dcPlayer.file.kind === 'video' ? 'Instagram, Facebook, TikTok - ვერტიკალურ ჩარჩოში. გადმოწერა - Octane App წარწერით.' : 'გაგზავნა - Messenger, WhatsApp, Viber, Telegram და სხვა.'"></p>
                 </div>
 
                 <!-- ✂️ მოჭრა -->
@@ -3483,7 +3483,7 @@ function obdApp() {
                 this.modernWifi = false;
             }
         },
-        // ═══════════ 🏷️ ვერსია და „რა არის ახალი“ ═══════════
+        // ═══════════ 🏷️ ვერსია და რა არის ახალი ═══════════
         // ⚠️ ახალი ვერსიის გამოშვებისას შეცვალე appVersion (და build.gradle-ში versionName/versionCode).
         // ფანჯარა ჩნდება ერთხელ თითო ვერსიაზე და მხოლოდ გააქტიურებულ აპში (აქტივაციის ეკრანის შემდეგ).
         appVersion: '6.2',
@@ -3503,7 +3503,7 @@ function obdApp() {
         },
         // ინსტრუქცია თავისით აღარ ამოდის - მის ნაცვლად მთავარ გვერდზე ვიდეოს ღილაკია
         maybeAutoGuide() {},
-        // „როგორ დავაკავშირო?“ - ვერსიის მიხედვით შესაბამისი ინსტრუქცია
+        // როგორ დავაკავშირო? - ვერსიის მიხედვით შესაბამისი ინსტრუქცია
         openHelp(failed = false) {
             if (this.modernWifi) {
                 this.quickFailed = failed;
@@ -3840,7 +3840,7 @@ function obdApp() {
 
         // ═══════════ 📶 ავტომატური WiFi (Android 10+) ═══════════
         // ნატიური ObdWifi პლაგინი თავად სთხოვს ტელეფონს სკანერის WiFi-სთან დაკავშირებას
-        // (ერთი სისტემური ფანჯარა, „ინტერნეტი არ არის“ შეტყობინების გარეშე).
+        // (ერთი სისტემური ფანჯარა, ინტერნეტი არ არის შეტყობინების გარეშე).
         // თუ პლაგინი არ არის / ძველი Android-ია / მომხმარებელმა გააუქმა - აპი
         // ჩვეულებრივად აგრძელებს ძველი გზით, არაფერი ფუჭდება.
         obdWifiLinked: false,
@@ -3974,7 +3974,7 @@ function obdApp() {
             }
 
             // VIN-ის წაკითხვა გამორთულია - ზოგ ავტომობილზე არასწორად იკითხებოდა
-            // (წაკითხვის ფუნქცია მთლიანად ამოღებულია - VIN მხოლოდ ხელით შეიყვანება „ჩემი მანქანის“ გვერდზე)
+            // (წაკითხვის ფუნქცია მთლიანად ამოღებულია - VIN მხოლოდ ხელით შეიყვანება ჩემი მანქანის გვერდზე)
             this.loading = false;
             this.statusMessage = 'სისტემა მზადაა!';
             this.quickHealth();
@@ -3986,7 +3986,7 @@ function obdApp() {
         // სწორედ ეს ფარავს ძველ, არა-CAN მანქანებსაც.
         async detectProtocol() {
             const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-            const KLINE = ['3', '4', '5']; // ISO 9141-2 / KWP2000 - ძველი ევროპული და იაპონური მანქანები (ნელი „გაღვიძება“)
+            const KLINE = ['3', '4', '5']; // ISO 9141-2 / KWP2000 - ძველი ევროპული და იაპონური მანქანები (ნელი გაღვიძება)
 
             // 0100-ის გაგზავნა და პასუხის შემოწმება. აბრუნებს: 'ok' | 'businit' | 'unable' | 'fail'
             const probe = async (timeoutMs) => {
@@ -4032,7 +4032,7 @@ function obdApp() {
                 return await this.protocolFound(m ? m[1] : null);
             }
 
-            // 3) ხელით შემოწმება. თუ ავტო-ძებნამ ზუსტად თქვა „UNABLE TO CONNECT“, CAN-ის ხელახლა
+            // 3) ხელით შემოწმება. თუ ავტო-ძებნამ ზუსტად თქვა UNABLE TO CONNECT, CAN-ის ხელახლა
             //    ცდას აზრი არ აქვს - ვამოწმებთ მხოლოდ K-line-ს, ხანგრძლივი ლოდინით.
             const order = auto === 'unable' ? KLINE : ['6', '3', '4', '5', '7', '8', '9', '1', '2'];
             for (let i = 0; i < order.length; i++) {
@@ -4042,7 +4042,7 @@ function obdApp() {
                 await this.sendELMCommand('AT SP' + p);
                 let r = await probe(isK ? 12000 : 5000);
                 if (r === 'ok') return await this.protocolFound(p);
-                // ზოგი ძველი მანქანა „არასტანდარტულ“ საკვანძო სიტყვას აგზავნის - ვთიშავთ მის შემოწმებას და ვცდით ხელახლა
+                // ზოგი ძველი მანქანა არასტანდარტულ საკვანძო სიტყვას აგზავნის - ვთიშავთ მის შემოწმებას და ვცდით ხელახლა
                 if (isK && r === 'businit') {
                     await this.sendELMCommand('AT KW0');
                     await this.sendELMCommand('AT SP' + p);
@@ -4067,9 +4067,9 @@ function obdApp() {
             return true;
         },
 
-        // ადაპტერი წინა ბრძანებაზე ჯერ კიდევ „ფიქრობს“ (დრო ამოიწურა). ნებისმიერი ახალი
+        // ადაპტერი წინა ბრძანებაზე ჯერ კიდევ ფიქრობს (დრო ამოიწურა). ნებისმიერი ახალი
         // ბრძანება მას აჩერებს; მერე ცოტას ველოდებით, რომ დაგვიანებული პასუხი შემდეგ
-        // ბრძანებაში არ „შეიპაროს“ და მონაცემები არ აირიოს.
+        // ბრძანებაში არ შეიპაროს და მონაცემები არ აირიოს.
         elmTimedOut: false,
         async elmResync() {
             this.elmTimedOut = false;
@@ -4184,7 +4184,7 @@ function obdApp() {
         // ═══════════ 🔍 სკანირება ანიმაციით ═══════════
         // ნამდვილი სკანირება (startScanning) ეშვება იმწამსვე, პარალელურად; ანიმაცია
         // მინიმუმ 30 წამს გრძელდება. ჩეკლისტის თითო პუნქტი აჩვენებს ნამდვილ შედეგს:
-        // თუ იმ კატეგორიაში კოდი ნაპოვნია - ყვითელი „!“ და რაოდენობა, თუ არა - მწვანე ✓.
+        // თუ იმ კატეგორიაში კოდი ნაპოვნია - ყვითელი ! და რაოდენობა, თუ არა - მწვანე ✓.
         scanConnError: false,
 
         // ═══════════ 🚗 მანქანის მარკა (მწარმოებლის კოდების ზუსტი აღწერისთვის) ═══════════
@@ -4244,7 +4244,7 @@ function obdApp() {
             for (let i = 0; i < items.length; i++) {
                 this.scanAnim.step = i;
                 await sleep(per);
-                // ნამდვილ შედეგამდე პუნქტებს „არ ვხურავთ“ - ჯერ ველოდებით სკანირების დასრულებას
+                // ნამდვილ შედეგამდე პუნქტებს არ ვხურავთ - ჯერ ველოდებით სკანირების დასრულებას
                 while (!scanDone) await sleep(250);
                 if (this.scanConnError) { clearInterval(ticker); return fail(); }
                 let it = this.scanAnim.items[i]; // reactive ასლი - რომ ეკრანი განახლდეს
@@ -4292,7 +4292,7 @@ function obdApp() {
                 }
                 this.statusMessage = 'დაფიქსირდა ' + this.errors.length + ' რეალური ხარვეზი.';
             } else if (allLines.length === 0) {
-                // სკანერმა საერთოდ არაფერი დააბრუნა - ეს კავშირის პრობლემაა, არა „ხარვეზები არ არის“
+                // სკანერმა საერთოდ არაფერი დააბრუნა - ეს კავშირის პრობლემაა, არა ხარვეზები არ არის
                 this.scanConnError = true;
                 this.statusMessage = 'კავშირში ხარვეზია - სკანერმა არ უპასუხა.';
             } else if (allLines.length > 0 && allLines.every(l => this.isErrorResponse(l))) {
@@ -4308,7 +4308,7 @@ function obdApp() {
         // 1) ELM327 გრძელ CAN პასუხს ასე აბრუნებს:  "00A" (ბაიტების რაოდენობა), "0:4304...", "1:0135..."
         //    - ნაწილებს ვაწებებთ თანმიმდევრობით და ვჭრით ზუსტ სიგრძეზე (ბოლოს შევსებული 00-ები იშლება).
         // 2) თითო შეტყობინება უნდა იწყებოდეს რეჟიმის ბაიტით (43/47) - შუაში ძებნა აღარ ხდება,
-        //    რადგან სწორედ ეს „აჩენდა“ არარსებულ კოდებს (მაგ. ცილინდრის ფანტომურ ხარვეზებს).
+        //    რადგან სწორედ ეს აჩენდა არარსებულ კოდებს (მაგ. ცილინდრის ფანტომურ ხარვეზებს).
         // 3) CAN-ზე რეჟიმის ბაიტს მოსდევს კოდების რაოდენობა - ვამოწმებთ და ვშლით.
         // 4) კოდის ასო ბიტებიდან: 00=P, 01=C, 10=B, 11=U (მაგ. U0100 - კავშირი სხვა ბლოკთან).
         parseDtcResponse(raw, cmd, modeHex) {
@@ -4372,7 +4372,7 @@ function obdApp() {
             if (this.hasScanned) {
                 const n = this.errors.length;
                 if (!n) return { tone: 'green', chip: 'გამართულია', title: 'ხარვეზები არ არის', text: 'მანქანის კომპიუტერში შეცდომები არ დაფიქსირდა.' };
-                return { tone: 'amber', chip: n + ' ხარვეზი', title: 'ნაპოვნია ' + n + ' ხარვეზი', text: 'იხილე „შეცდომების“ ჩანართში - თითოეულს ახსნა და რჩევა აქვს.' };
+                return { tone: 'amber', chip: n + ' ხარვეზი', title: 'ნაპოვნია ' + n + ' ხარვეზი', text: 'იხილე შეცდომების ჩანართში - თითოეულს ახსნა და რჩევა აქვს.' };
             }
             return { tone: '', chip: 'მზადაა', title: 'მზადაა სკანირებისთვის', text: 'სკანირება აჩვენებს ხარვეზებს, მათ ახსნას და რჩევას, რა შეამოწმო.' };
         },
@@ -4444,7 +4444,7 @@ function obdApp() {
                     level: 'კრიტიკული',
                     title: 'მე-2 ცილინდრში აალების გამოტოვება (Misfire Cylinder 2)',
                     desc: 'მეორე ცილინდრში ნარევი არ ფეთქდება. სავარაუდო მიზეზი: მე-2 ცილინდრის სანთელი, ბაბინა ან ელექტროგაყვანილობა.',
-                    symptoms: '🚨 სიმპტომები: ძრავის "ტროენი", გაზის პედალზე დაჭერისას დაგვიანებული რეაქცია.'
+                    symptoms: '🚨 სიმპტომები: ძრავის ტროენი, გაზის პედალზე დაჭერისას დაგვიანებული რეაქცია.'
                 },
                 'P0171': {
                     level: 'ყურადღება',
@@ -4485,7 +4485,7 @@ function obdApp() {
             }
 
             // 3. ბაზაში არ არის. მწარმოებლის კოდებს (P1xxx, P30-P33xx, B1-B3, C1-C3, U1-U3) მნიშვნელობა
-            //    მარკაზეა დამოკიდებული - „კონკრეტულ“ აღწერას არ ვიგონებთ, ვაჩვენებთ სისტემის კატეგორიას
+            //    მარკაზეა დამოკიდებული - კონკრეტულ აღწერას არ ვიგონებთ, ვაჩვენებთ სისტემის კატეგორიას
             //    (SAE J2012-ის მიხედვით: კოდის მე-3 სიმბოლო = ქვესისტემა).
             const letter = code.charAt(0);
             const isMfr = /^(P1|P3[0-3]|B[123]|C[123]|U[123])/.test(code);
@@ -4508,7 +4508,7 @@ function obdApp() {
             else cat = 'ბლოკებს შორის კავშირი (CAN ქსელი და საკომუნიკაციო ხაზები)';
 
             if (isMfr) {
-                // სათაური იწყება სისტემით (რაც მძღოლისთვის სასარგებლოა), „მწარმოებლის კოდი“ - ბოლოს, ფრჩხილებში
+                // სათაური იწყება სისტემით (რაც მძღოლისთვის სასარგებლოა), მწარმოებლის კოდი - ბოლოს, ფრჩხილებში
                 const SHORT = {
                     '0': 'საწვავის, ჰაერის ან ეკოლოგიური სისტემის ხარვეზი', '1': 'საწვავის და ჰაერის მიწოდების სისტემის ხარვეზი',
                     '2': 'საწვავის მიწოდების სისტემის ხარვეზი', '3': 'აალების სისტემის ხარვეზი',
@@ -4524,10 +4524,10 @@ function obdApp() {
                     code: code,
                     mfr: true,
                     level: 'სერვისში მისასვლელი',
-                    title: 'სავარაუდოდ: ' + short + ' (მწარმოებლის კოდი)',  // „სავარაუდოდ“ - SAE-ს ქვესისტემის წესს ყველა მარკა არ იცავს
-                    desc: 'ხარვეზი ეხება ამ სისტემას: ' + cat + '. ' + (this.carBrand
-                        ? 'დეტალური ახსნისთვის დააჭირე „ჰკითხე AI-ს“ და მიუთითე მოდელი (' + this.brandLabel() + '), ან კოდი გადაამოწმე ამ მარკის სერვისში.'
-                        : 'კოდი მწარმოებელმა (მარკამ) განსაზღვრა - ზემოთ აირჩიე შენი მანქანის მარკა ზუსტი აღწერისთვის, ან დააჭირე „ჰკითხე AI-ს“.'),
+                    title: 'სავარაუდოდ: ' + short + ' (მწარმოებლის კოდი)',  // სავარაუდოდ - SAE-ს ქვესისტემის წესს ყველა მარკა არ იცავს
+                    desc: 'ხარვეზი ეხება ამ სისტემას: ' + cat + '. ' + ((this.carBrand || (window.Alpine && Alpine.store('car') && Alpine.store('car').brand))
+                        ? 'ამ კოდის აღწერა ' + ((window.Alpine && Alpine.store('car') && Alpine.store('car').brand) || this.brandLabel()) + '-ისთვის ჯერ არ გვაქვს. დეტალური ახსნისთვის დააჭირე ღილაკს ჰკითხე AI-ს, ან კოდი გადაამოწმე ამ მარკის სერვისში.'
+                        : 'კოდი მწარმოებელმა (მარკამ) განსაზღვრა - ზემოთ აირჩიე შენი მანქანის მარკა ზუსტი აღწერისთვის, ან დააჭირე ღილაკს ჰკითხე AI-ს.'),
                     symptoms: 'სიმპტომები დამოკიდებულია მარკაზე და კონკრეტულ ხარვეზზე. თუ Check Engine ციმციმებს, ძრავა უსწორმასწოროდ მუშაობს ან მანქანა უცნაურად იქცევა - მალე მიიყვანე სერვისში.'
                 };
             }
@@ -4535,7 +4535,7 @@ function obdApp() {
                 code: code,
                 level: 'ყურადღება',
                 title: 'სტანდარტული ხარვეზის კოდი - ' + cat,
-                desc: 'ხარვეზი ეხება ამ სისტემას: ' + cat + '. დეტალური ახსნისთვის დააჭირე „ჰკითხე AI-ს“, ან კოდი სერვისში გადაამოწმე.',
+                desc: 'ხარვეზი ეხება ამ სისტემას: ' + cat + '. დეტალური ახსნისთვის დააჭირე ღილაკს ჰკითხე AI-ს, ან კოდი სერვისში გადაამოწმე.',
                 symptoms: 'სიმპტომები დამოკიდებულია კონკრეტულ ხარვეზზე. თუ Check Engine ციმციმებს ან ძრავა უსწორმასწოროდ მუშაობს - მალე მიიყვანე სერვისში.'
             };
         },
@@ -4550,7 +4550,7 @@ function obdApp() {
             let hasAck = clean.lines.some(l => /44/i.test(l.replace(/[^0-9A-Fa-f]/g, '')));
             let allErrors = clean.lines.length > 0 && clean.lines.every(l => this.isErrorResponse(l));
 
-            // სკანერმა საერთოდ არაფერი დააბრუნა - ეს კავშირის პრობლემაა, არა „წარმატება“
+            // სკანერმა საერთოდ არაფერი დააბრუნა - ეს კავშირის პრობლემაა, არა წარმატება
             if (clean.lines.length === 0) {
                 this.statusMessage = 'კავშირში ხარვეზია - სკანერმა არ უპასუხა.';
                 return 'conn';

@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   📹 Octane App — ქართული დეშ ქემი (ვიდეორეგისტრატორი)
+   📹 Octane App - ქართული დეშ ქემი (ვიდეორეგისტრატორი)
    ───────────────────────────────────────────────────────────────────────
    ეს ფაილი სრულიად დამოუკიდებელია OBD ნაწილისგან:
      1. OCTANE_DASHCAM_KEY  - დეშ ქემის აქტივაციის კოდი (მხოლოდ 2000)
-     2. DC_ADAPTERS         - კამერის მოდელის „ადაპტერი“ (მისამართი + ბრძანებები ერთ ადგილას)
+     2. DC_ADAPTERS         - კამერის მოდელის ადაპტერი (მისამართი + ბრძანებები ერთ ადგილას)
      3. DcNet               - HTTP კავშირი კამერასთან (ნატიური DashcamWifi პლაგინით)
      4. Alpine.store('octaneMode') - რეჟიმის არჩევა (OBD / ვიდეორეგისტრატორი)
      5. dashcamApp()        - დეშ ქემის განყოფილების Alpine კომპონენტი
@@ -28,7 +28,7 @@
             }
             return { success: false, message: 'არასწორი კოდი! შეამოწმეთ ვიდეორეგისტრატორის ინსტრუქციაზე მოცემული კოდი.' };
         },
-        // 🍎 iPhone-ზე კოდი არ სჭირდება (Apple-ის წესი: ფუნქცია საკუთარი კოდით არ უნდა „იხსნებოდეს“)
+        // 🍎 iPhone-ზე კოდი არ სჭირდება (Apple-ის წესი: ფუნქცია საკუთარი კოდით არ უნდა იხსნებოდეს)
         isActivated: function () { return isIOS() || lsGet(this.STORAGE, '') === 'true'; }
     };
     function isIOS() {
@@ -94,7 +94,7 @@
             try { var r = await this.send(ctx, this.CMD.HEARTBEAT); if (r.ok) return true; } catch (e) {}
             try { var r2 = await this.send(ctx, this.CMD.FIRMWARE); return r2.ok; } catch (e) { return false; }
         },
-        // ფაილების სანახავად კამერა „ჩანაწერების“ რეჟიმში უნდა გადავიდეს (ჩაწერა დროებით ჩერდება)
+        // ფაილების სანახავად კამერა ჩანაწერების რეჟიმში უნდა გადავიდეს (ჩაწერა დროებით ჩერდება)
         async enterPlayback(ctx) { try { await this.send(ctx, this.CMD.MODE, this.MODE.PLAYBACK); } catch (e) {} },
         // ცოცხალი ხედისთვის და აპიდან გასვლისას - ისევ ვიდეო-რეჟიმი და ჩაწერა
         async enterMovie(ctx) {
@@ -124,7 +124,7 @@
                 if (!name) continue;
                 var attr = parseInt(this.tag(n, 'ATTR'), 10) || 0;
                 var isPhoto = /\.(jpe?g|png)$/i.test(name);
-                // ავარიული (დაბლოკილი): RO/EMR/EVENT/LOCK საქაღალდე, ან ფაილს „მხოლოდ წაკითხვის“ ნიშანი აქვს (ATTR=33)
+                // ავარიული (დაბლოკილი): RO/EMR/EVENT/LOCK საქაღალდე, ან ფაილს მხოლოდ წაკითხვის ნიშანი აქვს (ATTR=33)
                 var locked = !isPhoto && (/\\(RO|EMR|EVENT|LOCK|PARK_EMR)\\/i.test(path) || (attr & 1) === 1);
                 out.push({
                     id: path,
@@ -139,7 +139,7 @@
             }
             return out;
         },
-        // „2024/01/31 18:05:09“ ან ფაილის სახელიდან „2024_0131_180509_001.MP4“
+        // 2024/01/31 18:05:09 ან ფაილის სახელიდან 2024_0131_180509_001.MP4
         parseTime: function (t, name) {
             var m = String(t || '').match(/(\d{4})\D(\d{1,2})\D(\d{1,2})\D+(\d{1,2})\D(\d{1,2})\D(\d{1,2})/);
             if (!m) m = String(name || '').match(/(\d{4})_?(\d{2})(\d{2})_?(\d{2})(\d{2})(\d{2})/);
@@ -155,13 +155,13 @@
         }
     };
 
-    // ═══════════ HiDvr_ (მოდელი LF9, ორიგინალი აპი GoLook) - HiSilicon „hisnet“ პროტოკოლი ═══════════
+    // ═══════════ HiDvr_ (მოდელი LF9, ორიგინალი აპი GoLook) - HiSilicon hisnet პროტოკოლი ═══════════
     // წყარო: GoLook 1.5.8 (com.damoa.dv), კლასი com.hisilicon.cameralib.device.hidvr.HiDvrProtocol.
     // ⚠️ რეალურ კამერაზე ჯერ არ არის შემოწმებული.
     //   • ბრძანება:  http://192.168.0.1/cgi-bin/hisnet/<name>.cgi?&-key=value
     //   • პასუხი:     var key="value";  (რამდენიმე სტრიქონი)
-    //   • წარმატება:  პასუხში წერია „Success“; შეცდომა: SvrFuncResult="N"
-    //   • ფაილები:   getdirfilelist → „sd/norm/xxx.MP4;sd/norm/yyy.MP4;“
+    //   • წარმატება:  პასუხში წერია Success; შეცდომა: SvrFuncResult="N"
+    //   • ფაილები:   getdirfilelist → sd/norm/xxx.MP4;sd/norm/yyy.MP4;
     //   • სურათი:    იგივე ბმული, ოღონდ .THM გაფართოებით
     //   • ცოცხალი:   rtsp://192.168.0.1:554/livestream/1 (TCP) - ნატიური ფლეიერით
     var HIDVR = {
@@ -263,7 +263,7 @@
             return d.normal || d.locked || d.photo ? d : null;
         },
 
-        // GoLook-ში „Replay“-ზე შესვლისას ჯერ ჩაწერა ჩერდება - სანამ კამერა წერს, სია ცარიელი მოდის
+        // GoLook-ში Replay-ზე შესვლისას ჯერ ჩაწერა ჩერდება - სანამ კამერა წერს, სია ცარიელი მოდის
         async enterPlayback(ctx) {
             await this.qok(ctx, 'workmodecmd.cgi?&-cmd=stop');
             await new Promise(function (r) { setTimeout(r, 800); });
@@ -324,7 +324,7 @@
             }
             return all;
         },
-        // „sd/norm/2026_10_27_154400_00.MP4“ → ფაილის ობიექტი
+        // sd/norm/2026_10_27_154400_00.MP4 → ფაილის ობიექტი
         toFile: function (raw, folder) {
             var p = String(raw || '').replace(/^\s*var\s+\w+\s*=\s*"?/, '').replace(/"?\s*$/, '').trim();
             if (!p || !/\.\w{2,4}$/.test(p)) return null;
@@ -675,7 +675,7 @@
             dcDiag: { running: false, done: false, wifi: '', phoneIp: '', gateway: '', rows: [] },
             dcDownloads: lsJson('octane_dc_downloads', {}),
             dcGallery: lsJson('octane_dc_gallery', {}),         // { ფაილის id: true } - ტელეფონის გალერეაში უკვე შენახულია
-            dcProxy: '',                                        // ნატიური „შუამავალი“ (http://127.0.0.1:PORT) - ესკიზები და ვიდეოები მისი გავლით     // { ფაილის id: ტელეფონში შენახული ფაილის მისამართი }
+            dcProxy: '',                                        // ნატიური შუამავალი (http://127.0.0.1:PORT) - ესკიზები და ვიდეოები მისი გავლით     // { ფაილის id: ტელეფონში შენახული ფაილის მისამართი }
             dcDurations: lsJson('octane_dc_durations', {}),     // { ფაილის id: წამები }
             dcDemo: DcNet.isDemo(),
 
@@ -702,7 +702,7 @@
                 window.addEventListener('dc-leave', function () { self.dcDisconnect(); });
                 this.$watch('dcTab', function (tab, old) { self.dcOnTab(tab, old); });
                 this.$watch('dcFolder', function () { self.dcSel = {}; });
-                // ძებნა იწყება მხოლოდ „დაკავშირების“ ღილაკზე დაჭერით (ავტომატურად არა)
+                // ძებნა იწყება მხოლოდ დაკავშირების ღილაკზე დაჭერით (ავტომატურად არა)
 
                 // 📺 ცოცხალი ხედი: ფანჯრის გახსნისას ვმალავთ, გადახვევისას ადგილს ვუსწორებთ
                 ['dcSheet', 'dcPick.open', 'dcFormat.open', 'dcConfirm.open', 'dcConfirmClip.open', 'dcPlayer.open'].forEach(function (k) {
@@ -710,7 +710,7 @@
                 });
                 this.$watch('$store.octaneMode.screen', function (s) {
                     if (s !== 'dashcam') { self.dcLiveStop(); return; }
-                    // სადემონსტრაციო APK: „ვითომ“ უკვე დაკავშირებულია
+                    // სადემონსტრაციო APK: ვითომ უკვე დაკავშირებულია
                     if (window.OCTANE_FLAGS && window.OCTANE_FLAGS.dashcamDemo && !self.dcConnected && !self.dcConnecting) self.dcConnect();
                 });
                 this.$nextTick(function () {
@@ -737,7 +737,7 @@
                             self.dcConnected = false;
                             self.dcLiveSrc = '';
                             self.dcStatus = 'კამერასთან კავშირი გაწყდა';
-                            self.dcShowToast('კამერასთან კავშირი გაწყდა. დააჭირე „დაკავშირება“ თავიდან.');
+                            self.dcShowToast('კამერასთან კავშირი გაწყდა. დააჭირე დაკავშირებას თავიდან.');
                         });
                         P.addListener('downloadProgress', function (e) {
                             if (e && e.total > 0) self.dcProgress = Math.min(100, Math.round(e.loaded * 100 / e.total));
@@ -790,7 +790,7 @@
                         try { sup = await P.isSupported(); } catch (e) {}
                         if (sup && sup.supported) {
                             try {
-                                // ქსელი, რომლის სახელი იწყება „HiDvr_“-ით (ზუსტი სახელის ცოდნა არ სჭირდება)
+                                // ქსელი, რომლის სახელი იწყება HiDvr_-ით (ზუსტი სახელის ცოდნა არ სჭირდება)
                                 var c = await P.connect({ ssid: (s.ssid || '').trim(), prefix: adapter.ssidPrefix || '', pattern: '.*', password: s.password || '' });
                                 ssid = (c && c.ssid) || '';
                             } catch (e) {
@@ -903,7 +903,7 @@
                 if (f.kind === 'photo') return this.dcViaProxy(this.dcAdapter.fileUrl(this.dcCtx().ip, f));
                 return this.dcViaProxy(this.dcAdapter.thumbUrl(this.dcCtx().ip, f));
             },
-            // კამერის ფაილს WebView ნატიური „შუამავლის“ გავლით ხსნის (WebView თავად კამერის WiFi-ს ყველგან ვერ წვდება)
+            // კამერის ფაილს WebView ნატიური შუამავლის გავლით ხსნის (WebView თავად კამერის WiFi-ს ყველგან ვერ წვდება)
             dcViaProxy: function (url) {
                 if (!this.dcProxy || !/^http:\/\//.test(url || '')) return url;
                 return this.dcProxy + '/http/' + url.slice(7);
@@ -991,7 +991,7 @@
             },
             // ─────────── 🏷️ ბრენდირება (ნატიური brand: ვიდეო + ზემოდან ეს სურათი) ───────────
             // story - ვერტიკალური 1080×1920 ჩარჩო გასაზიარებლად (ვარიანტი A, ღია);
-            // mark  - „Octane App“ წარწერა ქვედა მარჯვენა კუთხეში, ვიდეოს კადრებში (გალერეაშიც ჩანს).
+            // mark  - Octane App წარწერა ქვედა მარჯვენა კუთხეში, ვიდეოს კადრებში (გალერეაშიც ჩანს).
             dcBrandedPaths: {},
             dcLoadImg: function (src) {
                 return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; });
@@ -1021,7 +1021,7 @@
                     var bx = (W - cw - gap - wdw) / 2, by = wy / 2;
                     g.drawImage(car, bx, by - ch / 2, cw, ch);
                     g.drawImage(word, bx + cw + gap, by - wdh / 2 + 4, wdw, wdh);
-                    // ქვემოთ: ტექსტი, თარიღი, „Octane App“
+                    // ქვემოთ: ტექსტი, თარიღი, Octane App
                     var date = this.dcDateLabel(f && f.time);
                     var mid = wy + wh + (H - wy - wh) / 2, y0 = mid - (date ? 92 : 64);
                     g.fillStyle = '#111418';
@@ -1094,8 +1094,8 @@
                     await DcNet.plugin().saveToGallery({ path: marked || path, mime: marked ? 'video/mp4' : f.mime, fileName: marked ? String(f.name).replace(/\.[A-Za-z0-9]+$/, '') + '_octane.mp4' : f.name });
                     this.dcGallery[f.id] = marked ? 'mark' : true;
                     lsSet('octane_dc_gallery', JSON.stringify(this.dcGallery));
-                    if (f.kind === 'video' && !marked) this.dcShowToast('შენახულია, მაგრამ „Octane App“ წარწერა ვერ დაემატა.');
-                    else if (!quiet) this.dcShowToast(isIOS() ? 'შენახულია ტელეფონის გალერეაში (Photos).' : 'შენახულია ტელეფონის გალერეაში („Octane DashCam“ ალბომი).');
+                    if (f.kind === 'video' && !marked) this.dcShowToast('შენახულია, მაგრამ Octane App წარწერა ვერ დაემატა.');
+                    else if (!quiet) this.dcShowToast(isIOS() ? 'შენახულია ტელეფონის გალერეაში (Photos).' : 'შენახულია ტელეფონის გალერეაში (Octane DashCam ალბომი).');
                     return true;
                 } catch (e) {
                     var m = e && e.message ? e.message : '';
@@ -1151,7 +1151,7 @@
 
             // ─────────── ✂️ ვიდეოს მოჭრა ───────────
             // ნატიური DashcamWifi.trim (MediaExtractor + MediaMuxer). მოჭრილი ნაწილი ცალკე ფაილია
-            // ტელეფონში და dcDownloads-შია ჩაწერილი, ამიტომ „გალერეაში შენახვა“ და „გაგზავნა“ მასზეც მუშაობს.
+            // ტელეფონში და dcDownloads-შია ჩაწერილი, ამიტომ გალერეაში შენახვა და გაგზავნა მასზეც მუშაობს.
             dcIsClip: function (f) { return !!(f && f.folder === 'clip'); },
             dcTrimVideo: function () { return document.querySelector('.dc-player video'); },
             async dcTrimOpen() {
@@ -1307,7 +1307,7 @@
                 if (!this.dcAdapter.emergency) return;
                 try {
                     var ok = await this.dcAdapter.emergency(this.dcCtx());
-                    this.dcShowToast(ok ? 'ავარიული ჩაწერა დაიწყო. ნახე „გალერეაში“ → „ავარიული“.' : 'ბრძანება ვერ შესრულდა.');
+                    this.dcShowToast(ok ? 'ავარიული ჩაწერა დაიწყო. ნახე გალერეაში → ავარიული.' : 'ბრძანება ვერ შესრულდა.');
                 } catch (e) { this.dcShowToast('ბრძანება ვერ შესრულდა.'); }
             },
 
@@ -1361,7 +1361,7 @@
 
             // ─────────── 🗂️ ჩანართები: კამერა / გალერეა / პარამეტრები ───────────
             // GoLook-ის მსგავსად: გალერეასა და პარამეტრებში შესვლისას ჩაწერა ჩერდება,
-            // „კამერაზე“ დაბრუნებისას ისევ ირთვება და ცოცხალი ხედი თავისით იწყება.
+            // კამერაზე დაბრუნებისას ისევ ირთვება და ცოცხალი ხედი თავისით იწყება.
             async dcOnTab(tab, old) {
                 if (!this.dcConnected) {
                     // კამერის გარეშე გალერეაში მხოლოდ ტელეფონში შენახული ჩანს
@@ -1384,7 +1384,7 @@
             },
 
             // ─────────── 📺 ცოცხალი ხედი ეკრანზევე (დაჭერის გარეშე) ───────────
-            // HiDvr (RTSP): ნატიური ვიდეო „ედება“ .dc-live-slot ბარათს. Novatek (MJPEG): <img> ბარათშივე.
+            // HiDvr (RTSP): ნატიური ვიდეო ედება .dc-live-slot ბარათს. Novatek (MJPEG): <img> ბარათშივე.
             dcLiveDetail: '',             // iPhone: VLC-ის დიაგნოსტიკა
             dcLiveState: 'idle',          // idle | loading | playing | error | unavailable
             dcLiveOn: false,
@@ -1467,7 +1467,7 @@
                 this.dcBusy = 'ფოტოს გადაღება...';
                 try {
                     var ok = await this.dcAdapter.capture(this.dcCtx());
-                    this.dcShowToast(ok ? 'ფოტო გადაღებულია. ნახე „გალერეაში“ → „ფოტო“.' : 'ფოტო ვერ გადაიღო.');
+                    this.dcShowToast(ok ? 'ფოტო გადაღებულია. ნახე გალერეაში → ფოტო.' : 'ფოტო ვერ გადაიღო.');
                 } catch (e) { this.dcShowToast('ფოტო ვერ გადაიღო.'); }
                 finally { this.dcBusy = ''; if (this.dcAdapter.liveKind !== 'rtsp') this.dcRetryLive(); }
             },
@@ -1717,7 +1717,7 @@
 
             // ─────────── ფორმატირება ───────────
             dcFmtDate: function (ts) {
-                if (!ts) return '—';
+                if (!ts) return '-';
                 var d = new Date(ts), p = function (n) { return (n < 10 ? '0' : '') + n; };
                 return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
             },
@@ -1745,7 +1745,7 @@
         };
     };
 
-    // ═══════════ ◀️ ტელეფონის „უკან“ ღილაკი ═══════════
+    // ═══════════ ◀️ ტელეფონის უკან ღილაკი ═══════════
     // MainActivity იძახებს: true - აპმა თავად დახურა ფანჯარა/გვერდი; false - აპი ჩვეულებრივად იხურება.
     window.octaneBack = function () {
         try {

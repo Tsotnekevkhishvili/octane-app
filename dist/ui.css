@@ -85,7 +85,7 @@ body { color: var(--u-ink); -webkit-font-smoothing: antialiased; }
 .ui-link > svg { width: 18px; height: 18px; color: var(--u-ink-2); }
 .ui-ic-blue { width: 22px; height: 22px; color: var(--u-blue); flex-shrink: 0; }
 
-/* ზოლებიანი მაჩვენებელი (როგორც „Battery Information“) */
+/* ზოლებიანი მაჩვენებელი (როგორც Battery Information) */
 .ui-meter { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
 .ui-seg { flex: 1; height: 50px; display: flex; gap: 2px; padding: 3px; border-radius: 14px; background: var(--u-soft); border: 1px solid var(--u-line); overflow: hidden; }
 .ui-seg i { flex: 1; border-radius: 3px; background: transparent; transition: background .3s; }
@@ -101,13 +101,13 @@ body { color: var(--u-ink); -webkit-font-smoothing: antialiased; }
 .ui-accent { font-size: 24px; font-weight: 600; color: var(--u-blue); line-height: 1; white-space: nowrap; }
 .ui-accent.red { color: var(--u-red); } .ui-accent.green { color: var(--u-green); } .ui-accent.amber { color: var(--u-amber); }
 
-/* პროგრესი ტექსტით შიგნით (როგორც „24m 35 sec remaining“) */
+/* პროგრესი ტექსტით შიგნით (როგორც 24m 35 sec remaining) */
 .ui-prog { position: relative; height: 50px; border-radius: 14px; background: var(--u-soft); border: 1px solid var(--u-line); overflow: hidden; margin-top: 14px; }
 .ui-prog > span { position: absolute; left: 3px; top: 3px; bottom: 3px; border-radius: 11px; background: var(--u-blue); transition: width .5s linear; min-width: 6px;
                   background-image: repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,.25) 28px 30px); }
 .ui-prog > em { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12px; font-weight: 500; color: #fff; white-space: nowrap; }
 
-/* მართვის ღილაკები (როგორც „Vehicle Control“) */
+/* მართვის ღილაკები (როგორც Vehicle Control) */
 .ui-ctrls { display: flex; justify-content: space-between; margin-top: 16px; }
 .ui-ctrl { display: flex; flex-direction: column; align-items: center; gap: 8px; background: none; border: 0; padding: 0; cursor: pointer; flex: 1; min-width: 0; }
 .ui-ctrl-c { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--u-card); border: 1px solid var(--u-line); color: var(--u-ink-2); transition: transform .15s; }
@@ -132,7 +132,7 @@ body { color: var(--u-ink); -webkit-font-smoothing: antialiased; }
 .ui-btn.red { background: var(--u-red); color: #fff; }
 .ui-btn.wide { width: 100%; flex: none; }
 
-/* სტრიქონი ბარათში (როგორც „Battery capacity 77.4 kWh“) */
+/* სტრიქონი ბარათში (როგორც Battery capacity 77.4 kWh) */
 .ui-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
 .ui-row + .ui-row { border-top: 1px solid var(--u-line); padding-top: 14px; margin-top: 10px; }
 .ui-row-l { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 500; color: var(--u-ink); }
@@ -256,7 +256,7 @@ body { padding-bottom: 110px !important; }
 .q-full { color: var(--u-ink-2) !important; }
 .sc-err-ic { background: var(--u-red-soft) !important; color: var(--u-red) !important; box-shadow: none !important; }
 
-/* „რა არის ახალი“ */
+/* რა არის ახალი */
 .wn-overlay { background: rgba(18,20,23,.35) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .wn-card { background: var(--u-card) !important; border: 0 !important; border-radius: 28px !important; box-shadow: none !important; }
 .wn-badge { background: var(--u-blue-soft) !important; color: var(--u-blue) !important; box-shadow: none !important; }
@@ -414,7 +414,7 @@ body { padding-bottom: 110px !important; }
 .dc-sheet .dc-btn-soft, .dc-sheet .dc-btn-ghost { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; }
 .dc-sheet .dc-stack > * { margin: 0 !important; }
 
-/* „ჩემი მანქანის“ გვერდი */
+/* ჩემი მანქანის გვერდი */
 .ui-carpage { z-index: 9500; }
 .ui-nav.six { gap: 6px; }
 .ui-nav.six button { width: 50px; height: 50px; }

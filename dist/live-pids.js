@@ -60,7 +60,7 @@
     }
 
     function fmt(pid, v) {
-        if (v === null || v === undefined || isNaN(v)) return '—';
+        if (v === null || v === undefined || isNaN(v)) return '-';
         var m = META[pid] || {}, d = m.decimals !== undefined ? m.decimals : (pid === '42' ? 1 : 0);
         if (pid === '10') d = 1;
         return (d ? Number(v).toFixed(d) : String(Math.round(v))) + (m.unit ? ' ' + m.unit : '');

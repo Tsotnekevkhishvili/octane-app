@@ -62,7 +62,7 @@
                '<path d="' + c.b + '" fill="#141517"/><path d="' + c.w + '" fill="#E3E7EC"/>' + wheels + '</svg>';
     }
 
-    // ─────────── სავარაუდო OBD პროტოკოლი (ELM327 „AT SP“ ნომერი) - მხოლოდ პირველი ცდისთვის ───────────
+    // ─────────── სავარაუდო OBD პროტოკოლი (ELM327 AT SP ნომერი) - მხოლოდ პირველი ცდისთვის ───────────
     // 6 CAN 11bit/500k · 1 PWM (Ford) · 2 VPW (GM/Chrysler) · 3 ISO 9141-2 · 5 KWP2000 სწრაფი
     var FAM = {
         gm: /^(Chevrolet|GMC|Cadillac|Buick|Pontiac|Saturn|Hummer|Oldsmobile)$/,
@@ -83,7 +83,7 @@
         return y >= 2001 ? '5' : '3';   // ევროპული და დანარჩენი
     }
 
-    // აპის „მწარმოებლის კოდების“ მარკა (index.html → brandNames)
+    // აპის მწარმოებლის კოდების მარკა (index.html → brandNames)
     function codeBrand(brand) {
         var map = { toyota: /^(Toyota|Lexus|Scion)$/, nissan: /^(Nissan|Infiniti)$/, hyundai: /^(Hyundai|Kia|Genesis)$/,
                     vag: /^(Volkswagen|Audi|Škoda|SEAT|Cupra|Porsche|Bentley|Lamborghini)$/, ford: /^(Ford|Lincoln|Mercury)$/,

@@ -194,7 +194,7 @@
 
                 var cnt = function (k, unit) {
                     var x = c[k];
-                    if (!x) return '—';
+                    if (!x) return '-';
                     if (x.state === 'unsupported') return 'მიუწვდომელია';
                     if (x.state !== 'available') return 'ვერ წაიკითხა';
                     return unit === 'min' ? fmtMin(x.value) : x.value + (unit ? ' ' + unit : '');

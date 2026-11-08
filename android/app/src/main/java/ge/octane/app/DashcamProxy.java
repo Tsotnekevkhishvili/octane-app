@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Octane App — ლოკალური „შუამავალი“ კამერის ფაილებისთვის.
+ * Octane App - ლოკალური შუამავალი კამერის ფაილებისთვის.
  *
  * WebView (<img>, <video>) კამერის WiFi-ს (ინტერნეტის გარეშე ქსელს) ყველა ტელეფონზე ვერ წვდება,
  * ნატიური კავშირი კი (camNetwork.openConnection) წვდება. ამიტომ WebView ითხოვს

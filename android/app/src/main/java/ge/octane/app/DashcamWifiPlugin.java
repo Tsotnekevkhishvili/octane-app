@@ -47,17 +47,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Octane App — ვიდეორეგისტრატორის (დეშ ქემის) WiFi და ფაილები.
+ * Octane App - ვიდეორეგისტრატორის (დეშ ქემის) WiFi და ფაილები.
  *
  * ObdWifi-ს მსგავსად (WifiNetworkSpecifier), ოღონდ დეშ ქემის ქსელისთვის და პაროლით.
  * ObdWifi-ს არ ეხება: JS ჯერ OBD-ს თიშავს, მერე უკავშირდება კამერას.
  *
  *   isSupported()                       → { supported }   (Android 10+)
- *   connect({ ssid?, prefix?, pattern?, password? })  → სისტემური ფანჯარა, მერე აპი „ებმება“ კამერის ქსელს → { ssid }
+ *   connect({ ssid?, prefix?, pattern?, password? })  → სისტემური ფანჯარა, მერე აპი ებმება კამერის ქსელს → { ssid }
  *   wifiInfo()                          → { ssid, ip, gateway }   (დიაგნოსტიკისთვის)
  *   shareMany({ paths, mime, title })   → რამდენიმე ფაილის გაგზავნა
  *   openLive({ url, title })            → RTSP ცოცხალი ხედი სრულ ეკრანზე (DashcamLiveActivity)
- *   bindToWifi()                        → ხელით შეერთებულ WiFi-ზე „მიბმა“ (ძველი Android)
+ *   bindToWifi()                        → ხელით შეერთებულ WiFi-ზე მიბმა (ძველი Android)
  *   disconnect()
  *   request({ url, timeout })           → { status, data }   (CORS-ის გარეშე)
  *   download({ url, fileName })         → { path }   + "downloadProgress" { loaded, total }
@@ -80,7 +80,7 @@ public class DashcamWifiPlugin extends Plugin {
     // ქსელის ოპერაციები (გადმოწერა დიდხანს გრძელდება) - ცალკე ნაკადებზე, რომ სხვა პლაგინები არ შეფერხდეს
     private final ExecutorService io = Executors.newFixedThreadPool(3);
 
-    // ლოკალური „შუამავალი“ - WebView კამერის ფაილებს (ესკიზები, ვიდეოები) მისი გავლით ხსნის
+    // ლოკალური შუამავალი - WebView კამერის ფაილებს (ესკიზები, ვიდეოები) მისი გავლით ხსნის
     private DashcamProxy proxy;
 
     @Override
@@ -99,7 +99,7 @@ public class DashcamWifiPlugin extends Plugin {
         call.resolve(r);
     }
 
-    /** ეკრანის მობრუნება: „portrait“ - აპი მხოლოდ ვერტიკალურად; „auto“ - სრულეკრანიანი ვიდეოსთვის */
+    /** ეკრანის მობრუნება: portrait - აპი მხოლოდ ვერტიკალურად; auto - სრულეკრანიანი ვიდეოსთვის */
     @PluginMethod
     public void setOrientation(PluginCall call) {
         final boolean auto = "auto".equals(call.getString("mode", "portrait"));
@@ -137,7 +137,7 @@ public class DashcamWifiPlugin extends Plugin {
         if (ssid != null && !ssid.trim().isEmpty()) {
             b.setSsid(ssid.trim());
         } else if (prefix != null && !prefix.isEmpty()) {
-            // მაგ. „HiDvr_“ → HiDvr_15C628, HiDvr_A1B2C3 ... (ზუსტი სახელის ცოდნა არ სჭირდება)
+            // მაგ. HiDvr_ → HiDvr_15C628, HiDvr_A1B2C3 ... (ზუსტი სახელის ცოდნა არ სჭირდება)
             b.setSsidPattern(new PatternMatcher(prefix, PatternMatcher.PATTERN_PREFIX));
         } else {
             b.setSsidPattern(new PatternMatcher(pattern, PatternMatcher.PATTERN_SIMPLE_GLOB));
@@ -214,7 +214,7 @@ public class DashcamWifiPlugin extends Plugin {
         call.resolve();
     }
 
-    /** WiFi-ს სახელი (თუ Android ამის წაკითხვის ნებას იძლევა), ტელეფონის და „როუტერის“ (კამერის) მისამართი */
+    /** WiFi-ს სახელი (თუ Android ამის წაკითხვის ნებას იძლევა), ტელეფონის და როუტერის (კამერის) მისამართი */
     @PluginMethod
     public void wifiInfo(PluginCall call) {
         JSObject r = new JSObject();
@@ -511,7 +511,7 @@ public class DashcamWifiPlugin extends Plugin {
 
     // ═══════════ ✂️ ვიდეოს მოჭრა (MediaExtractor + MediaMuxer, ხელახალი კოდირების გარეშე) ═══════════
     // კადრები ისე გადაიწერება, როგორც არის - სწრაფია და ხარისხი არ იკარგება.
-    // დასაწყისი უახლოეს წინა „საკვანძო კადრზე“ გადაიწევს (shiftMs).
+    // დასაწყისი უახლოეს წინა საკვანძო კადრზე გადაიწევს (shiftMs).
     // ხმა, რომელსაც MP4 ვერ იღებს (მაგ. PCM), გამოიტოვება (audioDropped).
 
     @PluginMethod
@@ -622,7 +622,7 @@ public class DashcamWifiPlugin extends Plugin {
         });
     }
 
-    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / „Octane App“ წარწერა (გადმოწერა) ═══════════
+    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / Octane App წარწერა (გადმოწერა) ═══════════
     // { path, overlay (PNG base64, width×height), width, height, fileName, suffix } → { path, size }
 
     @PluginMethod
@@ -690,7 +690,7 @@ public class DashcamWifiPlugin extends Plugin {
 
     // ═══════════ 📺 ცოცხალი ხედი აპის ეკრანზევე (WebView-ის ზემოთ, ბარათის ადგილზე) ═══════════
     // JS აგზავნის ბარათის კოორდინატებს (CSS px). TextureView ჩანს მხოლოდ პირველი კადრის შემდეგ,
-    // მანამდე ქვემოთ HTML-ის მინიშნება ჩანს. შეხებას არ „იჭერს“ - ღილაკები ჩვეულებრივ მუშაობს.
+    // მანამდე ქვემოთ HTML-ის მინიშნება ჩანს. შეხებას არ იჭერს - ღილაკები ჩვეულებრივ მუშაობს.
 
     private android.widget.FrameLayout liveLayer;
     private android.view.TextureView liveView;

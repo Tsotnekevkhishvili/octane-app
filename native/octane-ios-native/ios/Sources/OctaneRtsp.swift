@@ -84,8 +84,8 @@ final class OctaneRtspClient {
     private func open() {
         guard let host = url.host else { fail("NO_HOST"); return }
         let portNum = url.port ?? 554
-        // iPhone-ზე კამერის WiFi-ს „gateway“ არ აქვს და Network.framework-ის „მხოლოდ WiFi“ კავშირი
-        // „Network is down“-ს წერდა. ფაილებს/ინფორმაციას URLSession წარმატებით იღებს - TCP-საც მისით ვხსნით.
+        // iPhone-ზე კამერის WiFi-ს gateway არ აქვს და Network.framework-ის მხოლოდ WiFi კავშირი
+        // Network is down-ს წერდა. ფაილებს/ინფორმაციას URLSession წარმატებით იღებს - TCP-საც მისით ვხსნით.
         let cfg = URLSessionConfiguration.default
         cfg.allowsCellularAccess = false
         cfg.waitsForConnectivity = false
@@ -265,7 +265,7 @@ final class OctaneRtspClient {
     }
 
     private func startKeepAlive() {
-        // კამერა: „Session: …;timeout=6“ - 6 წამში სიგნალი თუ არ მივიდა, ნაკადს წყვეტს (ლეპტოპით შემოწმდა).
+        // კამერა: Session: …;timeout=6 - 6 წამში სიგნალი თუ არ მივიდა, ნაკადს წყვეტს (ლეპტოპით შემოწმდა).
         // GET_PARAMETER ყოველ 2 წამში - 15 წამიან ტესტში კამერა ყველას პასუხობდა და ნაკადი არ გაწყვეტილა.
         let t = DispatchSource.makeTimerSource(queue: q)
         t.schedule(deadline: .now() + 2, repeating: 2)

@@ -24,7 +24,7 @@ import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 
 /**
- * Octane App — კამერის ჩანაწერის ყურება (ExoPlayer).
+ * Octane App - კამერის ჩანაწერის ყურება (ExoPlayer).
  *
  * WebView-ის <video> იაფ ტელეფონებზე 1296P ვიდეოს ვერ აჩვენებს (შავი ეკრანი, მხოლოდ ხმა).
  * ExoPlayer დეკოდერს ვიდეოს მიხედვით ირჩევს: თუ აპარატული ამ ზომას ვერ ხსნის, იყენებს პროგრამულს.
@@ -114,7 +114,7 @@ public class DashcamPlayerActivity extends Activity {
         player.setPlayWhenReady(true);
         player.prepare();
 
-        // „გადახედვა“ (მოჭრისას): მონიშნული ნაწილის ბოლოს ჩერდება
+        // გადახედვა (მოჭრისას): მონიშნული ნაწილის ბოლოს ჩერდება
         if (endMs > 0) {
             handler.post(new Runnable() {
                 @Override

@@ -40,7 +40,7 @@
 .dc-app .dc-progress .dc-bar, .dc-sheet .dc-bar { height: 12px; padding: 0; border-radius: 99px; }
 .dc-app .dc-progress .dc-bar span, .dc-sheet .dc-bar span { background-image: none !important; border-radius: 99px; }
 
-/* მართვის ღილაკები (როგორც „Vehicle Control“) */
+/* მართვის ღილაკები (როგორც Vehicle Control) */
 .dc-app .dc-acts { display: flex; justify-content: space-around; margin: 12px 0 0; padding: 18px 10px; background: var(--u-card); border-radius: var(--u-r); }
 .dc-app .dc-act { gap: 8px; color: var(--u-ink); }
 .dc-app .dc-act-c { width: 56px !important; height: 56px !important; border-radius: 50% !important; background: var(--u-blue) !important; color: #fff !important;
@@ -105,7 +105,7 @@
 .dc-modal-ic { background: var(--u-blue-soft) !important; color: var(--u-blue) !important; box-shadow: none !important; }
 .dc-toast { background: var(--u-dark) !important; color: #fff !important; border: 0 !important; box-shadow: none !important; border-radius: 999px !important; }
 
-/* ქვედა მენიუ - იგივე მცურავი „კაფსულა“ */
+/* ქვედა მენიუ - იგივე მცურავი კაფსულა */
 .dc-app .dc-nav { position: fixed; left: 50%; right: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: auto;
                   background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
 .dc-app .dc-nav-in { display: flex; gap: 8px; padding: 7px; border-radius: 999px; background: rgba(214,218,224,.72) !important;
