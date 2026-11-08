@@ -2207,7 +2207,7 @@
             </div>
 
             <!-- 🚗 მარკა - მხოლოდ მწარმოებლის კოდის შემთხვევაში -->
-            <div x-show="errors.some(e => e.mfr)" class="brand-box" style="margin-top:12px;">
+            <div x-show="errors.some(e => e.mfr && !e.brandExact) && !$store.car.brand" class="brand-box" style="margin-top:12px;">
                 <div class="brand-box-t">მწარმოებლის კოდის ზუსტი აღწერისთვის აირჩიე მარკა</div>
                 <select class="brand-select" :value="carBrand" @change="setBrand($event.target.value)" aria-label="მანქანის მარკა">
                     <option value="">აირჩიე მარკა</option>
@@ -2237,7 +2237,7 @@
                         </button>
                         <div x-show="why" x-cloak>
                             <p>ასეთ კოდებს (<b>P1, P3, B1, C1, U1</b>…) ყველა მარკა თავისებურად განსაზღვრავს, ამიტომ ზუსტ აღწერას მარკის ცოდნის გარეშე ვერცერთი სკანერი ვერ მოგცემს.</p>
-                            <p><b>რა ქნა:</b> ზემოთ აირჩიე მარკა ან დააჭირე „ჰკითხე AI-ს“.</p>
+                            <p><b>რა ქნა:</b> <span x-text="$store.car.brand ? 'ამ კოდის აღწერა ' + $store.car.brand + '-ისთვის ჯერ არ გვაქვს - დააჭირე „ჰკითხე AI-ს“ ან გადაამოწმე სერვისში.' : 'ზემოთ აირჩიე მარკა ან დააჭირე „ჰკითხე AI-ს“.'"></span></p>
                         </div>
                     </div>
                     <div x-show="err.brandExact" class="mfr-note mfr-note-ok" style="margin-top:12px;">
@@ -4311,7 +4311,7 @@ function obdApp() {
             if (window.OCTANE_AVTO && (isMfrCode || !db[code])) {
                 let a = window.OCTANE_AVTO.brand(code, this.carBrand);
                 if (a) {
-                    let bn = (window.Alpine && Alpine.store('car') && Alpine.store('car').brand) || this.brandLabel();
+                    let bn = a.label || this.brandLabel();
                     return this.avtoFault(code, a, bn);
                 }
             }

@@ -30,7 +30,14 @@
         return pending[key];
     }
     function carBrand() { try { return Alpine.store('car').brand || ''; } catch (e) { return ''; } }
-    function keyFor(group) { return FILE[carBrand()] || (group && GROUP[group]) || ''; }
+    // მანქანის ზუსტი მარკა (ჩემი მანქანა); თუ კოდის ძებნაში სხვა მარკის ჯგუფი აირჩიეს - ის
+    function keyFor(group) {
+        var b = carBrand(), own = FILE[b] || '';
+        var ownGroup = '';
+        try { ownGroup = window.OCTANE_BODY ? window.OCTANE_BODY.codeBrand(b) : ''; } catch (e) {}
+        if (group && GROUP[group] && group !== ownGroup) return GROUP[group];
+        return own || (group && GROUP[group]) || '';
+    }
 
     window.OCTANE_AVTO = {
         // არჩეული მარკის + ზოგადი ფაილის წინასწარ ჩატვირთვა
@@ -39,7 +46,8 @@
         brand: function (code, group) {
             var k = keyFor(group), t = k && cache[k] && cache[k][code];
             if (!t) { if (k) load(k); return null; }
-            return { title: t[0], rel: t[1] || '' };
+            // label: მანქანის მარკა, თუ მისი ფაილია; სხვა შემთხვევაში (ხელით არჩეული ჯგუფი) - ცარიელი
+            return { title: t[0], rel: t[1] || '', label: FILE[carBrand()] === k ? carBrand() : '' };
         },
         generic: function (code) {
             var t = cache.generic && cache.generic[code];
