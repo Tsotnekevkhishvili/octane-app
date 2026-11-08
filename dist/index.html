@@ -2251,7 +2251,7 @@
                 </div>
                 <div class="ui-eng-stats">
                     <button type="button" class="ui-eng-oil" @click="$store.car.openPage()"><small>ზეთამდე</small><b :class="$store.car.oilLeft !== null && $store.car.oilLeft <= 500 ? 'hot' : ''" x-text="$store.car.oilLeft === null ? 'მიუთითე' : ($store.car.oilLeft <= 0 ? 'დროა' : $store.car.oilLeft.toLocaleString('ka-GE') + ' კმ')"></b></button>
-                    <div><small>ძაბვა</small><b x-text="(health.volt || voltage) ? Number(health.volt || voltage).toFixed(1) + ' V' : '—'"></b></div>
+                    <div><small>ძაბვა</small><b x-text="health.volt ? health.volt.toFixed(1) + ' V' : (voltage >= 9 && voltage <= 16.5 ? Number(voltage).toFixed(1) + ' V' : '—')"></b></div>
                     <div><small>ანტიფრიზი</small><b x-text="health.temp === null ? '—' : health.temp + '°C'"></b></div>
                 </div>
                 <div class="ui-eng-foot">
@@ -4387,10 +4387,10 @@ function obdApp() {
             };
             try {
                 const t = await pid('05');
-                if (t && t.length) this.health.temp = t[0] - 40;
+                if (t && t.length && t[0] - 40 >= -40 && t[0] - 40 <= 130) this.health.temp = t[0] - 40;   // მხოლოდ რეალისტური
                 const rv = this.cleanELMResponse(await this.sendELMCommand('AT RV', 3000), 'AT RV');
                 const m = (rv.lines.join(' ').match(/(\d+(?:\.\d+)?)\s*V/i) || [])[1];
-                if (m) this.health.volt = parseFloat(m);
+                if (m && parseFloat(m) >= 9 && parseFloat(m) <= 16.5) this.health.volt = parseFloat(m);   // მხოლოდ რეალისტური
             } catch (e) {}
             this.health.busy = false;
         },
