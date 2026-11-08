@@ -1368,12 +1368,18 @@
         </select>
 
         <label class="ui-label" for="ui-car-model">მოდელი</label>
-        <input id="ui-car-model" class="ui-input" type="text" list="ui-car-models" maxlength="40" autocomplete="off"
-               :placeholder="$store.car.draftBrand ? 'აირჩიე ან ჩაწერე მოდელი' : 'ჯერ აირჩიე ბრენდი'" :disabled="!$store.car.draftBrand"
-               x-model="$store.car.draftModel" @change="$store.car.modelChanged()" @input.debounce.400ms="$store.car.modelChanged()">
-        <datalist id="ui-car-models">
-            <template x-for="m in $store.car.models" :key="m"><option :value="m"></option></template>
-        </datalist>
+        <!-- ჩამოსაშლელი სია (ბაზიდან) + „სხვა მოდელი“ - ხელით ჩასაწერად -->
+        <div x-data="{ manual: false, get other() { var c = Alpine.store('car'); return this.manual || !!(c.draftModel && c.models.indexOf(c.draftModel) < 0); } }"
+             x-effect="$store.car.draftBrand; manual = false">
+            <select id="ui-car-model" class="ui-input ui-select" :disabled="!$store.car.draftBrand"
+                    @change="if ($event.target.value === '__other') { manual = true; $store.car.draftModel = ''; $nextTick(() => $refs.mo.focus()); } else { manual = false; $store.car.draftModel = $event.target.value; $store.car.modelChanged(); }">
+                <option value="" x-text="$store.car.draftBrand ? 'აირჩიე მოდელი' : 'ჯერ აირჩიე ბრენდი'" :selected="!other && !$store.car.draftModel"></option>
+                <template x-for="m in $store.car.models" :key="m"><option :value="m" x-text="m" :selected="!other && m === $store.car.draftModel"></option></template>
+                <option value="__other" :selected="other">სხვა მოდელი (ჩაწერე)</option>
+            </select>
+            <input x-ref="mo" x-show="other" x-cloak class="ui-input" type="text" maxlength="40" autocomplete="off" style="margin-top:8px;"
+                   placeholder="ჩაწერე მოდელი" x-model="$store.car.draftModel" @change="$store.car.modelChanged()" @input.debounce.400ms="$store.car.modelChanged()">
+        </div>
 
         <div class="ui-two">
             <div>
