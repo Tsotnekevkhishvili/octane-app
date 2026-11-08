@@ -961,7 +961,7 @@
                 if (path && window.Capacitor && window.Capacitor.convertFileSrc) this.dcPlayer.src = window.Capacitor.convertFileSrc('file://' + path);
                 else this.dcPlayer.error = 'ვიდეო ვერ ჩაირთო. შეამოწმე კამერასთან კავშირი და სცადე თავიდან.';
             },
-            dcInGallery: function (f) { return !!(f && this.dcGallery[f.id]); },
+            dcInGallery: function (f) { return !!(f && (f.kind === 'video' ? this.dcGallery[f.id] === 'mark' : this.dcGallery[f.id])); },
 
             // ─────────── ⬇️ გადმოწერა / გალერეა / გაზიარება ───────────
             dcIsDownloaded: function (f) { return !!(f && this.dcDownloads[f.id]); },
@@ -1092,9 +1092,10 @@
                 this.dcBusy = 'გალერეაში შენახვა...';
                 try {
                     await DcNet.plugin().saveToGallery({ path: marked || path, mime: marked ? 'video/mp4' : f.mime, fileName: marked ? String(f.name).replace(/\.[A-Za-z0-9]+$/, '') + '_octane.mp4' : f.name });
-                    this.dcGallery[f.id] = true;
+                    this.dcGallery[f.id] = marked ? 'mark' : true;
                     lsSet('octane_dc_gallery', JSON.stringify(this.dcGallery));
-                    if (!quiet) this.dcShowToast(isIOS() ? 'შენახულია ტელეფონის გალერეაში (Photos).' : 'შენახულია ტელეფონის გალერეაში („Octane DashCam“ ალბომი).');
+                    if (f.kind === 'video' && !marked) this.dcShowToast('შენახულია, მაგრამ „Octane App“ წარწერა ვერ დაემატა.');
+                    else if (!quiet) this.dcShowToast(isIOS() ? 'შენახულია ტელეფონის გალერეაში (Photos).' : 'შენახულია ტელეფონის გალერეაში („Octane DashCam“ ალბომი).');
                     return true;
                 } catch (e) {
                     var m = e && e.message ? e.message : '';
@@ -1106,9 +1107,22 @@
             async dcShare(f) {
                 var path = await this.dcDownload(f, true);
                 if (!path) return;
-                var story = f.kind === 'video' ? await this.dcBrandFile(f, 'story') : null;
                 try {
-                    await DcNet.plugin().share({ path: story || path, mime: story ? 'video/mp4' : f.mime, title: 'გაზიარება' });
+                    await DcNet.plugin().share({ path: path, mime: f.mime, title: 'გაზიარება' });
+                } catch (e) {
+                    this.dcShowToast('გაზიარება ვერ მოხერხდა.');
+                }
+            },
+
+            // Instagram / Facebook / TikTok: ვიდეო ვერტიკალურ ჩარჩოში → პირდაპირ ამ აპში (Android); iPhone-ზე - გაზიარების მენიუ
+            async dcShareTo(f, app) {
+                var PK = { instagram: ['com.instagram.android'], facebook: ['com.facebook.katana', 'com.facebook.lite'], tiktok: ['com.zhiliaoapp.musically', 'com.ss.android.ugc.trill'] };
+                var path = await this.dcDownload(f, true);
+                if (!path) return;
+                var story = f.kind === 'video' ? await this.dcBrandFile(f, 'story') : null;
+                if (f.kind === 'video' && !story) this.dcShowToast('ჩარჩოს დამატება ვერ მოხერხდა - იგზავნება ორიგინალი.');
+                try {
+                    await DcNet.plugin().share({ path: story || path, mime: story ? 'video/mp4' : f.mime, title: 'გაზიარება', packages: PK[app] || [] });
                 } catch (e) {
                     this.dcShowToast('გაზიარება ვერ მოხერხდა.');
                 }

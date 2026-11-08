@@ -666,6 +666,19 @@ public class DashcamWifiPlugin extends Plugin {
             send.setType(mime);
             send.putExtra(Intent.EXTRA_STREAM, uri);
             send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            // Instagram / Facebook / TikTok: პირდაპირ ამ აპში (თუ დაყენებულია), სხვა შემთხვევაში - ჩვეულებრივი მენიუ
+            com.getcapacitor.JSArray pk = call.getArray("packages");
+            if (pk != null) {
+                for (int i = 0; i < pk.length(); i++) {
+                    try {
+                        Intent direct = new Intent(send);
+                        direct.setPackage(pk.getString(i));
+                        getActivity().startActivity(direct);
+                        call.resolve();
+                        return;
+                    } catch (Exception ignored) {}
+                }
+            }
             Intent chooser = Intent.createChooser(send, title);
             chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             getActivity().startActivity(chooser);

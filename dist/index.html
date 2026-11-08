@@ -3302,6 +3302,12 @@
 
                 <!-- მოქმედებები -->
                 <div x-show="!dcTrim.open">
+                    <!-- სოციალური ქსელები: ვიდეო ვერტიკალურ ჩარჩოში (Octane-ის ლოგოთი) -->
+                    <div class="dc-pl-social" x-show="dcPlayer.file && dcPlayer.file.kind === 'video'">
+                        <button type="button" class="dc-soc ig" @click="dcShareTo(dcPlayer.file, 'instagram')" :disabled="!!dcBusy"><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16.9" cy="7.1" r="1.1" fill="#fff"/></svg></i><span>Instagram</span></button>
+                        <button type="button" class="dc-soc fb" @click="dcShareTo(dcPlayer.file, 'facebook')" :disabled="!!dcBusy"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M13.6 21v-7.3h2.5l.4-2.9h-2.9V9c0-.8.3-1.4 1.5-1.4h1.5V5.1c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2H8.2v2.9h2.5V21h2.9z"/></svg></i><span>Facebook</span></button>
+                        <button type="button" class="dc-soc tt" @click="dcShareTo(dcPlayer.file, 'tiktok')" :disabled="!!dcBusy"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.5 3h-3v12.2a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V9.5a5.8 5.8 0 1 0 4.9 5.7V9.1a7.3 7.3 0 0 0 3.9 1.2V7.2c-2.1 0-3.9-1.8-3.9-4.2z"/></svg></i><span>TikTok</span></button>
+                    </div>
                     <div class="dc-pl-acts" :class="dcPlayer.file && dcPlayer.file.kind === 'photo' ? 'three' : 'four'">
                         <!-- „გადმოწერა“ = ტელეფონის გალერეაში შენახვა (ცალკე „გალერეა“ ღილაკი აღარ არის) -->
                         <button type="button" class="dc-pl-btn" :class="dcInGallery(dcPlayer.file) ? 'ok' : ''" @click="dcSaveToGallery(dcPlayer.file)" :disabled="!!dcBusy || dcInGallery(dcPlayer.file)">
@@ -3313,7 +3319,7 @@
                         <button type="button" class="dc-pl-btn red" x-show="!dcIsLocal(dcPlayer.file)" @click="dcAskDelete(dcPlayer.file)" :disabled="!!dcBusy || !dcConnected"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                         <button type="button" class="dc-pl-btn red" x-show="dcIsLocal(dcPlayer.file)" x-cloak @click="dcAskDeleteClip(dcPlayer.file)"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                     </div>
-                    <p class="dc-pl-note" x-text="dcPlayer.file && dcPlayer.file.kind === 'video' ? '„გაგზავნა“ - ვერტიკალურ ჩარჩოში: Instagram, Facebook, Messenger და სხვა.' : '„გაგზავნა“ - Messenger, WhatsApp, Viber, Telegram და სხვა.'"></p>
+                    <p class="dc-pl-note" x-text="dcPlayer.file && dcPlayer.file.kind === 'video' ? 'Instagram, Facebook, TikTok - ვერტიკალურ ჩარჩოში. „გადმოწერა“ - Octane App წარწერით.' : '„გაგზავნა“ - Messenger, WhatsApp, Viber, Telegram და სხვა.'"></p>
                 </div>
 
                 <!-- ✂️ მოჭრა -->

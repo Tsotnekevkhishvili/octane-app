@@ -146,3 +146,25 @@
 .dc-pl-panel .dc-trim-ok-t { color: var(--u-green); background: var(--u-green-soft); border: 0; font-weight: 500; }
 .dc-pl-panel .dc-trim-warn { color: var(--u-ink); background: var(--u-amber-soft); border: 0; font-weight: 500; }
 .dc-pl-panel .dc-trim-warn .ic { color: var(--u-amber); }
+
+/* სოციალური ქსელები ვიდეოს პანელზე */
+.dc-pl-social { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 28rem; margin: 0 auto 14px; }
+.dc-soc { height: 48px; border: 0; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; color: #fff !important; font-size: 13px; font-weight: 600; min-width: 0; }
+.dc-soc i { width: 22px; height: 22px; display: flex; flex-shrink: 0; }
+.dc-soc i svg { width: 100%; height: 100%; }
+.dc-soc span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dc-soc.ig { background: linear-gradient(45deg, #F58529, #DD2A7B 55%, #8134AF); }
+.dc-soc.fb { background: #1877F2; }
+.dc-soc.tt { background: #111; }
+.dc-soc:active { transform: scale(.97); }
+.dc-soc:disabled { opacity: .5; }
+
+/* არჩევის ზოლი და პროცესის ზოლი - ღია დიზაინი */
+.dc-selbar { background: var(--u-card) !important; border: 0 !important; color: var(--u-ink) !important; box-shadow: 0 12px 36px rgba(0,0,0,.18) !important; }
+.dc-selbar-top b { color: var(--u-ink); font-weight: 600 !important; }
+.dc-link { background: var(--u-soft) !important; color: var(--u-ink) !important; font-weight: 500 !important; border: 1px solid var(--u-line) !important; }
+.dc-bar-btn { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; font-weight: 500 !important; }
+.dc-bar-btn .ic { color: var(--u-ink) !important; }
+.dc-bar-btn.red, .dc-bar-btn.red .ic { color: var(--u-red) !important; }
+.dc-bar-btn.red { background: var(--u-red-soft) !important; border-color: transparent !important; }
+.dc-progress { background: var(--u-card) !important; border: 0 !important; color: var(--u-ink) !important; box-shadow: 0 12px 36px rgba(0,0,0,.18) !important; font-weight: 500 !important; }
