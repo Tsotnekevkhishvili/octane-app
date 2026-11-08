@@ -2695,6 +2695,25 @@
         </div>
     </template>
 
+    <!-- სკანერის WiFi-ის სახელი (თუ ავტომატურად ვერ მოიძებნა) -->
+    <template x-teleport="body">
+        <div>
+            <div class="ui-sheet-bg" x-show="obdSsidAsk" x-cloak x-transition.opacity @click="obdSsidAsk = false"></div>
+            <div class="ui-sheet" x-show="obdSsidAsk" x-cloak role="dialog" aria-modal="true" aria-label="სკანერის WiFi">
+                <div class="ui-sheet-grab"></div>
+                <div class="ui-sheet-ic"><svg class="ic"><use href="#i-wifi"/></svg></div>
+                <h3>რა ჰქვია სკანერის WiFi-ს?</h3>
+                <p class="ui-sheet-p">ნახე ტელეფონის პარამეტრებში, Wi-Fi სიაში. მაგალითად: WiFi_OBDII, WIFI_OBDII, OBDII, V-LINK. ჩაწერე ზუსტად ისე, როგორც იქ წერია (დიდი და პატარა ასოებით).</p>
+                <input class="ui-input" type="text" maxlength="32" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:14px;"
+                       placeholder="WiFi_OBDII" x-model="obdSsidDraft" @keydown.enter="saveObdSsid()">
+                <div class="ui-btns">
+                    <button type="button" class="ui-btn light" @click="obdSsidAsk = false; openHelp(true)">ინსტრუქცია</button>
+                    <button type="button" class="ui-btn dark" @click="saveObdSsid()" :disabled="!(obdSsidDraft || '').trim()">დაკავშირება</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- ჩეკის ჩაქრობის დადასტურება - ქვედა ფანჯარა -->
     <template x-teleport="body">
         <div>
@@ -3845,6 +3864,17 @@ function obdApp() {
         // ჩვეულებრივად აგრძელებს ძველი გზით, არაფერი ფუჭდება.
         obdWifiLinked: false,
         obdJoinFailed: false,
+        obdSsid: (function () { try { return localStorage.getItem('octane_obd_ssid') || ''; } catch (e) { return ''; } })(),
+        obdSsidAsk: false, obdSsidDraft: '',
+        saveObdSsid() {
+            const v = (this.obdSsidDraft || '').trim();
+            this.obdSsidAsk = false;
+            if (!v) return;
+            this.obdSsid = v;
+            try { localStorage.setItem('octane_obd_ssid', v); } catch (e) {}
+            this.obdWifiLinked = false;
+            this.connectOBD();
+        },
         async autoJoinObdWifi() {
             const plugins = window.Capacitor && window.Capacitor.Plugins;
             const ObdWifi = plugins && plugins.ObdWifi;
@@ -3854,7 +3884,10 @@ function obdApp() {
                 const sup = await ObdWifi.isSupported();
                 if (!sup || !sup.supported) return;
                 this.statusMessage = 'აირჩიე სკანერი სიიდან (WiFi OBD)...';
-                const jr = await ObdWifi.connect({ pattern: '.*OBD.*' });
+                const name = this.obdSsid;
+                const jr = await ObdWifi.connect(name
+                    ? { prefix: name, pattern: '.*' + name.replace(/([.*\\])/g, '\\$1') + '.*' }   // Android: PATTERN_SIMPLE_GLOB
+                    : { pattern: '.*OBD.*' });
                 this.obdJoinFailed = !!(jr && jr.connected === false);
                 this.obdWifiLinked = true;
                 this.statusMessage = 'WiFi დაკავშირდა! სკანერთან კავშირი...';
@@ -3883,7 +3916,13 @@ function obdApp() {
                             this.statusMessage = this.obdJoinFailed
                                 ? 'სკანერის WiFi-ს ავტომატურად ვერ დავუკავშირდით. ტელეფონის პარამეტრებში (Wi-Fi) აირჩიე სკანერის ქსელი და სცადე თავიდან.'
                                 : 'Wi-Fi შეცდომა! შეამოწმეთ ქსელი.';
-                            this.openHelp(true);
+                            // ავტომატურად ვერ მოიძებნა - ვკითხოთ სკანერის WiFi-ის სახელი (ერთხელ, მერე დაიმახსოვრებს)
+                            if (this.obdJoinFailed && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ObdWifi) {
+                                this.obdSsidDraft = this.obdSsid || '';
+                                this.obdSsidAsk = true;
+                            } else {
+                                this.openHelp(true);
+                            }
                         }
                     });
                 });

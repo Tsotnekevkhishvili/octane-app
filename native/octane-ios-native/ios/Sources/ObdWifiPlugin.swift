@@ -49,10 +49,38 @@ public class ObdWifiPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func connect(_ call: CAPPluginCall) {
-        let prefix = call.getString("prefix", "WiFi_OBD")
+        // სახელის დასაწყისი: ჯერ ბოლოს წარმატებული, მერე JS-იდან მოსული, მერე გავრცელებული ვარიანტები
+        // (iPhone დიდ და პატარა ასოებს არჩევს: WIFI_OBDII და WiFi_OBDII სხვადასხვაა)
+        var list: [String] = []
+        if let last = UserDefaults.standard.string(forKey: "octane_obd_prefix") { list.append(last) }
+        if let p = call.getString("prefix") { list.append(p) }
+        list.append(contentsOf: ["WIFI_OBD", "WiFi_OBD"])
+        var seen = Set<String>()
+        let prefixes = list.filter { !$0.isEmpty && seen.insert($0).inserted }
         ObdWifiPlugin.reachable(host: "192.168.0.10", port: 35000, timeout: 1.2) { ok in
             if ok { call.resolve(["connected": true, "already": true]); return }
-            self.join(prefix: prefix, fresh: false, call: call)
+            self.tryPrefixes(prefixes, index: 0, fresh: false, call: call)
+        }
+    }
+
+    /// რიგრიგობით ვცდით სახელებს; ბოლოს - პირველს თავიდან (შენახული პარამეტრის წაშლით, Join ფანჯრით)
+    private func tryPrefixes(_ prefixes: [String], index: Int, fresh: Bool, call: CAPPluginCall) {
+        if index >= prefixes.count {
+            if fresh || prefixes.isEmpty { call.resolve(["connected": false]); return }
+            tryPrefixes([prefixes[0]], index: 0, fresh: true, call: call)
+            return
+        }
+        let prefix = prefixes[index]
+        join(prefix: prefix, fresh: fresh) { result in
+            switch result {
+            case "ok":
+                UserDefaults.standard.set(prefix, forKey: "octane_obd_prefix")
+                call.resolve(["connected": true, "prefix": prefix])
+            case "denied":
+                call.reject("DENIED")
+            default:
+                self.tryPrefixes(prefixes, index: index + 1, fresh: fresh, call: call)
+            }
         }
     }
 
@@ -64,25 +92,18 @@ public class ObdWifiPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// მიერთება. fresh = true: ძველი (შენახული) პარამეტრი იშლება და iPhone თავიდან აჩვენებს Join ფანჯარას.
-    /// შენახული პარამეტრით iPhone ჩუმად ცდილობს მიერთებას და ზოგჯერ ვერ ახერხებს - მაშინ ერთხელ თავიდან ვცდით.
-    private func join(prefix: String, fresh: Bool, call: CAPPluginCall) {
+    /// მიერთება ერთი სახელით. fresh = true: ძველი (შენახული) პარამეტრი იშლება და iPhone თავიდან აჩვენებს Join ფანჯარას.
+    private func join(prefix: String, fresh: Bool, done: @escaping (String) -> Void) {
         let apply: () -> Void = {
             let cfg = NEHotspotConfiguration(ssidPrefix: prefix)
             cfg.joinOnce = false
             NEHotspotConfigurationManager.shared.apply(cfg) { error in
                 if let e = error as NSError?, e.code != NEHotspotConfigurationError.alreadyAssociated.rawValue {
-                    if e.code == NEHotspotConfigurationError.userDenied.rawValue { call.reject("DENIED"); return }
-                    if !fresh { self.join(prefix: prefix, fresh: true, call: call); return }
-                    call.reject("UNAVAILABLE: \(e.localizedDescription)")
+                    done(e.code == NEHotspotConfigurationError.userDenied.rawValue ? "denied" : "fail")
                     return
                 }
                 self.joinedPrefix = prefix
-                ObdWifiPlugin.waitReachable(tries: 12) { ok in
-                    if ok { call.resolve(["connected": true]); return }
-                    if !fresh { self.join(prefix: prefix, fresh: true, call: call); return }
-                    call.resolve(["connected": false])
-                }
+                ObdWifiPlugin.waitReachable(tries: 12) { ok in done(ok ? "ok" : "fail") }
             }
         }
         if !fresh { apply(); return }
