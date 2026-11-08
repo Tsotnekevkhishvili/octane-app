@@ -3215,7 +3215,7 @@
                         <button type="button" class="dc-pl-btn red" x-show="!dcIsLocal(dcPlayer.file)" @click="dcAskDelete(dcPlayer.file)" :disabled="!!dcBusy || !dcConnected"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                         <button type="button" class="dc-pl-btn red" x-show="dcIsLocal(dcPlayer.file)" x-cloak @click="dcAskDeleteClip(dcPlayer.file)"><i><svg class="ic"><use href="#i-trash"/></svg></i><span>წაშლა</span></button>
                     </div>
-                    <p class="dc-pl-note">„გაგზავნა“ - Messenger, WhatsApp, Viber, Telegram და სხვა.</p>
+                    <p class="dc-pl-note" x-text="dcPlayer.file && dcPlayer.file.kind === 'video' ? '„გაგზავნა“ - ვერტიკალურ ჩარჩოში: Instagram, Facebook, Messenger და სხვა.' : '„გაგზავნა“ - Messenger, WhatsApp, Viber, Telegram და სხვა.'"></p>
                 </div>
 
                 <!-- ✂️ მოჭრა -->

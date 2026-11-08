@@ -117,3 +117,32 @@
 .dc-app .dc-nav button.on .dc-nav-ic { background: var(--u-blue) !important; border-color: var(--u-blue) !important; color: #fff !important; }
 .dc-app .dc-nav-ic .ic { width: 21px !important; height: 21px !important; }
 .dc-app .dc-acts + .dc-wide, .dc-app .dc-acts ~ .dc-wide { margin-top: 12px; }
+
+/* ═══ ვიდეოს/ფოტოს ნახვა: ქვედა პანელი ახალ (ღია) დიზაინში ═══ */
+.dc-pl-back { background: rgba(255,255,255,.14) !important; border: 0 !important; }
+.dc-pl-panel { background: var(--u-card) !important; color: var(--u-ink) !important; border: 0 !important; border-radius: 28px 28px 0 0 !important; padding: 18px 16px calc(16px + env(safe-area-inset-bottom)) !important; box-shadow: 0 -8px 30px rgba(0,0,0,.25); }
+.dc-pl-btn { color: var(--u-ink) !important; font-size: 12px !important; font-weight: 500 !important; gap: 8px !important; }
+.dc-pl-btn i { width: 54px !important; height: 54px !important; background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; box-shadow: none !important; }
+.dc-pl-btn i .ic { width: 22px; height: 22px; }
+.dc-pl-btn.ac i { background: var(--u-blue) !important; border-color: var(--u-blue) !important; color: #fff !important; }
+.dc-pl-btn.ok i { background: var(--u-green-soft) !important; border-color: transparent !important; color: var(--u-green) !important; }
+.dc-pl-btn.red { color: var(--u-red) !important; }
+.dc-pl-btn.red i { background: var(--u-red-soft) !important; border-color: transparent !important; color: var(--u-red) !important; }
+.dc-pl-note { color: var(--u-ink-3) !important; font-weight: 400 !important; font-size: 12px !important; margin-top: 10px !important; }
+.dc-pl-panel .dc-trim > span { color: var(--u-ink); font-weight: 600 !important; }
+.dc-pl-panel .dc-bar { height: 10px; padding: 0; border-radius: 99px; background: var(--u-soft) !important; border: 0; margin-top: 10px !important; }
+.dc-pl-panel .dc-bar span { background: var(--u-blue) !important; border-radius: 99px; }
+/* მოჭრა */
+.dc-pl-panel .dc-trim-head b { font-weight: 600; color: var(--u-ink); }
+.dc-pl-panel .dc-trim-head b .ic { color: var(--u-blue); }
+.dc-pl-panel .dc-icon-btn { background: var(--u-soft) !important; border: 1px solid var(--u-line) !important; color: var(--u-ink) !important; }
+.dc-pl-panel .dc-range-track { background: var(--u-soft); border: 1px solid var(--u-line); }
+.dc-pl-panel .dc-range-fill { background: var(--u-blue); }
+.dc-pl-panel .dc-range input::-webkit-slider-thumb { border-color: var(--u-blue); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.dc-pl-panel .dc-trim-times div { background: var(--u-soft); border: 1px solid var(--u-line); }
+.dc-pl-panel .dc-trim-times span { color: var(--u-ink-2); font-weight: 500; }
+.dc-pl-panel .dc-trim-times b { color: var(--u-ink); font-weight: 600; }
+.dc-pl-panel .dc-trim-times .mid b { color: var(--u-blue); }
+.dc-pl-panel .dc-trim-ok-t { color: var(--u-green); background: var(--u-green-soft); border: 0; font-weight: 500; }
+.dc-pl-panel .dc-trim-warn { color: var(--u-ink); background: var(--u-amber-soft); border: 0; font-weight: 500; }
+.dc-pl-panel .dc-trim-warn .ic { color: var(--u-amber); }

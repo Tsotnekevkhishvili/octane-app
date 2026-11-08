@@ -10,9 +10,20 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import android.graphics.Bitmap;
+
+import androidx.media3.common.Effect;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
+import androidx.media3.effect.BitmapOverlay;
+import androidx.media3.effect.OverlayEffect;
 import androidx.media3.effect.Presentation;
+import androidx.media3.effect.TextureOverlay;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.ArrayList;
+import java.util.List;
 import androidx.media3.transformer.Composition;
 import androidx.media3.transformer.EditedMediaItem;
 import androidx.media3.transformer.Effects;
@@ -88,6 +99,64 @@ public final class VideoCompat {
         Object[] v = probe(path);
         if (v == null) return false;
         return !hardwareCanPlay((String) v[0], (Integer) v[1], (Integer) v[2]);
+    }
+
+    /**
+     * 🏷️ ბრენდირება: ვიდეო outW×outH ზომაზე (ჩაწერილი, პროპორციის შენარჩუნებით) + ზემოდან სრული ზომის
+     * გამჭვირვალე სურათი (overlay - აპი ხატავს: ვერტიკალური ჩარჩო ან „Octane App“ წარწერა).
+     * overlay-ის ზომა = outW×outH, ამიტომ Media3 მას მთელ კადრზე ადებს.
+     * თუ ხმის ფორმატი ვერ გადაიყვანება, მეორე ცდა - ხმის გარეშე.
+     */
+    public static void brand(Context ctx, String in, File out, Bitmap overlay, int outW, int outH, Progress progress, Done done) {
+        new Handler(Looper.getMainLooper()).post(() -> runBrand(ctx, in, out, overlay, outW, outH, false, progress, done));
+    }
+
+    private static void runBrand(Context ctx, String in, File out, Bitmap overlay, int outW, int outH, boolean noAudio, Progress progress, Done done) {
+        Handler main = new Handler(Looper.getMainLooper());
+        try {
+            if (out.exists()) out.delete();
+            final Transformer[] holder = new Transformer[1];
+            final boolean[] finished = {false};
+            Transformer t = new Transformer.Builder(ctx)
+                    .setVideoMimeType(MimeTypes.VIDEO_H264)
+                    .addListener(new Transformer.Listener() {
+                        @Override
+                        public void onCompleted(Composition composition, ExportResult result) {
+                            finished[0] = true;
+                            done.on(out, null);
+                        }
+
+                        @Override
+                        public void onError(Composition composition, ExportResult result, ExportException e) {
+                            finished[0] = true;
+                            out.delete();
+                            if (!noAudio) runBrand(ctx, in, out, overlay, outW, outH, true, progress, done);
+                            else done.on(null, e.getMessage());
+                        }
+                    })
+                    .build();
+            holder[0] = t;
+            List<Effect> fx = new ArrayList<>();
+            fx.add(Presentation.createForWidthAndHeight(outW, outH, Presentation.LAYOUT_SCALE_TO_FIT));
+            fx.add(new OverlayEffect(ImmutableList.<TextureOverlay>of(BitmapOverlay.createStaticBitmapOverlay(overlay))));
+            EditedMediaItem item = new EditedMediaItem.Builder(MediaItem.fromUri(Uri.fromFile(new File(in))))
+                    .setRemoveAudio(noAudio)
+                    .setEffects(new Effects(Collections.emptyList(), fx))
+                    .build();
+            t.start(item, out.getAbsolutePath());
+
+            ProgressHolder ph = new ProgressHolder();
+            main.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (finished[0]) return;
+                    if (holder[0].getProgress(ph) == Transformer.PROGRESS_STATE_AVAILABLE) progress.on(ph.progress);
+                    main.postDelayed(this, 500);
+                }
+            }, 500);
+        } catch (Exception e) {
+            done.on(null, e.getMessage());
+        }
     }
 
     /** ვიდეო → 1080p (ან ნაკლები) H.264. მუშაობს მთავარ ნაკადზე (Transformer ამას მოითხოვს). */

@@ -5,6 +5,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -618,6 +620,36 @@ public class DashcamWifiPlugin extends Plugin {
                 }
             }
         });
+    }
+
+    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / „Octane App“ წარწერა (გადმოწერა) ═══════════
+    // { path, overlay (PNG base64, width×height), width, height, fileName, suffix } → { path, size }
+
+    @PluginMethod
+    public void brand(final PluginCall call) {
+        final String path = call.getString("path");
+        final String b64 = call.getString("overlay");
+        final int w = call.getInt("width", 0), h = call.getInt("height", 0);
+        if (path == null || !new File(path).exists()) { call.reject("NO_FILE"); return; }
+        if (b64 == null || w <= 0 || h <= 0) { call.reject("BAD_OVERLAY"); return; }
+        final Bitmap bmp;
+        try {
+            byte[] bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+            bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        } catch (Exception e) { call.reject("BAD_OVERLAY"); return; }
+        if (bmp == null) { call.reject("BAD_OVERLAY"); return; }
+
+        String base = safeName(call.getString("fileName", new File(path).getName())).replaceAll("\\.[A-Za-z0-9]+$", "");
+        final File out = new File(getContext().getCacheDir(), base + "_" + safeName(call.getString("suffix", "octane")) + ".mp4");
+        VideoCompat.brand(getContext(), path, out, bmp, w, h,
+                pct -> { JSObject p = new JSObject(); p.put("percent", pct); notifyListeners("compatProgress", p); },
+                (res, err) -> {
+                    if (res == null) { call.reject("BRAND_FAILED: " + err); return; }
+                    JSObject r = new JSObject();
+                    r.put("path", res.getAbsolutePath());
+                    r.put("size", res.length());
+                    call.resolve(r);
+                });
     }
 
     // ═══════════ 📤 გაზიარება (Messenger, WhatsApp, Viber, Telegram...) ═══════════

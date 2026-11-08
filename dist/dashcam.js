@@ -989,13 +989,109 @@
                     this.dcProgress = -1;
                 }
             },
+            // ─────────── 🏷️ ბრენდირება (ნატიური brand: ვიდეო + ზემოდან ეს სურათი) ───────────
+            // story - ვერტიკალური 1080×1920 ჩარჩო გასაზიარებლად (ვარიანტი A, ღია);
+            // mark  - „Octane App“ წარწერა ქვედა მარჯვენა კუთხეში, ვიდეოს კადრებში (გალერეაშიც ჩანს).
+            dcBrandedPaths: {},
+            dcLoadImg: function (src) {
+                return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; });
+            },
+            dcDateLabel: function (t) {
+                if (!t) return '';
+                var M = ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი', 'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'];
+                var d = new Date(t);
+                return d.getDate() + ' ' + M[d.getMonth()] + ' ' + d.getFullYear() + ' · ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+            },
+            async dcOverlay(mode, W, H, vw, vh, f) {
+                try { await Promise.all([document.fonts.load('700 52px "Noto Sans Georgian"'), document.fonts.load('600 42px Inter'), document.fonts.load('400 44px "Noto Sans Georgian"')]); } catch (e) {}
+                var car = await this.dcLoadImg('img/octane-car.png');
+                var c = document.createElement('canvas');
+                c.width = W; c.height = H;
+                var g = c.getContext('2d');
+                g.textAlign = 'center'; g.textBaseline = 'middle';
+                if (mode === 'story') {
+                    var word = await this.dcLoadImg('img/octane-word.png');
+                    // ვიდეოს ფანჯარა (Presentation / AVFoundation - პროპორციით, ცენტრში)
+                    var sc = Math.min(W / vw, H / vh), ww = vw * sc, wh = vh * sc, wx = (W - ww) / 2, wy = (H - wh) / 2;
+                    g.fillStyle = '#EDEFF2';
+                    g.fillRect(0, 0, W, H);
+                    g.clearRect(Math.round(wx) + 1, Math.round(wy) + 1, Math.round(ww) - 2, Math.round(wh) - 2);
+                    // ზემოთ: ლოგო
+                    var ch = 120, cw = car.width * ch / car.height, wdh = 84, wdw = word.width * wdh / word.height, gap = 32;
+                    var bx = (W - cw - gap - wdw) / 2, by = wy / 2;
+                    g.drawImage(car, bx, by - ch / 2, cw, ch);
+                    g.drawImage(word, bx + cw + gap, by - wdh / 2 + 4, wdw, wdh);
+                    // ქვემოთ: ტექსტი, თარიღი, „Octane App“
+                    var date = this.dcDateLabel(f && f.time);
+                    var mid = wy + wh + (H - wy - wh) / 2, y0 = mid - (date ? 92 : 64);
+                    g.fillStyle = '#111418';
+                    g.font = '700 52px "Noto Sans Georgian", Inter, sans-serif';
+                    g.fillText('ქართული ვიდეორეგისტრატორი', W / 2, y0);
+                    var y = y0 + 52;
+                    if (date) {
+                        g.fillStyle = '#6B7280';
+                        g.font = '400 42px "Noto Sans Georgian", Inter, sans-serif';
+                        g.fillText(date, W / 2, y + 22);
+                        y += 66;
+                    }
+                    g.font = '600 42px Inter, sans-serif';
+                    var tw = g.measureText('Octane App').width, pw = tw + 88, ph = 84, px = (W - pw) / 2, py = y + 40;
+                    g.fillStyle = '#FFFFFF';
+                    g.beginPath();
+                    if (g.roundRect) g.roundRect(px, py, pw, ph, ph / 2); else g.rect(px, py, pw, ph);
+                    g.fill();
+                    g.fillStyle = '#111418';
+                    g.fillText('Octane App', W / 2, py + ph / 2 + 2);
+                } else {
+                    // წყლის ნიშანი: ქვედა მარჯვენა კუთხე
+                    var fs = Math.max(18, Math.round(H * 0.032)), ih = Math.round(fs * 1.05), iw = car.width * ih / car.height;
+                    g.font = '600 ' + fs + 'px Inter, sans-serif';
+                    g.textAlign = 'right';
+                    var rx = W - Math.round(W * 0.024), ry = H - Math.round(H * 0.035) - fs / 2;
+                    var tw2 = g.measureText('Octane App').width;
+                    g.shadowColor = 'rgba(0,0,0,0.6)'; g.shadowBlur = fs * 0.3; g.shadowOffsetY = fs * 0.08;
+                    g.fillStyle = 'rgba(255,255,255,0.9)';
+                    g.fillText('Octane App', rx, ry + 2);
+                    g.drawImage(car, rx - tw2 - fs * 0.35 - iw, ry - ih / 2, iw, ih);
+                }
+                return c.toDataURL('image/png').split(',')[1];
+            },
+            async dcBrandFile(f, mode) {
+                var P = DcNet.plugin();
+                if (!P || this.dcDemo || !f || f.kind !== 'video') return null;
+                var key = mode + ':' + f.id;
+                if (this.dcBrandedPaths[key]) return this.dcBrandedPaths[key];
+                var path = await this.dcDownload(f, true);
+                if (!path) return null;
+                this.dcBusy = mode === 'story' ? 'ვამზადებ გასაზიარებლად...' : 'ვამატებ წარწერას...';
+                this.dcProgress = -1;
+                try {
+                    var info = await P.probe({ path: path });
+                    var vw = info.width || 1920, vh = info.height || 1080, W, H;
+                    if (mode === 'story') { W = 1080; H = 1920; }
+                    else {
+                        var k = Math.min(1, 1080 / Math.min(vw, vh));
+                        W = Math.round(vw * k / 2) * 2; H = Math.round(vh * k / 2) * 2;
+                    }
+                    var ov = await this.dcOverlay(mode, W, H, vw, vh, f);
+                    var r = await P.brand({ path: path, overlay: ov, width: W, height: H, fileName: f.name, suffix: mode === 'story' ? 'story' : 'octane' });
+                    this.dcBrandedPaths[key] = r.path;
+                    return r.path;
+                } catch (e) {
+                    return null;
+                } finally {
+                    this.dcBusy = '';
+                    this.dcProgress = -1;
+                }
+            },
             async dcSaveToGallery(f, quiet) {
                 if (this.dcInGallery(f)) { if (!quiet) this.dcShowToast('უკვე შენახულია ტელეფონის გალერეაში.'); return true; }
                 var path = await this.dcDownload(f, true);
                 if (!path) return false;
+                var marked = f.kind === 'video' ? await this.dcBrandFile(f, 'mark') : null;
                 this.dcBusy = 'გალერეაში შენახვა...';
                 try {
-                    await DcNet.plugin().saveToGallery({ path: path, mime: f.mime, fileName: f.name });
+                    await DcNet.plugin().saveToGallery({ path: marked || path, mime: marked ? 'video/mp4' : f.mime, fileName: marked ? String(f.name).replace(/\.[A-Za-z0-9]+$/, '') + '_octane.mp4' : f.name });
                     this.dcGallery[f.id] = true;
                     lsSet('octane_dc_gallery', JSON.stringify(this.dcGallery));
                     if (!quiet) this.dcShowToast(isIOS() ? 'შენახულია ტელეფონის გალერეაში (Photos).' : 'შენახულია ტელეფონის გალერეაში („Octane DashCam“ ალბომი).');
@@ -1010,8 +1106,9 @@
             async dcShare(f) {
                 var path = await this.dcDownload(f, true);
                 if (!path) return;
+                var story = f.kind === 'video' ? await this.dcBrandFile(f, 'story') : null;
                 try {
-                    await DcNet.plugin().share({ path: path, mime: f.mime, title: 'გაზიარება' });
+                    await DcNet.plugin().share({ path: story || path, mime: story ? 'video/mp4' : f.mime, title: 'გაზიარება' });
                 } catch (e) {
                     this.dcShowToast('გაზიარება ვერ მოხერხდა.');
                 }

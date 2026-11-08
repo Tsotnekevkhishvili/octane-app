@@ -50,6 +50,7 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
         CAPPluginMethod(name: "probe", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openVideo", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trim", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "brand", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "share", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareMany", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setOrientation", returnType: CAPPluginReturnPromise),
@@ -333,6 +334,89 @@ public class DashcamWifiPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDownloadD
                 call.resolve(["path": out.path, "startMs": startMs, "endMs": endMs, "shiftMs": 0, "audioDropped": false, "size": size])
             } else {
                 call.reject("TRIM_FAILED: \(ex.error?.localizedDescription ?? "")")
+            }
+        }
+    }
+
+    // ═══════════ 🏷️ ბრენდირება: ვერტიკალური ჩარჩო (გაზიარება) / „Octane App“ წარწერა (გადმოწერა) ═══════════
+    // { path, overlay (PNG base64, width×height), width, height, fileName, suffix } → { path, size }
+    // ვიდეო ჩაიწერება width×height კადრში (პროპორციით, ცენტრში), ზემოდან - აპის დახატული სურათი.
+
+    @objc func brand(_ call: CAPPluginCall) {
+        guard let path = call.getString("path"), FileManager.default.fileExists(atPath: path) else { call.reject("NO_FILE"); return }
+        guard let b64 = call.getString("overlay"),
+              let data = Data(base64Encoded: b64, options: .ignoreUnknownCharacters),
+              let overlay = UIImage(data: data)?.cgImage else { call.reject("BAD_OVERLAY"); return }
+        let outW: Int = call.getInt("width", 0)
+        let outH: Int = call.getInt("height", 0)
+        if outW <= 0 || outH <= 0 { call.reject("BAD_OVERLAY"); return }
+        var base = DashcamWifiPlugin.safeName(call.getString("fileName", URL(fileURLWithPath: path).lastPathComponent))
+        if let dot = base.lastIndex(of: ".") { base = String(base[..<dot]) }
+        let suffix = DashcamWifiPlugin.safeName(call.getString("suffix", "octane"))
+        let out = FileManager.default.temporaryDirectory.appendingPathComponent("\(base)_\(suffix).mp4")
+        try? FileManager.default.removeItem(at: out)
+
+        let asset = AVURLAsset(url: URL(fileURLWithPath: path))
+        guard let vt = asset.tracks(withMediaType: .video).first else { call.reject("NO_VIDEO"); return }
+        let comp = AVMutableComposition()
+        guard let cv = comp.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else { call.reject("VIDEO_FORMAT"); return }
+        let range = CMTimeRange(start: .zero, duration: asset.duration)
+        do { try cv.insertTimeRange(range, of: vt, at: .zero) } catch { call.reject("VIDEO_FORMAT"); return }
+        if let at = asset.tracks(withMediaType: .audio).first,
+           let ca = comp.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
+            try? ca.insertTimeRange(range, of: at, at: .zero)
+        }
+
+        let renderSize = CGSize(width: CGFloat(outW), height: CGFloat(outH))
+        let natural = vt.naturalSize.applying(vt.preferredTransform)
+        let vw = abs(natural.width), vh = abs(natural.height)
+        if vw < 1 || vh < 1 { call.reject("VIDEO_FORMAT"); return }
+        let scale = min(renderSize.width / vw, renderSize.height / vh)
+        let tx = (renderSize.width - vw * scale) / 2
+        let ty = (renderSize.height - vh * scale) / 2
+        let transform = vt.preferredTransform
+            .concatenating(CGAffineTransform(scaleX: scale, y: scale))
+            .concatenating(CGAffineTransform(translationX: tx, y: ty))
+
+        let li = AVMutableVideoCompositionLayerInstruction(assetTrack: cv)
+        li.setTransform(transform, at: .zero)
+        let ins = AVMutableVideoCompositionInstruction()
+        ins.timeRange = CMTimeRange(start: .zero, duration: comp.duration)
+        ins.layerInstructions = [li]
+        ins.backgroundColor = UIColor(red: 0.929, green: 0.937, blue: 0.949, alpha: 1).cgColor   // #EDEFF2
+
+        let fps: Float = vt.nominalFrameRate > 1 ? vt.nominalFrameRate : 30
+        let vc = AVMutableVideoComposition()
+        vc.renderSize = renderSize
+        vc.frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps.rounded()))
+        vc.instructions = [ins]
+
+        DispatchQueue.main.async {
+            let frame = CGRect(origin: .zero, size: renderSize)
+            let parent = CALayer()
+            parent.frame = frame
+            let videoLayer = CALayer()
+            videoLayer.frame = frame
+            let top = CALayer()
+            top.frame = frame
+            top.contents = overlay
+            top.contentsGravity = .resize
+            parent.addSublayer(videoLayer)
+            parent.addSublayer(top)
+            vc.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: parent)
+
+            guard let ex = AVAssetExportSession(asset: comp, presetName: AVAssetExportPresetHighestQuality) else { call.reject("VIDEO_FORMAT"); return }
+            ex.outputURL = out
+            ex.outputFileType = .mp4
+            ex.videoComposition = vc
+            ex.shouldOptimizeForNetworkUse = true
+            ex.exportAsynchronously {
+                if ex.status == .completed {
+                    let size = (try? FileManager.default.attributesOfItem(atPath: out.path)[.size] as? Int64) ?? 0
+                    call.resolve(["path": out.path, "size": size])
+                } else {
+                    call.reject("BRAND_FAILED: \(ex.error?.localizedDescription ?? "")")
+                }
             }
         }
     }
