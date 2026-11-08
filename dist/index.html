@@ -1498,12 +1498,13 @@
         <div class="wn-card" role="dialog" aria-modal="true" aria-labelledby="wn-title">
             <div class="wn-badge"><svg class="ic" style="width:30px; height:30px;"><use href="#i-sparkle"/></svg></div>
             <h3 class="wn-title" id="wn-title">აპლიკაცია განახლდა!</h3>
-            <p class="wn-ver" x-text="'ვერსია ' + appVersion">ვერსია 6.1</p>
+            <p class="wn-ver" x-text="'ვერსია ' + appVersion">ვერსია 6.2</p>
             <div class="wn-list">
-                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-dc-dashcam"/></svg></span><span><b>ვიდეორეგისტრატორი</b> - ვიდეოების ყურება, ტელეფონში შენახვა, გაგზავნა და ცოცხალი ხედი.</span></div>
-                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-sparkle"/></svg></span><span><b>ახალი დიზაინი</b> - უფრო ლამაზი და მოსახერხებელი.</span></div>
-                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-play"/></svg></span><span><b>ვიდეო ინსტრუქცია</b> - ნახე, როგორ დაუკავშირდე სკანერს.</span></div>
-                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><span><b>გაუმჯობესდა ხარვეზების აღწერა</b> - უფრო მოკლე და გასაგები.</span></div>
+                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-sparkle"/></svg></span><span><b>ახალი დიზაინი</b> - სუფთა და მარტივი.</span></div>
+                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-doc"/></svg></span><span><b>33 000+ ახალი ხარვეზის აღწერა</b> - მარკის საკუთარი კოდებიც, 31 მარკაზე.</span></div>
+                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-dc-car"/></svg></span><span><b>ჩემი მანქანა</b> - მონაცემები, ზეთის შეცვლის შეხსენება.</span></div>
+                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-dc-shield"/></svg></span><span><b>შეძენამდე შემოწმება</b> - გაიგე, ხომ არ წაშალეს კოდები ახლახან.</span></div>
+                <div class="wn-row"><span class="wn-ri"><svg class="ic ic-sm"><use href="#i-gauge"/></svg></span><span><b>Live მონაცემები და ისტორია</b> - მეტი მაჩვენებელი ახსნით, სკანირებების ისტორია.</span></div>
             </div>
             <button class="g-btn g-btn-main" style="width:100%; flex:none; margin-top:18px;" @click="closeWhatsNew()">გასაგებია</button>
         </div>
@@ -2109,7 +2110,7 @@
                 <svg class="ic"><use href="#i-lock"/></svg><span>კონფიდენციალურობა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </a>
             <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="menuOpen = false">დახურვა</button>
-            <div class="ui-ver" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.1</div>
+            <div class="ui-ver" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.2</div>
         </div>
 
         <!-- ზედა ზოლი: მენიუ · მანქანის სახელი და სტატუსი · მოწყობილობის შეცვლა -->
@@ -2524,7 +2525,7 @@
         </template>
     </div>
     <!-- ვერსიის ნომერი - ფერმკრთალად, მთავარი გვერდის ბოლოში -->
-    <div class="app-ver" x-show="activeTab === 'errors'" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.1</div>
+    <div class="app-ver" x-show="activeTab === 'errors'" x-text="'Octane App · ვერსია ' + appVersion">Octane App · ვერსია 6.2</div>
 
     <!-- 🤖 AI კითხვა-პასუხის MODAL -->
     <template x-teleport="body">
@@ -3381,7 +3382,7 @@ function obdApp() {
         // ═══════════ 🏷️ ვერსია და „რა არის ახალი“ ═══════════
         // ⚠️ ახალი ვერსიის გამოშვებისას შეცვალე appVersion (და build.gradle-ში versionName/versionCode).
         // ფანჯარა ჩნდება ერთხელ თითო ვერსიაზე და მხოლოდ გააქტიურებულ აპში (აქტივაციის ეკრანის შემდეგ).
-        appVersion: '6.1',
+        appVersion: '6.2',
         whatsNewOpen: false,
         maybeShowWhatsNew() {
             if (!this.isActivated) return false;
