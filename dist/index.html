@@ -53,6 +53,7 @@
     <script src="prepurchase.js"></script>
     <script src="live-pids.js"></script>
     <script src="history.js"></script>
+    <script src="hybrid.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -1687,6 +1688,81 @@
         </div>
     </div>
 
+    <!-- ═══════════ 🔋 ბატარეის შემოწმება (hybrid.js) ═══════════ -->
+    <div class="ui-full" x-show="$store.hv.open" x-cloak x-transition.opacity.duration.150ms>
+        <header class="ui-top">
+            <button type="button" class="ui-circle" @click="$store.hv.close()" aria-label="უკან"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+            <div class="ui-top-t"><b x-text="$store.hv.kindLabel"></b><span x-text="$store.car.title"></span></div>
+            <span></span>
+        </header>
+        <div class="ui-page" style="padding-bottom:40px;">
+            <!-- დასაწყისი -->
+            <div class="ui-card" x-show="$store.hv.state === 'idle' || $store.hv.state === 'noconn'">
+                <div class="ui-card-t">როგორ შევამოწმოთ</div>
+                <div class="ui-hv-steps">
+                    <div><b>1</b><span>მანქანა ჩართე (READY), დააყენე ადგილზე.</span></div>
+                    <div><b>2</b><span>კონდიციონერი და დიდი მომხმარებლები გამორთე.</span></div>
+                    <div><b>3</b><span>დააჭირე „შემოწმებას“ - რამდენიმე წამი.</span></div>
+                </div>
+                <p class="ui-sheet-p" style="margin-top:12px;" x-show="$store.hv.prof" x-text="'მოდელი: ' + ($store.hv.prof ? $store.hv.prof.label : '')"></p>
+                <p class="ui-tip" x-show="$store.hv.prof && $store.hv.prof.exp" style="margin-top:10px;"><b>ტესტის რეჟიმი:</b> ამ მოდელზე შემოწმება ჯერ ყველა მანქანაზე არ არის გამოცდილი. თუ მონაცემი არარეალისტური იქნება, აპი მას არ აჩვენებს.</p>
+                <p class="ui-tip" x-show="$store.hv.state === 'noconn'" style="margin-top:10px; background:var(--u-amber-soft); color:var(--u-ink);">ჯერ დაუკავშირდი სკანერს მთავარ გვერდზე.</p>
+                <button type="button" class="ui-btn dark wide" style="margin-top:16px;" @click="$store.hv.start()" x-show="$store.hv.prof">შემოწმება</button>
+            </div>
+            <div class="ui-card" x-show="$store.hv.state === 'unsupported' || ($store.hv.state === 'idle' && !$store.hv.prof)">
+                <div class="ui-card-t">ამ მოდელზე შემოწმება ჯერ არ არის</div>
+                <div class="ui-card-s">ბატარეის წაკითხვის მეთოდი ყველა მარკას თავისი აქვს. ახლა ხელმისაწვდომია: Toyota / Lexus ჰიბრიდები, Nissan Leaf, Hyundai / Kia ელექტრო და ჰიბრიდი. შეამოწმე, სწორად არის თუ არა მითითებული მოდელი და წელი „ჩემი მანქანის“ გვერდზე.</div>
+            </div>
+            <!-- მიმდინარეობს -->
+            <div class="ui-card" x-show="$store.hv.state === 'run'" style="text-align:center;">
+                <div class="ui-hv-spin"></div>
+                <div class="ui-card-t" style="margin-top:14px;">ვკითხულობ ბატარეას…</div>
+                <div class="ui-card-s">რამდენიმე წამი. მანქანა არ გამორთო.</div>
+            </div>
+            <!-- ვერ წავიკითხეთ -->
+            <div class="ui-card" x-show="$store.hv.state === 'fail'">
+                <div class="ui-card-t">ბატარეის მონაცემი ვერ წავიკითხეთ</div>
+                <div class="ui-card-s">მანქანამ ან სკანერმა ეს მონაცემი არ გადმოსცა. ხშირი მიზეზები: მანქანა READY რეჟიმში არ არის, მოდელი ან წელი სხვაა, ან სკანერი ამ მოთხოვნას ვერ ასრულებს. სხვა მონაცემებზე (კოდები, Live) ეს გავლენას არ ახდენს.</div>
+                <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="$store.hv.start()">თავიდან ცდა</button>
+            </div>
+            <!-- შედეგი -->
+            <template x-if="$store.hv.state === 'done' && $store.hv.result">
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-h">
+                            <div style="min-width:0;"><div class="ui-card-t">შედეგი</div><div class="ui-card-s" x-text="$store.hv.result.label"></div></div>
+                            <span class="ui-chip" :class="$store.hv.result.tone" x-text="{ green: 'კარგია', amber: 'ყურადღება', red: 'სუსტი' }[$store.hv.result.tone]"></span>
+                        </div>
+                        <div class="ui-eng">
+                            <span class="ui-eng-ic" :class="$store.hv.result.tone"><svg class="ic"><use :href="$store.hv.result.tone === 'green' ? '#i-check' : '#i-alert'"/></svg></span>
+                            <div style="min-width:0;"><b x-text="$store.hv.result.title"></b><span x-text="$store.hv.result.text"></span></div>
+                        </div>
+                        <div class="ui-eng-stats">
+                            <div><small>სხვაობა</small><b x-text="$store.hv.result.spread.toFixed($store.hv.result.unit === 'cell' ? 3 : 2) + ' V'"></b></div>
+                            <div><small>დაბალი</small><b x-text="$store.hv.fmt($store.hv.result.min)"></b></div>
+                            <div><small>მაღალი</small><b x-text="$store.hv.fmt($store.hv.result.max)"></b></div>
+                        </div>
+                        <p class="ui-tip" x-show="$store.hv.result.exp" style="margin-top:12px;"><b>ტესტის რეჟიმი:</b> ამ მოდელზე შემოწმება ჯერ ნაკლებადაა გამოცდილი.</p>
+                    </div>
+                    <div class="ui-sec" x-text="($store.hv.result.unit === 'block' ? 'ბლოკები' : 'უჯრედები') + ' (' + $store.hv.result.values.length + ')'"></div>
+                    <div class="ui-card" style="margin-top:8px;">
+                        <div class="ui-hv-bars" :class="$store.hv.result.unit">
+                            <template x-for="(v, i) in $store.hv.result.values" :key="i">
+                                <div class="ui-hv-bar" :class="i + 1 === $store.hv.result.weak ? 'weak' : ''">
+                                    <em x-text="i + 1"></em>
+                                    <i><span :style="'width:' + $store.hv.barW(v) + '%'"></span></i>
+                                    <b x-text="$store.hv.fmt(v)"></b>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <p class="ui-note" style="margin-top:14px;">ეს არის ბლოკების ძაბვა და მათი ბალანსი ამ მომენტში - არა ბატარეის „ჯანმრთელობის პროცენტი“. ზუსტი სურათისთვის შემოწმება გაიმეორე სხვადასხვა დროს.</p>
+                    <button type="button" class="ui-btn light wide" style="margin-top:12px;" @click="$store.hv.start()">თავიდან შემოწმება</button>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <!-- ═══════════ 🕘 ისტორია (history.js) ═══════════ -->
     <div class="ui-full" x-show="$store.hist.open" x-cloak x-transition.opacity.duration.150ms>
         <header class="ui-top">
@@ -2094,6 +2170,9 @@
         <div class="ui-sheet-bg" x-show="menuOpen" x-cloak x-transition.opacity @click="menuOpen = false"></div>
         <div class="ui-sheet" x-show="menuOpen" x-cloak role="dialog" aria-modal="true" aria-label="მენიუ">
             <div class="ui-sheet-grab"></div>
+            <button type="button" class="ui-mrow" x-show="$store.hv.applies" x-cloak @click="menuOpen = false; $store.hv.show()">
+                <svg class="ic"><use href="#i-dc-battery"/></svg><span x-text="$store.hv.kindLabel"></span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
+            </button>
             <button type="button" class="ui-mrow" @click="menuOpen = false; $store.car.openPage()">
                 <svg class="ic"><use href="#i-dc-car"/></svg><span>ჩემი მანქანა</span><svg class="ic ui-mrow-arr"><use href="#i-chev-r"/></svg>
             </button>
@@ -2204,6 +2283,18 @@
                     <svg class="ic ui-ic-blue" style="width:26px; height:26px;"><use href="#i-dc-shield"/></svg>
                 </div>
                 <button type="button" class="ui-btn dark wide" style="margin-top:14px;" @click="$store.pp.start($data)" :disabled="loading || scanAnim.open || clearAnim.open">შეამოწმე შეძენამდე</button>
+            </div>
+
+            <!-- 🔋 ჰიბრიდის / ელექტრომობილის ბატარეა (hybrid.js) - მხოლოდ ჰიბრიდზე/ელექტრომობილზე -->
+            <div class="ui-card" x-show="$store.hv.applies" x-cloak>
+                <div class="ui-card-h" style="align-items:center;">
+                    <div>
+                        <div class="ui-card-t" x-text="$store.hv.kindLabel"></div>
+                        <div class="ui-card-s">ბლოკების ძაბვა და ბალანსი - რომელი სუსტდება.</div>
+                    </div>
+                    <svg class="ic ui-ic-blue" style="width:26px; height:26px;"><use href="#i-dc-battery"/></svg>
+                </div>
+                <button type="button" class="ui-btn light wide" style="margin-top:14px;" @click="$store.hv.show()" :disabled="loading || scanAnim.open || clearAnim.open">ბატარეის შემოწმება</button>
             </div>
 
             <!-- 🚗 მარკა - მხოლოდ მწარმოებლის კოდის შემთხვევაში -->

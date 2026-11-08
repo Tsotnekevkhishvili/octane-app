@@ -438,3 +438,20 @@ body { padding-bottom: 110px !important; }
 .ui-eng-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--u-ink-3); }
 .ui-eng-foot .ic { width: 15px; height: 15px; }
 .ui-eng-oil { background: none; font: inherit; text-align: left; cursor: pointer; color: inherit; }
+
+/* 🔋 ბატარეის შემოწმება */
+.ui-hv-steps { display: grid; gap: 10px; margin-top: 12px; }
+.ui-hv-steps div { display: flex; gap: 12px; align-items: center; font-size: 14px; color: var(--u-ink); }
+.ui-hv-steps b { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: var(--u-soft); font-size: 13px; font-weight: 600; }
+.ui-hv-spin { width: 44px; height: 44px; margin: 6px auto 0; border-radius: 50%; border: 4px solid var(--u-soft); border-top-color: var(--u-blue); animation: uiHvSpin 0.9s linear infinite; }
+@keyframes uiHvSpin { to { transform: rotate(360deg); } }
+.ui-hv-bars { display: grid; gap: 7px; }
+.ui-hv-bars.cell { grid-template-columns: 1fr 1fr; column-gap: 14px; }
+.ui-hv-bar { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 8px; font-size: 12.5px; }
+.ui-hv-bar em { font-style: normal; color: var(--u-ink-3); text-align: right; }
+.ui-hv-bar i { height: 10px; border-radius: 99px; background: var(--u-soft); overflow: hidden; }
+.ui-hv-bar i span { display: block; height: 100%; border-radius: 99px; background: var(--u-blue); }
+.ui-hv-bar b { font-weight: 600; color: var(--u-ink); font-variant-numeric: tabular-nums; }
+.ui-hv-bar.weak i span { background: var(--u-red); }
+.ui-hv-bar.weak b { color: var(--u-red); }
+.ui-chip.red { background: var(--u-red-soft); color: var(--u-red); }
