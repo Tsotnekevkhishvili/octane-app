@@ -52,19 +52,46 @@ public class ObdWifiPlugin: CAPPlugin, CAPBridgedPlugin {
         let prefix = call.getString("prefix", "WiFi_OBD")
         ObdWifiPlugin.reachable(host: "192.168.0.10", port: 35000, timeout: 1.2) { ok in
             if ok { call.resolve(["connected": true, "already": true]); return }
+            self.join(prefix: prefix, fresh: false, call: call)
+        }
+    }
+
+    /// სკანერი ხელმისაწვდომი გახდა? (WiFi-ზე გადასვლას iPhone-ს რამდენიმე წამი სჭირდება)
+    static func waitReachable(tries: Int, _ done: @escaping (Bool) -> Void) {
+        reachable(host: "192.168.0.10", port: 35000, timeout: 1.0) { ok in
+            if ok || tries <= 1 { done(ok); return }
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.7) { waitReachable(tries: tries - 1, done) }
+        }
+    }
+
+    /// მიერთება. fresh = true: ძველი (შენახული) პარამეტრი იშლება და iPhone თავიდან აჩვენებს Join ფანჯარას.
+    /// შენახული პარამეტრით iPhone ჩუმად ცდილობს მიერთებას და ზოგჯერ ვერ ახერხებს - მაშინ ერთხელ თავიდან ვცდით.
+    private func join(prefix: String, fresh: Bool, call: CAPPluginCall) {
+        let apply: () -> Void = {
             let cfg = NEHotspotConfiguration(ssidPrefix: prefix)
             cfg.joinOnce = false
             NEHotspotConfigurationManager.shared.apply(cfg) { error in
                 if let e = error as NSError?, e.code != NEHotspotConfigurationError.alreadyAssociated.rawValue {
+                    if e.code == NEHotspotConfigurationError.userDenied.rawValue { call.reject("DENIED"); return }
+                    if !fresh { self.join(prefix: prefix, fresh: true, call: call); return }
                     call.reject("UNAVAILABLE: \(e.localizedDescription)")
                     return
                 }
                 self.joinedPrefix = prefix
-                // iPhone-ს WiFi-ზე გადასვლას ცოტა დრო სჭირდება
-                DispatchQueue.global().asyncAfter(deadline: .now() + 1.5) {
-                    call.resolve(["connected": true])
+                ObdWifiPlugin.waitReachable(tries: 12) { ok in
+                    if ok { call.resolve(["connected": true]); return }
+                    if !fresh { self.join(prefix: prefix, fresh: true, call: call); return }
+                    call.resolve(["connected": false])
                 }
             }
+        }
+        if !fresh { apply(); return }
+        NEHotspotConfigurationManager.shared.getConfiguredSSIDs { ssids in
+            for s in ssids where s.hasPrefix(prefix) {
+                NEHotspotConfigurationManager.shared.removeConfiguration(forSSID: s)
+            }
+            NEHotspotConfigurationManager.shared.removeConfiguration(forSSID: prefix)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { apply() }
         }
     }
 

@@ -3844,20 +3844,24 @@ function obdApp() {
         // თუ პლაგინი არ არის / ძველი Android-ია / მომხმარებელმა გააუქმა - აპი
         // ჩვეულებრივად აგრძელებს ძველი გზით, არაფერი ფუჭდება.
         obdWifiLinked: false,
+        obdJoinFailed: false,
         async autoJoinObdWifi() {
             const plugins = window.Capacitor && window.Capacitor.Plugins;
             const ObdWifi = plugins && plugins.ObdWifi;
+            this.obdJoinFailed = false;
             if (!ObdWifi || this.obdWifiLinked) return;
             try {
                 const sup = await ObdWifi.isSupported();
                 if (!sup || !sup.supported) return;
                 this.statusMessage = 'აირჩიე სკანერი სიიდან (WiFi OBD)...';
-                await ObdWifi.connect({ pattern: '.*OBD.*' });
+                const jr = await ObdWifi.connect({ pattern: '.*OBD.*' });
+                this.obdJoinFailed = !!(jr && jr.connected === false);
                 this.obdWifiLinked = true;
                 this.statusMessage = 'WiFi დაკავშირდა! სკანერთან კავშირი...';
                 await new Promise(r => setTimeout(r, 800));
             } catch (e) {
-                // გაუქმდა ან ვერ მოიძებნა - ვაგრძელებთ ძველი გზით
+                // გაუქმდა ან ვერ მოიძებნა - ვაგრძელებთ ძველი გზით (თუ ტელეფონი უკვე სკანერის WiFi-ზეა, იმუშავებს)
+                this.obdJoinFailed = true;
                 console.log('ObdWifi:', e && e.message ? e.message : e);
             }
         },
@@ -3876,7 +3880,9 @@ function obdApp() {
                             await this.initELM327();
                         } else {
                             this.loading = false;
-                            this.statusMessage = 'Wi-Fi შეცდომა! შეამოწმეთ ქსელი.';
+                            this.statusMessage = this.obdJoinFailed
+                                ? 'სკანერის WiFi-ს ავტომატურად ვერ დავუკავშირდით. ტელეფონის პარამეტრებში (Wi-Fi) აირჩიე სკანერის ქსელი და სცადე თავიდან.'
+                                : 'Wi-Fi შეცდომა! შეამოწმეთ ქსელი.';
                             this.openHelp(true);
                         }
                     });
