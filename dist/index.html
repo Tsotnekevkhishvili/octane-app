@@ -54,6 +54,7 @@
     <script src="live-pids.js"></script>
     <script src="history.js"></script>
     <script src="hybrid.js"></script>
+    <script src="demo.js"></script>
     <script src="dashcam.js"></script>
     <!-- 🍎 iPhone-ის ფენა (ანდროიდზე არაფერს აკეთებს) -->
     <script src="ios-shim.js"></script>
@@ -2774,6 +2775,13 @@
                     <span class="ui-pick-t"><b>ვიდეორეგისტრატორი</b><small>ცოცხალი ხედი და ჩანაწერები</small></span>
                     <svg class="ic ui-pick-arr"><use href="#i-chev-r"/></svg>
                 </button>
+                <!-- საცდელი რეჟიმი: მოწყობილობის გარეშე (demo.js) -->
+                <button type="button" class="ui-demo-link" x-show="!(window.OCTANE_DEMO && OCTANE_DEMO.on())" @click="OCTANE_DEMO.enter()">
+                    <svg class="ic"><use href="#i-play"/></svg><span>სცადე მოწყობილობის გარეშე</span>
+                </button>
+                <button type="button" class="ui-demo-link on" x-show="window.OCTANE_DEMO && OCTANE_DEMO.on()" x-cloak @click="OCTANE_DEMO.exit()">
+                    <svg class="ic"><use href="#i-x"/></svg><span>საცდელი რეჟიმიდან გასვლა</span>
+                </button>
             </div>
 
             <!-- ნაბიჯი 2: ვიდეორეგისტრატორის კოდი (კოდი 2000) -->
@@ -3879,7 +3887,7 @@ function obdApp() {
             const plugins = window.Capacitor && window.Capacitor.Plugins;
             const ObdWifi = plugins && plugins.ObdWifi;
             this.obdJoinFailed = false;
-            if (!ObdWifi || this.obdWifiLinked) return;
+            if (!ObdWifi || this.obdWifiLinked || (window.OCTANE_DEMO && window.OCTANE_DEMO.on())) return;
             try {
                 const sup = await ObdWifi.isSupported();
                 if (!sup || !sup.supported) return;
@@ -3899,13 +3907,19 @@ function obdApp() {
             }
         },
 
+        // სკანერთან TCP: საცდელ რეჟიმში საცდელი სკანერი (demo.js), სხვა შემთხვევაში ნამდვილი
+        tcp() {
+            if (window.OCTANE_DEMO && window.OCTANE_DEMO.on()) return window.OCTANE_DEMO.tcp;
+            return (window.chrome && window.chrome.sockets && window.chrome.sockets.tcp) || null;
+        },
+
         async connectWifiOBD() {
             await this.autoJoinObdWifi();
             this.statusMessage = 'დაკავშირება 192.168.0.10:35000...';
-            if (window.chrome && window.chrome.sockets && window.chrome.sockets.tcp) {
-                window.chrome.sockets.tcp.create({}, (createInfo) => {
+            if (this.tcp()) {
+                this.tcp().create({}, (createInfo) => {
                     this.socketId = createInfo.socketId;
-                    window.chrome.sockets.tcp.connect(this.socketId, '192.168.0.10', 35000, async (res) => {
+                    this.tcp().connect(this.socketId, '192.168.0.10', 35000, async (res) => {
                         if (res === 0) {
                             this.connected = true;
                             localStorage.setItem('octane_connected_once', 'true');
@@ -3969,9 +3983,7 @@ function obdApp() {
 
                 let finish = (result) => {
                     clearTimeout(timeoutId);
-                    if (window.chrome && window.chrome.sockets && window.chrome.sockets.tcp) {
-                        window.chrome.sockets.tcp.onReceive.removeListener(onReceive);
-                    }
+                    if (this.tcp()) this.tcp().onReceive.removeListener(onReceive);
                     resolve(result);
                 };
 
@@ -3989,8 +4001,8 @@ function obdApp() {
                     }
                 };
 
-                window.chrome.sockets.tcp.onReceive.addListener(onReceive);
-                window.chrome.sockets.tcp.send(this.socketId, arrayBuffer, () => {});
+                this.tcp().onReceive.addListener(onReceive);
+                this.tcp().send(this.socketId, arrayBuffer, () => {});
                 timeoutId = setTimeout(() => {
                     this.elmTimedOut = true; // ადაპტერი ჯერ კიდევ მუშაობს - შემდეგ ბრძანებამდე elmResync() ასწორებს
                     finish(buffer); // რაც შეგროვდა, იმას ვაბრუნებთ ცარიელის ნაცვლად
@@ -4702,9 +4714,7 @@ function obdApp() {
         disconnectOBD() {
             if (this.liveTimer) clearInterval(this.liveTimer);
             if (this.extraLiveTimer) clearTimeout(this.extraLiveTimer);
-            if (this.socketId && window.chrome && window.chrome.sockets && window.chrome.sockets.tcp) {
-                window.chrome.sockets.tcp.close(this.socketId);
-            }
+            if (this.socketId && this.tcp()) this.tcp().close(this.socketId);
             // ავტომატური WiFi-კავშირის გათავისუფლება (თუ გამოიყენებოდა)
             try {
                 const ObdWifi = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ObdWifi;

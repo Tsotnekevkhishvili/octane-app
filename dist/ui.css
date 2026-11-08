@@ -457,3 +457,9 @@ body { padding-bottom: 110px !important; }
 .ui-chip.red { background: var(--u-red-soft); color: var(--u-red); }
 /* სრული ეკრანის გვერდები: ფართო ეკრანზეც ტელეფონის სიგანით (როგორც მთავარი გვერდი) */
 .ui-full > .ui-top, .ui-full > .ui-page { max-width: 480px; margin-left: auto; margin-right: auto; }
+
+/* საცდელი რეჟიმი */
+.ui-demo-link { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 14px; padding: 12px; border: 0; background: none; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--u-blue-2, var(--u-blue)); }
+.ui-demo-link .ic { width: 16px; height: 16px; }
+.ui-demo-link.on { color: var(--u-red); }
+html.demo-on body::after { content: 'საცდელი რეჟიმი'; position: fixed; bottom: calc(96px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 9999; padding: 3px 10px; border-radius: 999px; background: var(--u-amber-soft); color: var(--u-amber); font-size: 11px; font-weight: 600; pointer-events: none; }

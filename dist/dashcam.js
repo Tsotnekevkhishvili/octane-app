@@ -567,7 +567,7 @@
             // ⚙️ OCTANE_FLAGS.showDashcam = false → არჩევანის ეკრანი არ ჩანს, აპი პირდაპირ OBD-ზე იხსნება
             screen: (window.OCTANE_FLAGS && window.OCTANE_FLAGS.showDashcam === false) ? 'obd' : 'choose',   // 'choose' | 'obd' | 'dashcam'
             step: 'pick',              // 'pick' | 'dc-code'
-            dcActivated: window.OCTANE_DASHCAM_KEY.isActivated() || !!(window.OCTANE_FLAGS && window.OCTANE_FLAGS.dashcamDemo),
+            dcActivated: window.OCTANE_DASHCAM_KEY.isActivated() || !!(window.OCTANE_FLAGS && window.OCTANE_FLAGS.dashcamDemo) || !!(window.OCTANE_DEMO && window.OCTANE_DEMO.on()),
             dcInput: '',
             dcError: '',
             dcSuccess: '',
