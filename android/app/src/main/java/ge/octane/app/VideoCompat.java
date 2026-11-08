@@ -25,12 +25,14 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import androidx.media3.transformer.Composition;
+import androidx.media3.transformer.DefaultEncoderFactory;
 import androidx.media3.transformer.EditedMediaItem;
 import androidx.media3.transformer.Effects;
 import androidx.media3.transformer.ExportException;
 import androidx.media3.transformer.ExportResult;
 import androidx.media3.transformer.ProgressHolder;
 import androidx.media3.transformer.Transformer;
+import androidx.media3.transformer.VideoEncoderSettings;
 
 import java.io.File;
 import java.util.Collections;
@@ -117,8 +119,13 @@ public final class VideoCompat {
             if (out.exists()) out.delete();
             final Transformer[] holder = new Transformer[1];
             final boolean[] finished = {false};
+            // ხარისხი: 1080p-ზე ~12 Mbps (დეშქემის ორიგინალის დონე), პატარა ზომაზე - პროპორციულად (მინ. 4 Mbps)
+            int bitrate = (int) Math.max(4_000_000L, Math.min(12_000_000L, 12_000_000L * outW * outH / (1920L * 1080L)));
             Transformer t = new Transformer.Builder(ctx)
                     .setVideoMimeType(MimeTypes.VIDEO_H264)
+                    .setEncoderFactory(new DefaultEncoderFactory.Builder(ctx)
+                            .setRequestedVideoEncoderSettings(new VideoEncoderSettings.Builder().setBitrate(bitrate).build())
+                            .build())
                     .addListener(new Transformer.Listener() {
                         @Override
                         public void onCompleted(Composition composition, ExportResult result) {
